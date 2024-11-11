@@ -5,7 +5,7 @@ export default function Page() {
   return (
     <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
       <Text>Login</Text>
-      <Link href="/register">
+      <Link href="/register" replace>
         <Text>Create a new account</Text>
       </Link>
     </View>
