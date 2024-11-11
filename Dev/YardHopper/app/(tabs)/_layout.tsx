@@ -4,6 +4,7 @@ import React from 'react';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import LogoutComponent from '@/components/LogoutComponent';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -13,6 +14,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: true,
+        headerRight: () => <LogoutComponent/>
       }}>
       <Tabs.Screen
         name="index"
