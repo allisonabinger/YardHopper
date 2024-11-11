@@ -12,7 +12,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
+        headerShown: true,
       }}>
       <Tabs.Screen
         name="index"
@@ -42,12 +42,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="settings/index"
         options={{
           title: 'Settings',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'settings' : 'settings-outline'} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings/[id]"
+        options={{
+          title: 'Settings',
+          href: null,
         }}
       />
     </Tabs>
