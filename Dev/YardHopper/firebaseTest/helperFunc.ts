@@ -1,7 +1,7 @@
 // Contains functions that helped us get urls to work with the firebase storage
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import {getFirestore, doc, getDoc} from "firebase/firestore"
-import { app, db } from "../firebaseConfig"
+import { app, db } from "../../../../holdStuffTemporarily/YardHopper/firebaseConfig"
 
 // Function to get the download URL
 async function getDownloadUrl(filePath: string) {
