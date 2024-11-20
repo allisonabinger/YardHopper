@@ -18,7 +18,7 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Forgot Password</Text>
+      <Text style={styles.title}>Forgot Password?</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter your email"
