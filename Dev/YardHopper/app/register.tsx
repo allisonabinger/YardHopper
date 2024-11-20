@@ -11,6 +11,7 @@ export default function Page() {
   async function register(email: string, password: string) {
     // setLoading(true);
     try {
+      console.log(`signing up with ${email} and ${password}`)
       await auth.register(email, password)
       router.replace("/(tabs)");
     } catch (e) {

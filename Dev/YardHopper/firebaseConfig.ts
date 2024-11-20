@@ -1,22 +1,21 @@
+// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { initializeAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
 
-// Firebase configuration object (replace this with your actual config)
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyCO8IaOrOukob8FuKiUmCx8XmjN9x8VhPA",
-    authDomain: "yardhopper-37d13.firebaseapp.com",
-    projectId: "yardhopper-37d13",
-    storageBucket: "yardhopper-37d13.firebasestorage.app",
-    messagingSenderId: "550166057071",
-    appId: "1:550166057071:web:148908b2baaf8fecb6bd9a",
-    measurementId: "G-6CFPHMSBQT"
+  apiKey: "AIzaSyC-IOZP3TF5ImTYM9hYSFIP-q4pWBv_4lY",
+  authDomain: "yardhopper-7aeb4.firebaseapp.com",
+  projectId: "yardhopper-7aeb4",
+  storageBucket: "yardhopper-7aeb4.firebasestorage.app",
+  messagingSenderId: "188647393247",
+  appId: "1:188647393247:web:39d9f45ac13e30dd34e66a"
 };
 
 // Initialize Firebase
-export const app = initializeApp(firebaseConfig);
-// export const storage = getStorage(app);
-// export const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
 // Initialize Auth
 export const auth = initializeAuth(app);
