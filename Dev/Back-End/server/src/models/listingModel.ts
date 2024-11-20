@@ -31,8 +31,8 @@ export interface Address {
     postId: string;
     generatedAt: string;
     status: Status;
-    lng: number;
     lat: number;
+    long: number;
     userId: string;
   }
   
