@@ -46,26 +46,29 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, buttonTitle = "Submit" })
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+    width: '100%',
   },
   input: {
     height: 50,
-    // borderColor: Colors.teal,
     borderWidth: 1,
     marginBottom: 12,
     paddingLeft: 8,
-    color: "black",
-    borderRadius: 4,
+    color: 'black',
+    borderRadius: 30, // Rounded corners
+    backgroundColor: '#F0F0F0', // Light background color
+    width: '100%',
   },
   button: {
-    // backgroundColor: Colors.teal,
-    // textAlign: "center",
-    borderRadius: 4,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center"
+    backgroundColor: '#159636', // Button color
+    borderRadius: 30, // Rounded corners for the button
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 20,
   },
   buttonText: {
-    color: "black",
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

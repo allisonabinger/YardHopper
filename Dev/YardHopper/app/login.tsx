@@ -1,8 +1,18 @@
 import { Link, useRouter } from 'expo-router';
-import { View, Text, Pressable } from 'react-native';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Pressable,
+  Image,
+  Text,
+} from "react-native";
 import { useAuth } from "@/components/AuthProvider";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
 import  AuthForm  from "@/components/AuthForm";
 import  ForgotPassword from "@/components/ForgotPassword";
+
 
 
 export default function Page() {
