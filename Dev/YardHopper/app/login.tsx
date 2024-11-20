@@ -2,6 +2,7 @@ import { Link, useRouter } from 'expo-router';
 import { View, Text, Pressable } from 'react-native';
 import { useAuth } from "@/components/AuthProvider";
 import  AuthForm  from "@/components/AuthForm";
+import  ForgotPassword from "@/components/ForgotPassword";
 
 
 export default function Page() {
@@ -24,7 +25,7 @@ export default function Page() {
     <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
       <Text>Login</Text>
       <AuthForm onSubmit={login} buttonTitle="Sign In" />
-
+      <ForgotPassword />
       <Link href="/register" replace>
         <Text>Create a new account</Text>
       </Link>
