@@ -22,11 +22,11 @@ export default function Page() {
   return (
     <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
       <Text>Login</Text>
+      <AuthForm onSubmit={login} buttonTitle="Sign In" />
+
       <Link href="/register" replace>
         <Text>Create a new account</Text>
       </Link>
-      <AuthForm onSubmit={login} buttonTitle="Sign In" />
-
       <Pressable onPress={() => {router.replace("/(tabs)")}}>
         <Text>Sign In</Text>
       </Pressable>
