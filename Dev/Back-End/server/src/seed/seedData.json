@@ -39,8 +39,10 @@
       "postId": "",
       "generatedAt": "",
       "status": "",
-      "lat": 36.1555061340332,
-      "long": -95.99500274658203,
+      "coordinates": {
+        "latitude": 36.1555061340332,
+        "longitude": -95.99500274658203
+      },
       "userId": ""
     },
     {
