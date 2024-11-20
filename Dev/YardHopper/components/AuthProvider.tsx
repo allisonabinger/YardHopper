@@ -1,8 +1,21 @@
-import { auth } from "@/firebaseConfig"
+import { auth } from "@/firebaseConfig";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, User, UserCredential } from "firebase/auth";
-import { createContext, ReactNode } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
-const AuthContext = createContext({});
+const AuthContext = createContext<AuthContextType>({
+  register,
+  logout,
+  login,
+});
+
+type AuthContextType = {
+  register: (email: string, password: string) => Promise<UserCredential>;
+  logout: () => Promise<void>;
+  login: (email: string, password: string) => Promise<UserCredential>;
+  user?: User | null;
+}
+
+export const useAuth = () => useContext<AuthContextType>(AuthContext)
 
 function register(email: string, password: string) {
   return createUserWithEmailAndPassword(auth, email, password)
@@ -16,8 +29,22 @@ function login(email: string, password: string) {
   return signInWithEmailAndPassword(auth, email, password);
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  return <AuthContext.Provider value={{register, logout, login}}>
+export function AuthProvider({children}: {children: ReactNode}){
+  const [user, setUser] = useState(auth.currentUser);
+
+  useEffect(() => {
+    // create subscription when component mounts
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if(user) {
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    });
+    // unsubscribe when component unmounts
+    return () => unsubscribe();
+  }, [])
+  return <AuthContext.Provider value={{user, register, logout, login }}>
     {children}
   </AuthContext.Provider>
 }
