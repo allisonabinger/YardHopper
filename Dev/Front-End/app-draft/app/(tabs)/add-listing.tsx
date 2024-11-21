@@ -1,185 +1,208 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  SectionList,
+  StyleSheet,
+  Animated,
+  ScrollView,
+} from "react-native";
 import { useRouter } from "expo-router";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { Easing } from "react-native";
+
+const categories = [
+  { id: "1", name: "Decor & Art", subcategories: ["Paintings", "Sculptures", "Wall Art", "Pottery", "Mirrors", "Candles", "Clocks"] },
+  { id: "2", name: "Clothing", subcategories: ["Mens", "Womens", "Kids", "Winter", "Summer", "Outerwear", "Belts", "Sunglasses"] },
+  { id: "3", name: "Shoes & Accessories", subcategories: ["Jewelry", "Bags", "Mens", "Womens"] },
+  { id: "4", name: "Pet", subcategories: ["Cat", "Dog", "Bird", "Exotic", "Other"] },
+  { id: "5", name: "Tools/Parts", subcategories: ["Automotive", "Power Tools", "Lawn/Garden", "Trades", "Hand Tools"] },
+  { id: "6", name: "Kitchenware", subcategories: ["Cups/Glasses", "Crystal", "Silverware", "Dining", "Utensils", "Gadgets"] },
+  { id: "7", name: "Textiles", subcategories: ["Fabrics", "Bedding", "Towels", "Rugs"] },
+  { id: "8", name: "Furniture", subcategories: ["Seating", "Tables/Desks", "Storage", "Bedroom", "Outdoor", "Office", "Children's", "Nursery"] },
+  { id: "9", name: "Books & Media", subcategories: ["Picture Books", "Novels", "Reference Books", "CDs", "Television Series Sets", "VHS", "Cassettes", "Vinyl"] },
+  { id: "10", name: "Seasonal/Holiday", subcategories: ["Christmas", "Halloween", "Costumes", "Gift/Wrapping", "Misc Holiday", "Seasonal Decor"] },
+  { id: "11", name: "Appliances", subcategories: ["Large Appliances", "Kitchen Appliances", "Personal Care", "Outdoor", "Cleaning"] },
+  { id: "12", name: "Electronics", subcategories: ["TVs/Home Entertainment", "Gaming", "Computer/Accessories", "Personal Devices", "Music/Audio", "Photography"] },
+  { id: "13", name: "Hobbies", subcategories: ["Painting", "Yarn", "Sewing", "Woodworking", "Floral/Decorative", "Kids Crafts", "Musical Instruments"] },
+  { id: "14", name: "Sports/Outdoors", subcategories: ["Sport Accessories", "Camping Gear", "Bikes/Scooters", "Skating", "Sporting Gear", "Fishing"] },
+  { id: "15", name: "Kids", subcategories: ["Clothing", "Toys", "Nursery"] },
+  { id: "16", name: "Other", subcategories: [] },
+];
+
+const icons = {
+  "Decor & Art": "palette",
+  Clothing: "tshirt-crew",
+  "Shoes & Accessories": "shoe-formal",
+  Pet: "paw",
+  "Tools/Parts": "tools",
+  Kitchenware: "silverware",
+  Textiles: "rug",
+  Furniture: "sofa",
+  "Books & Media": "book-open",
+  "Seasonal/Holiday": "calendar",
+  Appliances: "fridge",
+  Electronics: "desktop-mac",
+  Hobbies: "puzzle",
+  "Sports/Outdoors": "basketball",
+  Other: "dots-horizontal",
+  Kids: "baby",
+};
 
 export default function AddListingPage() {
+  const [expandedCategory, setExpandedCategory] = useState(null);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
+  const dropdownAnimations = useRef({});
   const router = useRouter();
-  const [step, setStep] = useState(1);
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
-  const categories = [
-    { id: 1, name: 'Decor /Art', icon: 'image-outline' },
-    { id: 2, name: 'Clothing', icon: 'shirt-outline' },
-    { id: 3, name: 'Furniture', icon: 'bed-outline' },
-    { id: 4, name: 'Electronics', icon: 'tv-outline' },
-    { id: 5, name: 'Books & Media', icon: 'book-outline' },
-    { id: 6, name: 'Hobbies', icon: 'game-controller-outline' },
-    { id: 7, name: 'Kitchenware', icon: 'restaurant-outline' },
-    { id: 8, name: 'Pets', icon: 'paw-outline' },
-  ];
+  categories.forEach((cat) => {
+    if (!dropdownAnimations.current[cat.id]) {
+      dropdownAnimations.current[cat.id] = new Animated.Value(0);
+    }
+  });
 
-  const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const dates = Array.from({ length: 35 }, (_, i) => i + 26);
+  const toggleCategory = (id, subcategories) => {
+    const isExpanded = expandedCategory === id;
 
-  const toggleCategory = (id: number) => {
-    setSelectedCategories(prev =>
-      prev.includes(id) ? prev.filter(catId => catId !== id) : [...prev, id]
+    // Close the previously expanded category
+    if (expandedCategory && expandedCategory !== id) {
+      Animated.timing(dropdownAnimations.current[expandedCategory], {
+        toValue: 0,
+        duration: 400, // Slightly longer for smoothness
+        easing: Easing.inOut(Easing.ease), // Smooth easing
+        useNativeDriver: false,
+      }).start();
+    }
+
+    // Expand or collapse the current category
+    setExpandedCategory(isExpanded ? null : id);
+    Animated.timing(dropdownAnimations.current[id], {
+      toValue: isExpanded ? 0 : 1,
+      duration: 100, // Match the duration
+      easing: Easing.inOut(Easing.ease), // Smooth easing
+      useNativeDriver: false,
+    }).start();
+
+    // Manage selected categories
+    setSelectedCategories((prev) => {
+      if (isExpanded && !subcategories.some((sub) => selectedSubcategories.includes(sub))) {
+        return prev.filter((cat) => cat !== id);
+      }
+      return prev.includes(id) ? prev : [...prev, id];
+    });
+  };
+
+  const toggleSubcategory = (subcategory) => {
+    setSelectedSubcategories((prev) =>
+      prev.includes(subcategory)
+        ? prev.filter((sub) => sub !== subcategory)
+        : [...prev, subcategory]
     );
   };
 
-  const renderCategoriesStep = () => (
-    <ScrollView style={styles.content}>
-      <Text style={styles.title}>Create your listing</Text>
+  const isCategorySelected = (category) => {
+    return (
+      selectedCategories.includes(category.id) ||
+      (category.subcategories || []).some((sub) => selectedSubcategories.includes(sub))
+    );
+  };
 
-      <View style={styles.categoriesSection}>
-        <Text style={styles.categoryTitle}>Categories</Text>
-        <Text style={styles.categorySubtitle}>(select all that apply)</Text>
+  const renderCategory = ({ section }) => {
+    const isSelected = isCategorySelected(section);
+    const heightAnimation = dropdownAnimations.current[section.id]?.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, (section.data.length + 1) * 50],
+    });
 
-        <View style={styles.grid}>
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category.id}
-              style={[
-                styles.categoryCard,
-                selectedCategories.includes(category.id) && styles.selectedCategory
-              ]}
-              onPress={() => toggleCategory(category.id)}
-            >
-              <Ionicons name={category.icon} size={32} color={selectedCategories.includes(category.id) ? "white" : "black"} />
-              <Text style={[
-                styles.categoryLabel,
-                selectedCategories.includes(category.id) && styles.selectedCategoryText
-              ]}>{category.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderDetailsStep = () => (
-    <ScrollView style={styles.content}>
-      {/* Listing Title */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Listing title</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter title"
-          placeholderTextColor="#666"
-        />
-      </View>
-
-      {/* Address Section */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Listing address</Text>
-        <View style={styles.addressInputs}>
-          <View style={styles.addressInput}>
-            <TextInput
-              style={styles.input}
-              placeholder="Street"
-              placeholderTextColor="#666"
-            />
-            <TouchableOpacity style={styles.locationButton}>
-              <Ionicons name="location-outline" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
-          <TextInput
-            style={styles.input}
-            placeholder="City"
-            placeholderTextColor="#666"
+    return (
+      <View>
+        <TouchableOpacity
+          style={[
+            styles.category,
+            isSelected && styles.selectedCategory,
+          ]}
+          onPress={() => toggleCategory(section.id, section.data || [])}
+        >
+          <Icon
+            name={icons[section.name] || "help-circle"}
+            size={30}
+            color={isSelected ? "#fff" : "#333"}
+            style={styles.icon}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="State"
-            placeholderTextColor="#666"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Zip"
-            placeholderTextColor="#666"
-          />
-        </View>
-      </View>
+          <Text style={[styles.categoryText, isSelected && styles.selectedCategoryText]}>
+            {section.name}
+          </Text>
+        </TouchableOpacity>
 
-      {/* Description */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Listing description</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          multiline
-          numberOfLines={4}
-          placeholder="Enter description"
-          placeholderTextColor="#666"
-        />
-      </View>
-
-      {/* Calendar */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Date</Text>
-        <View style={styles.calendar}>
-          <View style={styles.weekDays}>
-            {weekDays.map((day, index) => (
-              <Text key={index} style={styles.weekDay}>{day}</Text>
-            ))}
-          </View>
-          <View style={styles.dates}>
-            {dates.map((date, index) => (
+        <Animated.View style={[styles.dropdownContainer, { height: heightAnimation }]}>
+          {section.data.length > 0 && (
+            <Text style={styles.subcategoriesLabel}>Subcategories</Text>
+          )}
+          {(section.data || []).map((subcategory) => {
+            const isSubSelected = selectedSubcategories.includes(subcategory);
+            return (
               <TouchableOpacity
-                key={index}
+                key={subcategory}
                 style={[
-                  styles.dateButton,
-                  date === 20 && styles.selectedDate
+                  styles.subcategory,
+                  isSubSelected && styles.selectedSubcategory,
                 ]}
+                onPress={() => toggleSubcategory(subcategory)}
               >
-                <Text style={[
-                  styles.dateText,
-                  date === 20 && styles.selectedDateText
-                ]}>{date}</Text>
+                <Text
+                  style={[
+                    styles.subcategoryText,
+                    isSubSelected && styles.selectedSubcategoryText,
+                  ]}
+                >
+                  {subcategory}
+                </Text>
               </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+            );
+          })}
+        </Animated.View>
       </View>
-
-      {/* Time Selection */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Time</Text>
-        <View style={styles.timeSelection}>
-          <View style={styles.timeInput}>
-            <Text>7:00 am</Text>
-          </View>
-          <Text style={styles.toText}>to</Text>
-          <View style={styles.timeInput}>
-            <Text>3:00 pm</Text>
-          </View>
-        </View>
-      </View>
-    </ScrollView>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header with Progress Bar */}
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => step === 1 ? router.back() : setStep(1)}>
-          <Ionicons name="arrow-back" size={24} color="black" />
+        <TouchableOpacity onPress={() => router.push("/")}>
+          <Text style={styles.backArrow}>←</Text>
         </TouchableOpacity>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: step === 1 ? '50%' : '100%' }]} />
+          <View style={styles.progress}></View>
         </View>
       </View>
 
-      {step === 1 ? renderCategoriesStep() : renderDetailsStep()}
+      {/* Title */}
+      <Text style={styles.title}>Create your listing</Text>
+      <Text style={styles.subtitle}>Categories (select all that apply)</Text>
 
-      <TouchableOpacity
-        style={styles.continueButton}
-        onPress={() => step === 1 ? setStep(2) : console.log('Publish')}
-      >
-        <Text style={styles.continueButtonText}>
-          {step === 1 ? 'Continue' : 'Publish'}
-        </Text>
-      </TouchableOpacity>
+      {/* SectionList */}
+      <SectionList
+        sections={categories.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          data: cat.subcategories,
+        }))}
+        keyExtractor={(item, index) => item + index}
+        renderSectionHeader={renderCategory}
+        renderItem={() => null} // Subcategories are handled inside Animated.View
+        contentContainerStyle={[styles.listContainer, { paddingBottom: 100 }]} // Add extra padding for scroll space
+        ListFooterComponent={
+<TouchableOpacity
+  style={styles.continueButton}
+  onPress={() => router.push('/add-listing-details')} // Navigate to the second page
+>
+  <Text style={styles.continueText}>Continue</Text>
+</TouchableOpacity>
+        }
+      />
     </View>
   );
 }
@@ -187,158 +210,116 @@ export default function AddListingPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "#fff",
   },
   header: {
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
-    paddingTop: 48,
-    gap: 16,
+  },
+  backArrow: {
+    fontSize: 24,
+    marginRight: 8,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 2,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#159636',
-    borderRadius: 2,
-  },
-  content: {
     flex: 1,
-    padding: 16,
+    height: 4,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 2,
+  },
+  progress: {
+    width: "50%",
+    height: "100%",
+    backgroundColor: "#4caf50",
+    borderRadius: 2,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#159636', // Updated green
-    marginBottom: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 8,
+    color: '#159636',
   },
-  categoriesSection: {
-    gap: 8,
-  },
-  categoryTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#159636', // Updated green
-  },
-  categorySubtitle: {
+  subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#555",
+    textAlign: "center",
     marginBottom: 16,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 16, // Ensure enough space for footer
+    paddingTop: 16,
   },
-  categoryCard: {
-    width: '47%',
-    aspectRatio: 1,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+  category: {
+    alignItems: "center",
+    paddingVertical: 20,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    marginBottom: 12,
   },
   selectedCategory: {
-    backgroundColor: '#159636', // Updated green
+    backgroundColor: "#4caf50",
+    borderColor: "#388e3c",
   },
-  categoryLabel: {
+  icon: {
+    marginBottom: 8,
+  },
+  categoryText: {
     fontSize: 16,
-    color: '#333',
+    fontWeight: "500",
+    color: "#333",
   },
   selectedCategoryText: {
-    color: 'white',
+    color: "#fff",
+  },
+  dropdownContainer: {
+    overflow: "hidden",
+    marginLeft: 16,
+  },
+  subcategoriesLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#555",
+    marginBottom: 8,
+    marginLeft: 16,
+  },
+  subcategory: {
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "#c7d3c0",
+    marginBottom: 8,
+    marginLeft: 16,
+    marginRight: 16,
+  },
+  selectedSubcategory: {
+    backgroundColor: "#4caf50",
+    borderColor: "#388e3c",
+  },
+  subcategoryText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+  },
+  selectedSubcategoryText: {
+    color: "#fff",
   },
   continueButton: {
-    margin: 16,
-    backgroundColor: '#159636', // Updated green
-    padding: 16,
-    borderRadius: 24,
-    alignItems: 'center',
+    backgroundColor: "#159636",
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 50,
+    alignItems: "center",
+    alignSelf: "center",
+    marginTop: 40,
   },
-  continueButtonText: {
-    color: 'white',
+  continueText: {
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
-  },
-  inputGroup: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#333',
-  },
-  addressInputs: {
-    gap: 8,
-  },
-  addressInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  locationButton: {
-    marginLeft: 8,
-  },
-  textArea: {
-    height: 100,
-  },
-  calendar: {
-    gap: 8,
-  },
-  weekDays: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  weekDay: {
-    fontSize: 16,
-    color: '#333',
-  },
-  dates: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  dateButton: {
-    width: '13%',
-    aspectRatio: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 8,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  selectedDate: {
-    backgroundColor: '#159636', // Updated green
-  },
-  dateText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  selectedDateText: {
-    color: 'white',
-  },
-  timeSelection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  timeInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  toText: {
-    fontSize: 16,
-    color: '#333',
+    fontWeight: "bold",
   },
 });
