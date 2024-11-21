@@ -1,12 +1,26 @@
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLayoutEffect } from 'react';
 import LogoutComponent from '@/components/LogoutComponent';
 import { Link } from 'expo-router';
+import { getAuth } from 'firebase/auth';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
+  const [userEmail, setUserEmail] = useState('');
+
+  useEffect(() => {
+    // Fetch the current user's email
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      setUserEmail(user.email);
+    } else {
+      setUserEmail('Guest'); // Fallback if no user is signed in
+    }
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -37,7 +51,7 @@ export default function SettingsScreen() {
           <View style={styles.avatarContainer}>
             <Ionicons name="person-outline" size={32} color="#666" />
           </View>
-          <Text style={styles.profileName}>John Doe</Text>
+          <Text style={styles.profileName}>{userEmail}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Account Settings</Text>
