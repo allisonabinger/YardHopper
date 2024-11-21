@@ -16,7 +16,7 @@ export default function SettingsScreen() {
     const auth = getAuth();
     const user = auth.currentUser;
     if (user) {
-      setUserEmail(user.email);
+      setUserEmail(user.email ?? 'Guest'); // Fallback to 'Guest' if email is null
     } else {
       setUserEmail('Guest'); // Fallback if no user is signed in
     }
@@ -81,7 +81,7 @@ export default function SettingsScreen() {
           </Pressable>
         </Link>
 
-        <LogoutComponent style={styles.menuItem}>
+        <LogoutComponent>
           <Text style={styles.menuText}>Log out</Text>
         </LogoutComponent>
       </View>
