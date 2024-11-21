@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TextInput,
   Alert,
-  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
@@ -31,18 +30,21 @@ export default function AddListingDetails() {
 
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
   const fetchGeolocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert("Permission denied", "Location permission is required to auto-fill the address.");
+        Alert.alert(
+          "Permission denied",
+          "Location permission is required to auto-fill the address."
+        );
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
       const { latitude, longitude } = location.coords;
 
       const [geocodedAddress] = await Location.reverseGeocodeAsync({
@@ -89,48 +91,39 @@ export default function AddListingDetails() {
 
     while (currentDate <= lastDate) {
       const dateString = currentDate.toISOString().split("T")[0];
-      dates[dateString] = { selected: true, color: "#159636", textColor: "white" };
+      dates[dateString] = {
+        selected: true,
+        color: "#159636",
+        textColor: "white",
+      };
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
     return dates;
   };
 
-  const handleEndTimeChange = (event, selectedTime) => {
-    if (selectedTime) {
-      // Validate that end time is not before start time
-      if (selectedTime < startTime) {
-        Alert.alert("Invalid Time", "End time cannot be before the start time.");
-      } else {
-        setEndTime(selectedTime);
-      }
-    }
-    setShowEndTimePicker(false);
-  };
-
   const validateForm = () => {
     const missingFields = [];
-  
-    if (!address) missingFields.push("Address");
+
     if (!address.street) missingFields.push("Street Address");
     if (!address.city) missingFields.push("City");
     if (!address.state) missingFields.push("State");
     if (!address.zip) missingFields.push("ZIP Code");
     if (!startDate) missingFields.push("Start Date");
     if (!endDate) missingFields.push("End Date");
-    if (!startTime) missingFields.push("Start Time");
-    if (!endTime) missingFields.push("End Time");
-  
+
     return missingFields;
   };
-  
+
   const handlePublish = () => {
     const missingFields = validateForm();
-  
+
     if (missingFields.length > 0) {
       Alert.alert(
         "Incomplete Details",
-        `Please fill out the following fields before publishing:\n\n${missingFields.join("\n")}`
+        `Please fill out the following fields before publishing:\n\n${missingFields.join(
+          "\n"
+        )}`
       );
     } else {
       console.log("Publish Listing"); // Replace with actual publish logic
@@ -164,7 +157,10 @@ export default function AddListingDetails() {
 
             <View style={styles.addressHeader}>
               <Text style={styles.label}>Address</Text>
-              <TouchableOpacity style={styles.geoButton} onPress={fetchGeolocation}>
+              <TouchableOpacity
+                style={styles.geoButton}
+                onPress={fetchGeolocation}
+              >
                 <MaterialIcons name="my-location" size={24} color="#7f7f7f" />
               </TouchableOpacity>
             </View>
@@ -173,126 +169,96 @@ export default function AddListingDetails() {
               style={styles.input}
               placeholder="Street Address"
               value={address.street}
-              onChangeText={(text) => setAddress((prev) => ({ ...prev, street: text }))}
+              onChangeText={(text) =>
+                setAddress((prev) => ({ ...prev, street: text }))
+              }
             />
             <TextInput
               style={styles.input}
               placeholder="City"
               value={address.city}
-              onChangeText={(text) => setAddress((prev) => ({ ...prev, city: text }))}
+              onChangeText={(text) =>
+                setAddress((prev) => ({ ...prev, city: text }))
+              }
             />
             <TextInput
               style={styles.input}
               placeholder="State"
               value={address.state}
-              onChangeText={(text) => setAddress((prev) => ({ ...prev, state: text }))}
+              onChangeText={(text) =>
+                setAddress((prev) => ({ ...prev, state: text }))
+              }
             />
             <TextInput
               style={styles.input}
               placeholder="ZIP Code"
               keyboardType="numeric"
               value={address.zip}
-              onChangeText={(text) => setAddress((prev) => ({ ...prev, zip: text }))}
+              onChangeText={(text) =>
+                setAddress((prev) => ({ ...prev, zip: text }))
+              }
             />
 
             <Text style={styles.calenderLabel}>Select Start and End Dates</Text>
             <Calendar
               onDayPress={handleDayPress}
               markedDates={{
-                ...(startDate && endDate ? getDatesInRange(startDate, endDate) : {}),
-                [startDate]: { selected: true, startingDay: true, color: "#159636", textColor: "white" },
-                [endDate]: { selected: true, endingDay: true, color: "#159636", textColor: "white" },
+                ...(startDate && endDate
+                  ? getDatesInRange(startDate, endDate)
+                  : {}),
+                [startDate]: {
+                  selected: true,
+                  startingDay: true,
+                  color: "#159636",
+                  textColor: "white",
+                },
+                [endDate]: {
+                  selected: true,
+                  endingDay: true,
+                  color: "#159636",
+                  textColor: "white",
+                },
               }}
               markingType="period"
               style={{ marginBottom: 24 }}
             />
 
-            {/* Start Time */}
-            <Text style={styles.label}>Start Time</Text>
-            <TouchableOpacity
-              style={styles.timePickerButton}
-              onPress={() => setShowStartTimePicker(true)}
-            >
-              <Text style={styles.timePickerText}>
-                {startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Start Time Modal */}
-            <Modal
-              visible={showStartTimePicker}
-              transparent={true}
-              animationType="fade"
-              onRequestClose={() => setShowStartTimePicker(false)}
-            >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
+            <View style={styles.timePickerWrapper}>
+              <View style={styles.timePickerRow}>
+                <View style={styles.timePickerContainer}>
+                  <Text style={styles.label}>Start Time</Text>
                   <DateTimePicker
                     value={startTime}
                     mode="time"
-                    display="spinner"
+                    display="default"
                     onChange={(event, selectedTime) => {
-                      if (selectedTime) {
-                        setStartTime(selectedTime);
-                      }
-                      setShowStartTimePicker(false);
+                      if (selectedTime) setStartTime(selectedTime);
                     }}
+                    style={styles.timePicker}
                   />
-                  <TouchableOpacity
-                    style={styles.modalButton}
-                    onPress={() => setShowStartTimePicker(false)}
-                  >
-                    <Text style={styles.modalButtonText}>Done</Text>
-                  </TouchableOpacity>
                 </View>
-              </View>
-            </Modal>
 
-            {/* End Time */}
-            <Text style={styles.label}>End Time</Text>
-            <TouchableOpacity
-              style={styles.timePickerButton}
-              onPress={() => setShowEndTimePicker(true)}
-            >
-              <Text style={styles.timePickerText}>
-                {endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </Text>
-            </TouchableOpacity>
-
-            {/* End Time Modal */}
-            <Modal
-              visible={showEndTimePicker}
-              transparent={true}
-              animationType="fade"
-              onRequestClose={() => setShowEndTimePicker(false)}
-            >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
+                <View style={styles.timePickerContainer}>
+                  <Text style={styles.label}>End Time</Text>
                   <DateTimePicker
                     value={endTime}
                     mode="time"
-                    display="spinner"
+                    display="default"
                     onChange={(event, selectedTime) => {
-                      if (selectedTime) {
-                        // Ensure end time is after start time
-                        if (selectedTime < startTime) {
-                          Alert.alert("Invalid Time", "End time cannot be before the start time.");
-                        } else {
-                          setEndTime(selectedTime);
-                        }
+                      if (selectedTime >= startTime) {
+                        setEndTime(selectedTime);
+                      } else {
+                        Alert.alert(
+                          "Invalid Time",
+                          "End time cannot be before start time."
+                        );
                       }
-                      setShowEndTimePicker(false);
                     }}
+                    style={styles.timePicker}
                   />
-                  <TouchableOpacity
-                    style={styles.modalButton}
-                    onPress={() => setShowEndTimePicker(false)}
-                  >
-                    <Text style={styles.modalButtonText}>Done</Text>
-                  </TouchableOpacity>
                 </View>
               </View>
-            </Modal>
+            </View>
 
             <TouchableOpacity
               style={styles.publishButton}
@@ -315,7 +281,7 @@ const styles = StyleSheet.create({
   backArrow: { fontSize: 24, marginRight: 8 },
   title: { fontSize: 24, fontWeight: "bold", color: "#159636", marginBottom: 24 },
   form: { flex: 1, marginTop: 16 },
-  label: { fontSize: 16, fontWeight: "bold", color: "#555", marginBottom: 8 },
+  label: { fontSize: 16, fontWeight: "bold", color: "#555", marginBottom: 8, textAlign: "center" },
   calenderLabel: { fontSize: 16, fontWeight: "bold", color: "#555", marginBottom: 24 },
   input: {
     borderWidth: 1,
@@ -323,6 +289,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
+    color: "#555",
+    fontSize: 16,
   },
   textArea: { height: 100, textAlignVertical: "top", marginBottom: 24 },
   addressHeader: {
@@ -331,40 +299,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 24,
   },
-  geoButton: { padding: 8, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  timePickerButton: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
+  geoButton: {
+    padding: 8,
     borderRadius: 8,
-    backgroundColor: "#f9f9f9",
-    marginBottom: 16,
-  },
-  timePickerText: { fontSize: 16, color: "#333" },
-  modalContainer: {
-    flex: 1,
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 20,
-    width: "80%",
-    alignItems: "center",
-  },
-  modalButton: {
-    backgroundColor: "#159636",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 50,
-    marginTop: 10,
-  },
-  modalButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
   },
   publishButton: {
     backgroundColor: "#159636",
@@ -387,5 +326,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#159636",
     width: "100%",
     borderRadius: 3,
+  },
+  timePickerWrapper: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  timePickerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "80%",
+  },
+  timePickerContainer: {
+    flex: 1,
+    marginHorizontal: 8,
+  },
+  timePicker: {
+    marginVertical: 10,
   },
 });
