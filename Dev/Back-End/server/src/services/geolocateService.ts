@@ -28,9 +28,9 @@ export async function generateCoordinates(address: Address): Promise<{ latitude:
     const {street, city, state, zip} = address;
 
     const apiKey = process.env.GEOAPIFY_API_KEY;
-    const url = `https://api.geoapify.com/v1/geocode/search?housenumber=&street=${encodeURIComponent(street)}&postcode=${zip}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=United%20States%20of%20America&lang=en&limit=5&format=json&apiKey=${apiKey}`
+    const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(street)}&postcode=${zip}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=United%20States%20of%20America&lang=en&limit=5&format=json&apiKey=${apiKey}`
 
-    // console.log(url)
+    console.log(url)
     try {
         const response = await axios.get(url);
         
