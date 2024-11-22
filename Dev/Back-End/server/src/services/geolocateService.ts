@@ -20,6 +20,7 @@ export const generateGeo = (latitude: number, longitude: number) => {
     return { geohash, geopoint };
   } catch (error) {
     console.error("Error generating GeoPoint and GeoHash: ", error);
+    return undefined;
   }
 };
 
