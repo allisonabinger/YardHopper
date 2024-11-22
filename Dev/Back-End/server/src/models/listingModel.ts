@@ -1,5 +1,5 @@
 // model for Listing 
-
+import { GeoPoint } from "firebase-admin/firestore";
 export interface Address {
     street: string;
     city: string;
@@ -16,6 +16,12 @@ export interface Address {
     name: string;
     subcategories?: string;
   }
+
+  export interface Geolocation {
+    geohash: string;
+    geopoint: GeoPoint;
+  }
+
   
   export type Status = "active" | "upcoming" | "postponed" | "archived";
   
@@ -31,8 +37,7 @@ export interface Address {
     postId: string;
     generatedAt: string;
     status: Status;
-    lat: number;
-    long: number;
-    userId: string;
+    g: Geolocation;
+    userId: string | null;
   }
   
