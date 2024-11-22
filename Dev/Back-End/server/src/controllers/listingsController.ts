@@ -10,7 +10,7 @@ import { getListings } from "../services/listingService";
 
 export const fetchListings = async(req: Request, res: Response) => {
     const { lat, long, radius, categories } = req.query;
-    console.log("fetchListings called");
+    // console.log("fetchListings called");
 
     try {
         const latitude = parseFloat(lat as string);
@@ -19,10 +19,10 @@ export const fetchListings = async(req: Request, res: Response) => {
         const parsedCategories = categories ? JSON.parse(categories as string) : [];
 
 
-        console.log("Latitude:", latitude);
-        console.log("Longitude:", longitude);
-        console.log("Radius:", searchRadius);
-        console.log("Categories:", parsedCategories);
+        // console.log("Latitude:", latitude);
+        // console.log("Longitude:", longitude);
+        // console.log("Radius:", searchRadius);
+        // console.log("Categories:", parsedCategories);
         // call query function in services with formatted filters
         const listings = await getListings({
             lat: latitude,
@@ -33,7 +33,7 @@ export const fetchListings = async(req: Request, res: Response) => {
         if (!listings) {
             console.log("No listings from fetchListings")
         }
-        console.log(listings)
+        // console.log(listings)
 
         res.status(200).json({ listings })
     } catch (err) {
