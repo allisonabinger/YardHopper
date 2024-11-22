@@ -3,6 +3,8 @@ import { Query } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
 import { GeoFirestore } from "geofirestore";
 import * as admin from "firebase-admin";
+import { Listing } from "../models/listingModel";
+import { generateCoordinates, generateGeo } from "./geolocateService";
 
 const geoFirestore = new GeoFirestore(db);
 
@@ -60,6 +62,30 @@ export const getListings = async ({
     console.error("Error occurred during getListings: ", err);
   }
 };
+
+export const postListing = async(listingData: Omit<Listing, "images"| "postId" | "userId"> ) => {
+    try {
+        const preparedListingData = {
+            ...listingData,
+            images: null,
+            userId: null,
+        };
+
+        const listingRef = await db.collection("listings").add(preparedListingData);
+
+        const postId = listingRef.id;
+
+        await listingRef.update({
+            postId,
+        })
+
+        console.log(`Listing ${listingData.title} posted with ID: ${postId}`);
+
+    } catch (err) {
+        console.log("Error: ", err)
+        throw new Error("Error posting listing to DB")
+    }
+}
 
 // Function to calculate the distance between to points using coordinates!
 // const haversineDistance = (lat1: number, long1: number, lat2: number, long2: number): number => {
