@@ -1,264 +1,390 @@
 {
   "listings": [
     {
-      "title": "Rustic Decor and Furniture Sale",
-      "description": "A collection of rustic decor items and vintage furniture.",
+      "title": "Lots of clothes!",
+      "description": "Affordable clothing, shoes, and accessories.",
       "address": {
-        "street": "123 Maple St",
-        "city": "Broken Arrow",
-        "state": "OK",
-        "zip": 74011
+        "zip": 74063,
+        "city": "Sand Springs",
+        "street": "9 E Broadway St",
+        "state": "OK"
       },
-      "dates": ["2024-11-22", "2024-11-23"],
-      "startTime": "08:00",
-      "endTime": "15:00",
+      "dates": [
+        "2024-11-20"
+      ],
+      "startTime": "09:00",
+      "endTime": "13:00",
       "images": [
         {
-          "uri": "images/RusticDecor.jpeg",
-          "caption": "Rustic Decor"
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2F9XUAxe4LtsgdDH2f3SRc%2Fimage1.jpg?generation=1732134542246214&alt=media",
+          "caption": "Suits"
         },
         {
-            "uri": "images/Generic1.jpeg",
-            "caption": ""
-        }
-      ],
-      "categories": [
-        {
-          "name": "Decor/Art",
-          "subcategories": ["Wall Art", "Pottery", "Mirrors"]
-        },
-        {
-          "name": "Furniture",
-          "subcategories": ["Seating", "Tables/Desks", "Outdoor"]
-        },
-        {
-          "name": "Textiles",
-          "subcategories": ["Bedding", "Rugs"]
-        }
-      ],
-      "postId": "",
-      "generatedAt": "",
-      "status": "",
-      "coordinates": {
-        "latitude": 36.1555061340332,
-        "longitude": -95.99500274658203
-      },
-      "userId": ""
-    },
-    {
-      "title": "Kids' Clothing and Toys Sale",
-      "description": "Affordable kids' clothes, toys, and games.",
-      "address": {
-        "street": "456 Elm Dr",
-        "city": "Tulsa",
-        "state": "OK",
-        "zip": 74133
-      },
-      "dates": ["2024-11-20"],
-      "startTime": "07:30",
-      "endTime": "14:00",
-      "images": [
-        {
-          "uri": "images/ToysBooks.jpeg",
-          "caption": "Toys and Books"
-        },
-        {
-            "uri": "images/Generic2.jpeg",
-            "caption": ""
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2F9XUAxe4LtsgdDH2f3SRc%2Fimage2.jpg?generation=1732134542577615&alt=media",
+          "caption": ""
         }
       ],
       "categories": [
         {
           "name": "Clothing",
-          "subcategories": ["Kids", "Winter", "Outerwear"]
+          "subcategories": [
+            "Mens",
+            "Womens",
+            "Kids"
+          ]
         },
         {
-          "name": "Hobbies",
-          "subcategories": ["Kids Crafts", "Floral/Decorative"]
-        },
-        {
-          "name": "Books/Media",
-          "subcategories": ["Picture Books", "Novels", "CDs"]
-        }
-      ],
-      "postId": "",
-      "generatedAt": "",
-      "status": "",
-      "lat": 36.118454843364354,
-      "long": -95.92925049985104,
-      "userId": ""
-    },
-    {
-      "title": "Sports Gear and Tools Clearance",
-      "description": "Selling camping gear, tools, and more.",
-      "address": {
-        "street": "789 Oak Ln",
-        "city": "Bixby",
-        "state": "OK",
-        "zip": 74008
-      },
-      "dates": ["2024-11-20"],
-      "startTime": "09:00",
-      "endTime": "15:00",
-      "images": [
-        {
-          "uri": "images/SportsGear.jpeg",
-          "caption": "Sports Gear"
-        },
-        {
-            "uri": "images/Generic3.jpeg",
-            "caption": ""
-        }
-      ],
-      "categories": [
-        {
-          "name": "Sports/Outdoors",
-          "subcategories": ["Camping Gear", "Fishing", "Bikes/Scooters"]
-        },
-        {
-          "name": "Tools/Parts",
-          "subcategories": ["Power Tools", "Hand Tools", "Lawn/Garden"]
-        },
-        {
-          "name": "Appliances",
-          "subcategories": ["Outdoor", "Kitchen Appliances"]
-        }
-      ],
-      "postId": "",
-      "generatedAt": "",
-      "status": "",
-      "lat": 36.09499405655506,
-      "long": -95.90809964522481,
-      "userId": ""
-    },
-    {
-      "title": "Holiday Decorations Bonanza",
-      "description": "Everything you need for the holidays: decor, costumes, and more.",
-      "address": {
-        "street": "101 Pine St",
-        "city": "Owasso",
-        "state": "OK",
-        "zip": 74055
-      },
-      "dates": ["2024-11-22"],
-      "startTime": "08:00",
-      "endTime": "12:00",
-      "images": [
-        {
-          "uri": "images/HolidayDecor.jpeg",
-          "caption": "Christmas Trees"
-        },
-        {
-            "uri": "images/Generic4.jpeg",
-            "caption": ""
-        }
-      ],
-      "categories": [
-        {
-          "name": "Seasonal/Holiday",
-          "subcategories": ["Christmas", "Halloween", "Gift/Wrapping"]
+          "name": "Shoes & Accessories",
+          "subcategories": [
+            "Jewelry",
+            "Bags",
+            "Belts"
+          ]
         },
         {
           "name": "Textiles",
-          "subcategories": ["Fabrics", "Rugs", "Bedding"]
-        },
-        {
-          "name": "Decor/Art",
-          "subcategories": ["Candles", "Mirrors"]
+          "subcategories": [
+            "Bedding",
+            "Towels"
+          ]
         }
       ],
-      "postId": "",
-      "generatedAt": "",
-      "status": "",
-      "lat": 36.12612348317283,
-      "long": -95.92128388679708,
-      "userId": ""
+      "postId": "9XUAxe4LtsgdDH2f3SRc",
+      "generatedAt": "2024-11-20T20:29:01.822Z",
+      "status": "active",
+      "g": {
+        "geohash": "9y7tsgncv",
+        "geopoint": {
+          "_latitude": 36.1398660597748,
+          "_longitude": -96.10989445439044
+        }
+      },
+      "userId": null
     },
     {
       "title": "Multi Family Sale",
       "description": "Lots of clothes, office supplies, electronics, and more.",
       "address": {
-        "street": "202 Birch Ave",
+        "zip": 74037,
         "city": "Jenks",
-        "state": "OK",
-        "zip": 74037
+        "street": "300 Aquarium Drive",
+        "state": "OK"
       },
-      "dates": ["2024-11-21"],
+      "dates": [
+        "2024-11-21"
+      ],
       "startTime": "10:00",
       "endTime": "15:00",
       "images": [
         {
-          "uri": "images/Electronics.jpeg",
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FDOcNhHR25vTD70cmlySs%2Fimage1.jpg?generation=1732134541333058&alt=media",
           "caption": "Office Supplies"
         },
         {
-            "uri": "images/Generic5.jpeg",
-            "caption": ""
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FDOcNhHR25vTD70cmlySs%2Fimage2.jpg?generation=1732134541749536&alt=media",
+          "caption": ""
         }
       ],
       "categories": [
         {
           "name": "Electronics",
-          "subcategories": ["Computers/Accessories", "Gaming", "Music/Audio"]
+          "subcategories": [
+            "Computers/Accessories",
+            "Gaming",
+            "Music/Audio"
+          ]
         },
         {
           "name": "Furniture",
-          "subcategories": ["Office", "Seating", "Storage"]
+          "subcategories": [
+            "Office",
+            "Seating",
+            "Storage"
+          ]
         },
         {
           "name": "Books/Media",
-          "subcategories": ["Reference Books", "Novels", "CDs"]
+          "subcategories": [
+            "Reference Books",
+            "Novels",
+            "CDs"
+          ]
         }
       ],
-      "postId": "",
-      "generatedAt": "",
-      "status": "",
-      "lat": 36.12855991384113,
-      "long": -95.92619415125745,
-      "userId": ""
+      "postId": "DOcNhHR25vTD70cmlySs",
+      "generatedAt": "2024-11-20T20:29:00.923Z",
+      "status": "upcoming",
+      "g": {
+        "geohash": "9y7ubmnm3",
+        "geopoint": {
+          "_latitude": 36.019589116194474,
+          "_longitude": -95.95694318593097
+        }
+      },
+      "userId": null
     },
     {
-      "title": "Lots of clothes!",
-      "description": "Affordable clothing, shoes, and accessories.",
+      "title": "",
+      "description": "",
       "address": {
-        "street": "303 Cedar Ct",
-        "city": "Sand Springs",
-        "state": "OK",
-        "zip": 74063
+        "street": "",
+        "city": "",
+        "state": "",
+        "zip": 0
       },
-      "dates": ["2024-11-20"],
-      "startTime": "09:00",
-      "endTime": "13:00",
+      "dates": [],
+      "startTime": "",
+      "endTime": "",
+      "categories": [],
+      "postId": "",
+      "generatedAt": "",
+      "status": "active",
+      "userId": null
+    },
+    {
+      "title": "Rustic Decor and Furniture Sale",
+      "description": "A collection of rustic decor items and vintage furniture.",
+      "address": {
+        "zip": 74113,
+        "city": "Tulsa",
+        "street": "3123 Riverside Dr",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-11-22",
+        "2024-11-23"
+      ],
+      "startTime": "08:00",
+      "endTime": "15:00",
       "images": [
         {
-          "uri": "images/Suits.jpeg",
-          "caption": "Suits"
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FSi1twfMDLzV2bSb7aEU8%2Fimage1.jpg?generation=1732134537394440&alt=media",
+          "caption": "Rustic Decor"
         },
         {
-            "uri": "images/Generic6.jpeg",
-            "caption": ""
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FSi1twfMDLzV2bSb7aEU8%2Fimage2.jpg?generation=1732134537762019&alt=media",
+          "caption": ""
+        }
+      ],
+      "categories": [
+        {
+          "name": "Decor/Art",
+          "subcategories": [
+            "Wall Art",
+            "Pottery",
+            "Mirrors"
+          ]
+        },
+        {
+          "name": "Furniture",
+          "subcategories": [
+            "Seating",
+            "Tables/Desks",
+            "Outdoor"
+          ]
+        },
+        {
+          "name": "Textiles",
+          "subcategories": [
+            "Bedding",
+            "Rugs"
+          ]
+        }
+      ],
+      "postId": "Si1twfMDLzV2bSb7aEU8",
+      "generatedAt": "2024-11-20T20:28:56.424Z",
+      "status": "upcoming",
+      "g": {
+        "geohash": "9y7trz43y",
+        "geopoint": {
+          "_latitude": 36.11788240290836,
+          "_longitude": -95.98417771188453
+        }
+      },
+      "userId": null
+    },
+    {
+      "title": "Holiday Decorations Bonanza",
+      "description": "Everything you need for the holidays: decor, costumes, and more.",
+      "address": {
+        "zip": 74104,
+        "city": "Tulsa",
+        "street": "1123 South Zunis Avenue East",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-11-22"
+      ],
+      "startTime": "08:00",
+      "endTime": "12:00",
+      "images": [
+        {
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Fd8TEFyzDJPU2kLkynXoU%2Fimage1.jpg?generation=1732134540583798&alt=media",
+          "caption": "Christmas Trees"
+        },
+        {
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Fd8TEFyzDJPU2kLkynXoU%2Fimage2.jpg?generation=1732134540861276&alt=media",
+          "caption": ""
+        }
+      ],
+      "categories": [
+        {
+          "name": "Seasonal/Holiday",
+          "subcategories": [
+            "Christmas",
+            "Halloween",
+            "Gift/Wrapping"
+          ]
+        },
+        {
+          "name": "Textiles",
+          "subcategories": [
+            "Fabrics",
+            "Rugs",
+            "Bedding"
+          ]
+        },
+        {
+          "name": "Decor/Art",
+          "subcategories": [
+            "Candles",
+            "Mirrors"
+          ]
+        }
+      ],
+      "postId": "d8TEFyzDJPU2kLkynXoU",
+      "generatedAt": "2024-11-20T20:29:00.166Z",
+      "status": "upcoming",
+      "g": {
+        "geohash": "9y7v8k7vt",
+        "geopoint": {
+          "_latitude": 36.14733710591523,
+          "_longitude": -95.96019160280154
+        }
+      },
+      "userId": null
+    },
+    {
+      "title": "Kids' Clothing and Toys Sale",
+      "description": "Affordable kids' clothes, toys, and games.",
+      "address": {
+        "zip": 74103,
+        "city": "Tulsa",
+        "street": "15 N Cheyenne Ave",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-11-20"
+      ],
+      "startTime": "07:30",
+      "endTime": "14:00",
+      "images": [
+        {
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2ForKr1XXBosvl9JDxRg63%2Fimage1.jpg?generation=1732134539037541&alt=media",
+          "caption": "Toys and Books"
+        },
+        {
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2ForKr1XXBosvl9JDxRg63%2Fimage2.jpg?generation=1732134539372295&alt=media",
+          "caption": ""
         }
       ],
       "categories": [
         {
           "name": "Clothing",
-          "subcategories": ["Mens", "Womens", "Kids"]
+          "subcategories": [
+            "Kids",
+            "Winter",
+            "Outerwear"
+          ]
         },
         {
-          "name": "Shoes & Accessories",
-          "subcategories": ["Jewelry", "Bags", "Belts"]
+          "name": "Hobbies",
+          "subcategories": [
+            "Kids Crafts",
+            "Floral/Decorative"
+          ]
         },
         {
-          "name": "Textiles",
-          "subcategories": ["Bedding", "Towels"]
+          "name": "Books/Media",
+          "subcategories": [
+            "Picture Books",
+            "Novels",
+            "CDs"
+          ]
         }
       ],
-      "postId": "",
-      "generatedAt": "",
-      "status": "",
-      "lat": 36.11718193011569,
-      "long": -95.96089539039447,
-      "userId": ""
+      "postId": "orKr1XXBosvl9JDxRg63",
+      "generatedAt": "2024-11-20T20:28:58.647Z",
+      "status": "active",
+      "g": {
+        "geohash": "9y7txtfw2",
+        "geopoint": {
+          "_latitude": 36.1557379,
+          "_longitude": -95.9950594
+        }
+      },
+      "userId": null
+    },
+    {
+      "title": "Sports Gear and Tools Clearance",
+      "description": "Selling camping gear, tools, and more.",
+      "address": {
+        "zip": 74114,
+        "city": "Tulsa",
+        "street": "2445 S Peoria Ave",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-11-20"
+      ],
+      "startTime": "09:00",
+      "endTime": "15:00",
+      "images": [
+        {
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Fw0whNL9DV7eshUTYs0cA%2Fimage1.jpg?generation=1732134539851234&alt=media",
+          "caption": "Sports Gear"
+        },
+        {
+          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Fw0whNL9DV7eshUTYs0cA%2Fimage2.jpg?generation=1732134540148894&alt=media",
+          "caption": ""
+        }
+      ],
+      "categories": [
+        {
+          "name": "Sports/Outdoors",
+          "subcategories": [
+            "Camping Gear",
+            "Fishing",
+            "Bikes/Scooters"
+          ]
+        },
+        {
+          "name": "Tools/Parts",
+          "subcategories": [
+            "Power Tools",
+            "Hand Tools",
+            "Lawn/Garden"
+          ]
+        },
+        {
+          "name": "Appliances",
+          "subcategories": [
+            "Outdoor",
+            "Kitchen Appliances"
+          ]
+        }
+      ],
+      "postId": "w0whNL9DV7eshUTYs0cA",
+      "generatedAt": "2024-11-20T20:28:59.421Z",
+      "status": "active",
+      "g": {
+        "geohash": "9y7v81413",
+        "geopoint": {
+          "_latitude": 36.12875645342699,
+          "_longitude": -95.97373819493207
+        }
+      },
+      "userId": null
     }
   ]
 }
