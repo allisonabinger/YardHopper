@@ -32,7 +32,7 @@ export interface Address {
     dates: string[];
     startTime: string;
     endTime: string;
-    images?: Image[];
+    image?: Image[] | null;
     categories: Category[];
     postId: string;
     generatedAt: string;

@@ -6,7 +6,7 @@ import { fetchListings } from "../controllers/listingsController";
 const router = express.Router();
 
 router.get("/", fetchListings);
-// router.post("/listings", createListing);
+router.post("/listings", createListing);
 // router.put("/listing/:listingId", updateListing);
 // router.put("/listing/:listingId/images", addListingImage)
 // router.delete("/listing/:listingId", removeListing);
