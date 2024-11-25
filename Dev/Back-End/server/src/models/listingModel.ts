@@ -28,7 +28,7 @@ export interface Address {
     dates: string[];
     startTime: string;
     endTime: string;
-    image?: Image[] | null;
+    images?: Image[] | null;
     categories: string[];
     postId: string;
     generatedAt: string;
