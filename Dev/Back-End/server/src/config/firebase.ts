@@ -5,15 +5,17 @@
 import { initializeApp, cert, ServiceAccount } from "firebase-admin/app";
 import {getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
-import * as dotenv from "dotenv"
-import path from "path"
+import { ENV } from "./environment";
+// import * as dotenv from "dotenv"
+// import path from "path"
 
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+// // dotenv.config({ path: path.resolve(__dirname, ".env") });
+// dotenv.config();
 
 const serviceAccount: ServiceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    projectId: ENV.FIREBASE_PROJECT_ID,
+    privateKey: ENV.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    clientEmail: ENV.FIREBASE_CLIENT_EMAIL,
 }
 
 // console.log("Service Account Configuration:", serviceAccount);
@@ -24,7 +26,7 @@ if (!serviceAccount.projectId || !serviceAccount.privateKey || !serviceAccount.c
 
 const app = initializeApp({
     credential: cert(serviceAccount),
-    storageBucket: `gs://${process.env.FIREBASE_STORAGE_BUCKET}`,
+    storageBucket: `gs://${ENV.FIREBASE_STORAGE_BUCKET}`,
 })
 
 export const db = getFirestore(app);
