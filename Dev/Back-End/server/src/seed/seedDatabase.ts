@@ -3,6 +3,7 @@ import { db, storage } from "../config/firebase"
 import seedData from "./seedData.json"
 import fs from "fs"
 import path from "path"
+import { DocumentData } from '@google-cloud/firestore';
 
 const seedDatabase = async() => {
     try {
@@ -67,4 +68,49 @@ const seedDatabase = async() => {
     }
 };
 
-seedDatabase();
+function flattenCategories(categories: Array<{ name: string, subcategories?: string[] }>) {
+    const flatCategories: string[] = [];
+
+    categories.forEach(({ name, subcategories }) => {
+        flatCategories.push(name); // Add the broad category
+        if (subcategories) {
+            subcategories.forEach(sub => flatCategories.push(`${name} > ${sub}`)); // Add subcategories with prefix
+        }
+    });
+
+    return flatCategories;
+}
+
+async function updateCategoryFormat() {
+    const listingsRef = db.collection('listings');
+
+    try {
+        const snapshot = await listingsRef.get();
+
+        if (snapshot.empty) {
+            console.log('No listings found');
+            return;
+        }
+
+        for (const doc of snapshot.docs) {
+            const data = doc.data() as DocumentData;
+
+            if (data.categories && Array.isArray(data.categories)) {
+                const flatCategories = flattenCategories(data.categories);
+
+                await listingsRef.doc(doc.id).update({
+                    categories: flatCategories
+                });
+                console.log("Updated document ID: ", doc.id);
+            } else {
+                console.warn("doc didn't have categories or wasn't formatted correctly: ", doc.id)
+            }
+        }
+        console.log("listings updated successfully")
+    } catch (err) {
+        console.log("Error: ", err)
+    }
+}
+
+// seedDatabase();
+updateCategoryFormat()

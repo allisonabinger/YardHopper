@@ -124,24 +124,6 @@
       "userId": null
     },
     {
-      "title": "",
-      "description": "",
-      "address": {
-        "street": "",
-        "city": "",
-        "state": "",
-        "zip": 0
-      },
-      "dates": [],
-      "startTime": "",
-      "endTime": "",
-      "categories": [],
-      "postId": "",
-      "generatedAt": "",
-      "status": "active",
-      "userId": null
-    },
-    {
       "title": "Rustic Decor and Furniture Sale",
       "description": "A collection of rustic decor items and vintage furniture.",
       "address": {
