@@ -1,6 +1,53 @@
 # API
 This directory will contain the server used as the restful API that will be hosted on Render as the in between for the front-end and Firestore
 
+## Usage
+This server will be hosted on a service to manage incoming and outgoing traffic and database operations. The Firestore database is set up with mock data that should be identical to the data used in production.
+
+These are the instructions for running the server locally before any hosting and security is completed. 
+
+**You must have an .env set up before this server will properly function. Please contact database admin for .env keys.**
+
+At this point, the API has two working endpoints: `GET /listings` and `POST /listings`. User auth and functionality has not been implemented.
+
+### Starting the server. 
+
+In your terminal, run `npm run dev` from the /server directory. 
+```
+$ npm run dev
+
+> yardhopper-server@1.0.0 dev
+> ts-node-dev src/server.ts
+
+[INFO] 14:22:19 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.6.3)
+```
+
+Using Postman, your browser, or `curl`, you can now utilize the endpoints. 
+
+### GET /listings
+The `GET /listings` endpoint will need accept coordinates or zipcode in order to find listings in the area. As of now, database has listings in Tulsa, Jenks, and Sand Springs. **The request must have a latitude and longitude or a zipcode query in order to find listings.** This is because a user will need to allow location services and send their location with the listing, or they must provide their zipcode. They can always extend the radius regardless.
+
+The endpoint can also accept a radius to search by. The default search radius is 15 miles. 
+
+Finally, the endpoint can accept categories to search by. The categories are structured as "Category" or "Category > Subcategory".
+
+#### By Coordinates
+Use the lat and long query parameters.
+
+**URL**: http://localhost:4000/api/listings?lat=36.1555&long=-95.9950
+
+#### By Zipcode
+**URL**: http://localhost:4000/api/listings?zipcode=74105
+
+#### With Categories (No Subcategories)
+**URL**: http://localhost:4000/api/listings?zipcode=74105&categories=["Furniture"]
+
+#### With Categories and Subcategories
+**URL**: http://localhost:4000/api/listings?zipcode=74105&categories=["Decor/Art", "Decor/Art > Pottery"]
+
+#### With Radius
+**URL**: http://localhost:4000/api/listings?zipcode=74105&radius=5
+
 
 ## API Core Structure
 
@@ -55,12 +102,7 @@ USER - Provided by user input via front-end interaction
           "caption": string PUB
           
         },
-    "categories": array PUB[
-      {
-        "name": string PUB
-        "subcategories": string PUB NULLOK
-      }
-    ],
+    "categories": array string PUB[],
     "postId": string (uuid) GEN,
     "generatedAt": string (datetime) GEN,
     "status": string (active, upcoming, postponed, archived) PUB GEN,
@@ -84,7 +126,9 @@ Users will not have their information public to others, so there is not identify
 
 Users will be able to archive their posts, and once a post has been archived, the image will be deleted from the database to perserve storage and ensure privacy. 
 
+
 ## Optimization
+
 
 ## Auto-Cleanup
 There are several options for removing expired or archived posts from feeds, but we want to preserve a user's previous sales for their viewing. We will set up a cron service to check every 12 hours for listings that have the "active" status and change it to "archived" for the user to view later. This way expired listings are not filling up the feed. The service will run at 2am and 2pm, to keep the feed relevant and clear. 
