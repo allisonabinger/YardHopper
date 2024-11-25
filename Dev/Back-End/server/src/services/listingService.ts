@@ -4,19 +4,19 @@ import { db } from "../config/firebase";
 import { GeoFirestore } from "geofirestore";
 import * as admin from "firebase-admin";
 import { Listing } from "../models/listingModel";
-import { generateCoordinates, generateGeo } from "./geolocateService";
+// import { generateCoordinates, generateGeo } from "./geolocateService";
 
 const geoFirestore = new GeoFirestore(db);
 
 export const getListings = async ({
   lat,
   long,
-  radius = 15,
+  radius,
   categories,
 }: {
   lat: number;
   long: number;
-  radius?: number;
+  radius: number;
   categories?: string[];
 }) => {
   try {
@@ -31,9 +31,10 @@ export const getListings = async ({
     // only get active and upcoming sales
     query = query.where("status", "in", ["active", "upcoming"]);
 
+    // updated for flattened categories
     if (categories && categories.length > 0) {
-      query = query.where("categories", "array-contains-any", categories);
-    }
+        query = query.where("categories", "array-contains-any", categories);
+      }
     // access database
     const snapshot = await query.get();
 
