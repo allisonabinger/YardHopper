@@ -12,10 +12,6 @@ export interface Address {
     caption?: string;
   }
   
-  export interface Category {
-    name: string;
-    subcategories?: string;
-  }
 
   export interface Geolocation {
     geohash: string;
@@ -33,7 +29,7 @@ export interface Address {
     startTime: string;
     endTime: string;
     image?: Image[] | null;
-    categories: Category[];
+    categories: string[];
     postId: string;
     generatedAt: string;
     status: Status;
