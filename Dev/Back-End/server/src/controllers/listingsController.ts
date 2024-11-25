@@ -40,9 +40,20 @@ export const fetchListings = async (req: Request, res: Response) => {
       latitude = parseFloat(lat as string);
       longitude = parseFloat(long as string);
     }
-    const searchRadius = radius ? parseInt(radius as string) : 15;
-    const parsedCategories = categories ? JSON.parse(categories as string) : [];
+    // declare search radius
+    const searchRadius = radius ? parseInt(radius as string) : 10;
 
+    // handle categories as json structure or as string
+    let parsedCategories: string[] = [];
+    if (categories) {
+      try {
+        parsedCategories = JSON.parse(categories as string);
+      } catch (error) {
+        return res.status(400).json({ error: "Invalid categories format" });
+      }
+    }
+
+    
 
     // call query function in services with formatted filters
     const listings = await getListings({
