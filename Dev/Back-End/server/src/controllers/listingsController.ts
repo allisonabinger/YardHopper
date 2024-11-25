@@ -2,28 +2,48 @@
 import { Request, Response } from "express";
 import { getListings, postListing } from "../services/listingService";
 import { Listing, Status } from "../models/listingModel";
-import { generateCoordinates, generateGeo } from "../services/geolocateService";
+import {
+  generateCoordinatesByAddress,
+  generateCoordinatesByZipcode,
+  generateGeo,
+} from "../services/geolocateService";
 
-// fetchListings
-// createListing
-// updateListing
-// removeListing
-// addListingImage
 
 export const fetchListings = async (req: Request, res: Response) => {
-  const { lat, long, radius, categories } = req.query;
+  const { lat, long, radius, categories, zipcode } = req.query;
   // console.log("fetchListings called");
 
   try {
-    const latitude = parseFloat(lat as string);
-    const longitude = parseFloat(long as string);
+    let latitude: number | undefined;
+    let longitude: number | undefined;
+
+    if (!lat && !long) {
+      // if no lat or long provided in request, try to use zipcode instead
+      if (!zipcode) {
+        // if not lat, long, or zipcode provided, listings cannot be fetched
+        console.error("No location provided");
+        return res.status(400).json({ error: "No location provided." });
+      }
+
+      // convert zipcode to an integer
+      const zip = parseInt(zipcode as string);
+      // get lat and long from geoapify using zipcode
+      const coordinates = await generateCoordinatesByZipcode(zip);
+      if (coordinates) {
+        ({ latitude, longitude } = coordinates);
+      } else {
+        console.error("Failed to generate coordinates form zipcode");
+        return res.status(500).json({error: "Invalid zipcode or location"})
+      }
+    } else {
+      // if lat and long provided, convert them to integers and use them
+      latitude = parseFloat(lat as string);
+      longitude = parseFloat(long as string);
+    }
     const searchRadius = radius ? parseInt(radius as string) : 15;
     const parsedCategories = categories ? JSON.parse(categories as string) : [];
 
-    // console.log("Latitude:", latitude);
-    // console.log("Longitude:", longitude);
-    // console.log("Radius:", searchRadius);
-    // console.log("Categories:", parsedCategories);
+
     // call query function in services with formatted filters
     const listings = await getListings({
       lat: latitude,
@@ -82,17 +102,19 @@ export const createListing = async (req: Request, res: Response) => {
     }
 
     // call api to get coordinates from address (geoapify)
-    const coordinates = await generateCoordinates(address);
+    const coordinates = await generateCoordinatesByAddress(address);
     if (!coordinates) {
-        throw new Error("Could not retrieve coodinates")
+      throw new Error("Could not retrieve coodinates");
     }
-    const {latitude, longitude} = coordinates;
+    const { latitude, longitude } = coordinates;
 
     // call func to get geohash and geopoint from coordinates
     const geolocation = await generateGeo(latitude, longitude);
     if (!geolocation) {
-        return res.status(500).json({ message: 'Unable to generate geolocation data.' });
-      }
+      return res
+        .status(500)
+        .json({ message: "Unable to generate geolocation data." });
+    }
 
     // insert authentication here to attach userId
     // call user auth and attach userId to listingData below:
@@ -120,3 +142,30 @@ export const createListing = async (req: Request, res: Response) => {
       .json({ error: "Failed to create listing. Internal Server Error" });
   }
 };
+
+// export const updateListing = async (req: Request, res: Response) => {
+//     const { postId } = req.params;
+//     const {
+//         title,
+//         description,
+//         address,
+//         dates,
+//         startTime,
+//         endTime,
+//         categories,
+//         caption
+//       } = req.body;
+//       const imageFile = req.file;
+
+//       try {
+//         const listingRef = db.collection("listings").doc(postId);
+
+//         const updateData: any = {};
+
+//         if (title) updateData.title = title;
+//         if (description) updateData.description = description;
+//         if (address) updateData.address = address;
+//         if (dates) updateData.dates = dates
+
+//       }
+// }
