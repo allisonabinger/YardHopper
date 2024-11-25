@@ -10,7 +10,7 @@
     "test": "jest",
     "dev": "ts-node-dev src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.ts"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +24,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@types/multer": "^1.4.12",
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -33,6 +34,7 @@
     "geofire": "^6.0.0",
     "geofire-common": "^6.0.0",
     "geofirestore": "^4.3.0",
+    "multer": "^1.4.5-lts.1",
     "ngeohash": "^0.6.3"
   }
 }
