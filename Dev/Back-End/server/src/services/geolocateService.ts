@@ -61,16 +61,18 @@ export async function generateCoordinatesByZipcode(
   zipcode: number
 ): Promise<{ latitude: number; longitude: number } | null> {
   const url = `https://api.geoapify.com/v1/geocode/search?text=${zipcode}&type=postcode&filter=countrycode:us&apiKey=${apiKey}`;
-
   try {
     const response = await axios.get(url);
 
-    const result = response.data.results[0];
+    const result = response.data;
 
-    if (result) {
-      const latitude = result.lat;
-      const longitude = result.lon;
-      return { latitude, longitude };
+    // access result from geoapify, nested in geometry.coordinates
+    if (result?.features?.length > 0) {
+        const coordinates = result.features[0].geometry.coordinates;
+        const longitude = coordinates[0];
+        const latitude = coordinates[1];
+  
+        return { latitude, longitude };
     } else {
       console.error("No results found from zipcode");
       return null;
@@ -80,10 +82,3 @@ export async function generateCoordinatesByZipcode(
     return null;
   }
 }
-// const addressTest: Address = {
-//     street: "15 N Cheyenne Ave",
-//     city: "Tulsa",
-//     state: "OK",
-//     zip: 74103
-// }
-// generateCoordinates(addressTest)
