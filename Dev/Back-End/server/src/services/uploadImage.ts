@@ -3,7 +3,7 @@ import path from "path"
 import { storage } from '../config/firebase';
 import { v4 as uuidv4 } from "uuid"
 
-export const uploadImageToFirebase = async (file: Express.Multer.File, postId: string): Promise => {
+export const uploadImageToFirebase = async (file: Express.Multer.File, postId: string): Promise<string> => {
     const imageId = uuidv4();
     const fileName = `${imageId}-${file.originalname}`;
 
