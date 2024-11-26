@@ -30,6 +30,7 @@ export interface Address {
     endTime: string;
     images?: Image[] | null;
     categories: string[];
+    subcategories: Record<string, string[]>;
     postId: string;
     generatedAt: string;
     status: Status;
