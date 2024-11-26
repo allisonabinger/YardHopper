@@ -103,7 +103,11 @@ export const updateListingInDB = async (
       updatedFields: Record<string, any>
 ) => {
       try {
+        if (Object.keys(updatedFields).length === 0) {
+            throw new Error("No fields to update.");
+          }
             const listingRef = db.collection("listings").doc(postId);
+            console.log("Updating firestore doc: ", listingRef.path)
 
             await listingRef.update(updatedFields);
 
@@ -114,6 +118,31 @@ export const updateListingInDB = async (
             throw error;
       }
 };
+
+export const addImageToListing = async (postId: string, imageURI: string, caption: string): Promise<any> => {
+    try {
+        const listingRef = db.collection("listings").doc(postId)
+
+        const listingDoc = await listingRef.get();
+
+        if (!listingDoc.exists) {
+            console.log("listing not found: ", postId)
+            throw new Error("Listing not found.")
+        }
+        const listingData = listingDoc.data();
+        const currentImages = listingData?.images || [];
+
+        const updatedImages = [...currentImages, {uri: imageURI, caption: caption}]
+
+        await listingRef.update({images: updatedImages})
+
+        const updatedDoc = await listingRef.get();
+        return updatedDoc.exists ? updatedDoc.data() : null;
+    } catch (err) {
+        console.error("Error updating listing in firestore with new image");
+        throw new Error("Failed to add image to listing")
+    }
+}
 
 // Function to calculate the distance between to points using coordinates!
 // const haversineDistance = (lat1: number, long1: number, lat2: number, long2: number): number => {
