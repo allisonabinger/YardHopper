@@ -193,6 +193,8 @@ export default function AddListingPage() {
         keyExtractor={(item, index) => item + index}
         renderSectionHeader={renderCategory}
         renderItem={() => null} // Subcategories are handled inside Animated.View
+        stickySectionHeadersEnabled={false}
+        ListHeaderComponent={<View style={{ height: 20 }} />}
         contentContainerStyle={[styles.listContainer, { paddingBottom: 100 }]} // Add extra padding for scroll space
         ListFooterComponent={
       <TouchableOpacity

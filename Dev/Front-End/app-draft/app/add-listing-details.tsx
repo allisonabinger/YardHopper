@@ -17,6 +17,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function AddListingDetails() {
   const router = useRouter();
+  const [isGeoActive, setIsGeoActive] = useState(false);
 
   const [address, setAddress] = useState({
     street: "",
@@ -39,6 +40,7 @@ export default function AddListingDetails() {
           "Permission denied",
           "Location permission is required to auto-fill the address."
         );
+        setIsGeoActive(false); 
         return;
       }
 
@@ -61,10 +63,12 @@ export default function AddListingDetails() {
         });
       } else {
         Alert.alert("Error", "Unable to fetch address information.");
+        setIsGeoActive(false);
       }
     } catch (error) {
       Alert.alert("Error", "An error occurred while fetching the location.");
       console.error(error);
+      setIsGeoActive(false);
     }
   };
 
@@ -134,7 +138,8 @@ export default function AddListingDetails() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.container}>
+      <View style={styles.container}>
+          {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()}>
               <Text style={styles.backArrow}>←</Text>
@@ -144,8 +149,10 @@ export default function AddListingDetails() {
             </View>
           </View>
 
+          {/* Title */}
           <Text style={styles.title}>Add Listing Details</Text>
 
+          {/* Form */}
           <View style={styles.form}>
             <TextInput style={styles.input} placeholder="Enter title" />
             <TextInput
@@ -155,13 +162,24 @@ export default function AddListingDetails() {
               numberOfLines={4}
             />
 
+            {/* Address Section */}
             <View style={styles.addressHeader}>
               <Text style={styles.label}>Address</Text>
               <TouchableOpacity
-                style={styles.geoButton}
-                onPress={fetchGeolocation}
+                style={[
+                  styles.geoButton,
+                  isGeoActive && styles.geoButtonActive, // Apply active style
+                ]}
+                onPress={() => {
+                  setIsGeoActive((prev) => !prev); // Toggle active state
+                  fetchGeolocation(); // Fetch geolocation
+                }}
               >
-                <MaterialIcons name="my-location" size={24} color="#7f7f7f" />
+                <MaterialIcons
+                  name="my-location"
+                  size={20}
+                  color={isGeoActive ? "#fff" : "#7f7f7f"} // Adjust icon color
+                />
               </TouchableOpacity>
             </View>
 
@@ -304,6 +322,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+  },
+  geoButtonActive: {
+    backgroundColor: "#159636",
   },
   publishButton: {
     backgroundColor: "#159636",
