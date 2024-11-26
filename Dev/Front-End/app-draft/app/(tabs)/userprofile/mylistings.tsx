@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList, View, StyleSheet } from "react-native";
+import { FlatList, View, Text, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import Card from "@/components/Card";
 
@@ -13,7 +13,7 @@ const salesData = [
   { id: "6", title: "Yard Sale 6", description: "Home décor and art pieces.", image: require("@/assets/images/sale6.png") },
 ];
 
-export default function HomeScreen() {
+export default function MyListings() {
   const router = useRouter();
 
   const renderItem = ({ item }: { item: typeof salesData[0] }) => (
@@ -32,6 +32,12 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>My Listings</Text>
+      </View>
+
+      {/* List */}
       <FlatList
         data={salesData}
         renderItem={renderItem}
@@ -46,6 +52,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingVertical: 12,
+    backgroundColor: "#F8F8F8",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333333",
   },
   listContent: {
     paddingVertical: 16,

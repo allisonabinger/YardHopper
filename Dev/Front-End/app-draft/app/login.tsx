@@ -43,7 +43,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       <Image
         source={require("../assets/images/logo.png")}
         style={{
-          width: 200,
+          width: 220,
           height: 280,
           marginBottom: 60,
           padding: 30
