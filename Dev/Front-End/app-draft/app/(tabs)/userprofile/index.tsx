@@ -26,10 +26,8 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        {/* Gear Icon */}
         <Ionicons name="settings-outline" size={24} color="white" />
-        {/* Header Text */}
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerTitle}>Profile</Text>
       </View>
 
       <View style={styles.card}>
@@ -47,17 +45,21 @@ export default function SettingsScreen() {
           <Text style={styles.menuText}>Share</Text>
         </Pressable>
 
-        <Pressable style={styles.menuItem}>
-          <Ionicons name="bookmark-outline" size={24} color="#333" />
-          <Text style={styles.menuText}>Saved posts</Text>
-          <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
-        </Pressable>
+        <Link href="/userprofile/savedposts" asChild>
+          <Pressable style={styles.menuItem}>
+            <Ionicons name="bookmark-outline" size={24} color="#333" />
+            <Text style={styles.menuText}>Saved posts</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
+          </Pressable>
+        </Link>
 
-        <Pressable style={styles.menuItem}>
-          <Ionicons name="eye-outline" size={24} color="#333" />
-          <Text style={styles.menuText}>View your listings</Text>
-          <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
-        </Pressable>
+        <Link href="/userprofile/mylistings" asChild>
+          <Pressable style={styles.menuItem}>
+            <Ionicons name="eye-outline" size={24} color="#333" />
+            <Text style={styles.menuText}>View your listings</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
+          </Pressable>
+        </Link>
 
         <Link href="/userprofile/changepassword" asChild>
           <Pressable style={styles.menuItem}>
