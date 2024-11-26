@@ -26,17 +26,25 @@
       ],
       "categories": [
         "Clothing",
-        "Clothing > Mens",
-        "Clothing > Womens",
-        "Clothing > Kids",
         "Shoes/Accessories",
-        "Shoes/Accessories > Jewelry",
-        "Shoes/Accessories > Bags",
-        "Shoes/Accessories > Belts",
-        "Textiles",
-        "Textiles > Bedding",
-        "Textiles > Towels"
+        "Textiles"
       ],
+      "subcategories": {
+        "Clothing": [
+          "Mens",
+          "Womens",
+          "Kids"
+        ],
+        "Shoes/Accessories": [
+          "Jewelry",
+          "Bags",
+          "Belts"
+        ],
+        "Textiles": [
+          "Bedding",
+          "Towels"
+        ]
+      },
       "postId": "9XUAxe4LtsgdDH2f3SRc",
       "generatedAt": "2024-11-20T20:29:01.822Z",
       "status": "active",
@@ -75,18 +83,26 @@
       ],
       "categories": [
         "Electronics",
-        "Electronics > Computers/Accessories",
-        "Electronics > Gaming",
-        "Electronics > Music/Audio",
         "Furniture",
-        "Furniture > Office",
-        "Furniture > Seating",
-        "Furniture > Storage",
-        "Books/Media",
-        "Books/Media > Reference Books",
-        "Books/Media > Novels",
-        "Books/Media > CDs"
+        "Books/Media"
       ],
+      "subcategories": {
+        "Electronics": [
+          "Computers/Accessories",
+          "Gaming",
+          "Music/Audio"
+        ],
+        "Furniture": [
+          "Office",
+          "Seating",
+          "Storage"
+        ],
+        "Books/Media": [
+          "Reference Books",
+          "Novels",
+          "CDs"
+        ]
+      },
       "postId": "DOcNhHR25vTD70cmlySs",
       "generatedAt": "2024-11-20T20:29:00.923Z",
       "status": "upcoming",
@@ -126,17 +142,25 @@
       ],
       "categories": [
         "Decor/Art",
-        "Decor/Art > Wall Art",
-        "Decor/Art > Pottery",
-        "Decor/Art > Mirrors",
         "Furniture",
-        "Furniture > Seating",
-        "Furniture > Tables/Desks",
-        "Furniture > Outdoor",
-        "Textiles",
-        "Textiles > Bedding",
-        "Textiles > Rugs"
+        "Textiles"
       ],
+      "subcategories": {
+        "Decor/Art": [
+          "Wall Art",
+          "Pottery",
+          "Mirrors"
+        ],
+        "Furniture": [
+          "Seating",
+          "Tables/Desks",
+          "Outdoor"
+        ],
+        "Textiles": [
+          "Bedding",
+          "Rugs"
+        ]
+      },
       "postId": "Si1twfMDLzV2bSb7aEU8",
       "generatedAt": "2024-11-20T20:28:56.424Z",
       "status": "upcoming",
@@ -175,17 +199,25 @@
       ],
       "categories": [
         "Seasonal/Holiday",
-        "Seasonal/Holiday > Christmas",
-        "Seasonal/Holiday > Halloween",
-        "Seasonal/Holiday > Gift/Wrapping",
         "Textiles",
-        "Textiles > Fabrics",
-        "Textiles > Rugs",
-        "Textiles > Bedding",
-        "Decor/Art",
-        "Decor/Art > Candles",
-        "Decor/Art > Mirrors"
+        "Decor/Art"
       ],
+      "subcategories": {
+        "Seasonal/Holiday": [
+          "Christmas",
+          "Halloween",
+          "Gift/Wrapping"
+        ],
+        "Textiles": [
+          "Fabrics",
+          "Rugs",
+          "Bedding"
+        ],
+        "Decor/Art": [
+          "Candles",
+          "Mirrors"
+        ]
+      },
       "postId": "d8TEFyzDJPU2kLkynXoU",
       "generatedAt": "2024-11-20T20:29:00.166Z",
       "status": "upcoming",
@@ -224,17 +256,25 @@
       ],
       "categories": [
         "Clothing",
-        "Clothing > Kids",
-        "Clothing > Winter",
-        "Clothing > Outerwear",
         "Hobbies",
-        "Hobbies > Kids Crafts",
-        "Hobbies > Floral/Decorative",
-        "Books/Media",
-        "Books/Media > Picture Books",
-        "Books/Media > Novels",
-        "Books/Media > CDs"
+        "Books/Media"
       ],
+      "subcategories": {
+        "Clothing": [
+          "Kids",
+          "Winter",
+          "Outerwear"
+        ],
+        "Hobbies": [
+          "Kids Crafts",
+          "Floral/Decorative"
+        ],
+        "Books/Media": [
+          "Picture Books",
+          "Novels",
+          "CDs"
+        ]
+      },
       "postId": "orKr1XXBosvl9JDxRg63",
       "generatedAt": "2024-11-20T20:28:58.647Z",
       "status": "active",
@@ -273,17 +313,25 @@
       ],
       "categories": [
         "Sports/Outdoors",
-        "Sports/Outdoors > Camping Gear",
-        "Sports/Outdoors > Fishing",
-        "Sports/Outdoors > Bikes/Scooters",
         "Tools/Parts",
-        "Tools/Parts > Power Tools",
-        "Tools/Parts > Hand Tools",
-        "Tools/Parts > Lawn/Garden",
-        "Appliances",
-        "Appliances > Outdoor",
-        "Appliances > Kitchen Appliances"
+        "Appliances"
       ],
+      "subcategories": {
+        "Sports/Outdoors": [
+          "Camping Gear",
+          "Fishing",
+          "Bikes/Scooters"
+        ],
+        "Tools/Parts": [
+          "Power Tools",
+          "Hand Tools",
+          "Lawn/Garden"
+        ],
+        "Appliances": [
+          "Outdoor",
+          "Kitchen Appliances"
+        ]
+      },
       "postId": "w0whNL9DV7eshUTYs0cA",
       "generatedAt": "2024-11-20T20:28:59.421Z",
       "status": "active",
