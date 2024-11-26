@@ -1,6 +1,6 @@
 // Server actions for listing management
 import { Request, Response } from "express";
-import { getListings, postListing } from "../services/listingService";
+import { addImageToListing, getListings, postListing, updateListingInDB } from "../services/listingService";
 import { Listing, Status } from "../models/listingModel";
 import {
   generateCoordinatesByAddress,
@@ -12,7 +12,7 @@ import { uploadImageToFirebase } from "../services/uploadImage";
 
 export const fetchListings = async (req: Request, res: Response) => {
   const { lat, long, radius, categories, zipcode } = req.query;
-  // console.log("fetchListings called");
+  console.log("fetchListings called");
 
   try {
     let latitude: number | undefined;
@@ -85,6 +85,7 @@ export const createListing = async (req: Request, res: Response) => {
       startTime,
       endTime,
       categories,
+      subcategories,
     } = req.body;
 
     if (
@@ -138,6 +139,7 @@ export const createListing = async (req: Request, res: Response) => {
       startTime,
       endTime,
       categories,
+      subcategories,
       generatedAt: generatedAt,
       status: status,
       g: geolocation,
@@ -157,20 +159,23 @@ export const createListing = async (req: Request, res: Response) => {
 
 export const updateListing = async (req: Request, res: Response) => {
     try {
+        // console.log(req.file)
         const { postId } = req.params;
         const updatedFields = {...req.body}
 
-        if (req.file) {
-            const {file, body: {caption}} = req;
-            const imageURI = await uploadImageToFirebase(file, `listings/${postId}/images`)
+        // if (req.file) {
+        //     const {file, body: {caption}} = req;
+        //     const imageURI = await uploadImageToFirebase(file, postId)
 
-            updatedFields.images = updatedFields.images || [];
-            updatedFields.images.push({uri: imageURI, caption})
-        }
+        //     // console.log(imageURI)
+        //     updatedFields.images = updatedFields.images || [];
+        //     updatedFields.images.push({uri: imageURI, caption})
+        //     // console.log("Updated Fields: ", updatedFields)
+        // }
 
         const updatedListing = await updateListingInDB(postId, updatedFields);
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Listing updated successfully",
             listing: updatedListing
         });
@@ -179,4 +184,28 @@ export const updateListing = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Failed to update listing."})
     }
 
+}
+
+export const addImage = async(req: Request, res: Response) => {
+    try {
+        const { postId } = req.params;
+        const { caption } = req.body;
+        const { file } = req;
+    
+        if (!file) {
+            return res.status(400).json({ message: "No image file provided." });
+        }
+
+        const imageURI = await uploadImageToFirebase(file, postId);
+
+        const updatedListing = await addImageToListing(postId, imageURI, caption);
+
+        return res.status(200).json({
+            message: "Listing updated successfully",
+            listing: updatedListing
+        });
+    } catch (err) {
+        console.error("Error updating listing: ", err);
+        return res.status(500).json({ message: "Failed to update listing."})
+    }
 }
