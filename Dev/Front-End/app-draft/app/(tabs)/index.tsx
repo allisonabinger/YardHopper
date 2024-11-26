@@ -1,6 +1,7 @@
 import React from "react";
-import { FlatList, View, StyleSheet } from "react-native";
+import { FlatList, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import Card from "@/components/Card";
 
 // Updated sales data with images
@@ -15,6 +16,12 @@ const salesData = [
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [filterSelected, setFilterSelected] = React.useState(false);
+
+  const toggleFilter = () => {
+    setFilterSelected(!filterSelected);
+    // Add your filter logic here
+  };
 
   const renderItem = ({ item }: { item: typeof salesData[0] }) => (
     <Card
@@ -32,6 +39,19 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Home</Text>
+        <TouchableOpacity onPress={toggleFilter}>
+          <Ionicons
+            name={filterSelected ? "filter-circle" : "filter-circle-outline"}
+            size={28}
+            color="#159636"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* List */}
       <FlatList
         data={salesData}
         renderItem={renderItem}
@@ -46,6 +66,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingVertical: 12,
+    backgroundColor: "#F8F8F8",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333333",
   },
   listContent: {
     paddingVertical: 16,
