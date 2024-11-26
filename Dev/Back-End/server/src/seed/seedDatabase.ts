@@ -81,6 +81,10 @@ function flattenCategories(categories: Array<{ name: string, subcategories?: str
     return flatCategories;
 }
 
+function reformatCategories(categories: string[]) {
+    return categories.map(category => category.replace(" > ", "-"));
+}
+
 async function updateCategoryFormat() {
     const listingsRef = db.collection('listings');
 
@@ -96,19 +100,19 @@ async function updateCategoryFormat() {
             const data = doc.data() as DocumentData;
 
             if (data.categories && Array.isArray(data.categories)) {
-                const flatCategories = flattenCategories(data.categories);
+                const reformattedCategories = reformatCategories(data.categories);
 
                 await listingsRef.doc(doc.id).update({
-                    categories: flatCategories
+                    categories: reformattedCategories
                 });
                 console.log("Updated document ID: ", doc.id);
             } else {
-                console.warn("doc didn't have categories or wasn't formatted correctly: ", doc.id)
+                console.warn("Document didn't have categories or wasn't formatted correctly: ", doc.id);
             }
         }
-        console.log("listings updated successfully")
+        console.log("Listings updated successfully");
     } catch (err) {
-        console.log("Error: ", err)
+        console.error("Error updating categories: ", err);
     }
 }
 

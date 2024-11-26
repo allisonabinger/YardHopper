@@ -7,6 +7,7 @@ import {
   generateCoordinatesByZipcode,
   generateGeo,
 } from "../services/geolocateService";
+import { uploadImageToFirebase } from "../services/uploadImage";
 
 
 export const fetchListings = async (req: Request, res: Response) => {
@@ -154,29 +155,28 @@ export const createListing = async (req: Request, res: Response) => {
   }
 };
 
-// export const updateListing = async (req: Request, res: Response) => {
-//     const { postId } = req.params;
-//     const {
-//         title,
-//         description,
-//         address,
-//         dates,
-//         startTime,
-//         endTime,
-//         categories,
-//         caption
-//       } = req.body;
-//       const imageFile = req.file;
+export const updateListing = async (req: Request, res: Response) => {
+    try {
+        const { postId } = req.params;
+        const updatedFields = {...req.body}
 
-//       try {
-//         const listingRef = db.collection("listings").doc(postId);
+        if (req.file) {
+            const {file, body: {caption}} = req;
+            const imageURI = await uploadImageToFirebase(file, `listings/${postId}/images`)
 
-//         const updateData: any = {};
+            updatedFields.images = updatedFields.images || [];
+            updatedFields.images.push({uri: imageURI, caption})
+        }
 
-//         if (title) updateData.title = title;
-//         if (description) updateData.description = description;
-//         if (address) updateData.address = address;
-//         if (dates) updateData.dates = dates
+        const updatedListing = await updateListingInDB(postId, updatedFields);
 
-//       }
-// }
+        res.status(200).json({
+            message: "Listing updated successfully",
+            listing: updatedListing
+        });
+    } catch (err) {
+        console.error("Error updating listing: ", err);
+        return res.status(500).json({ message: "Failed to update listing."})
+    }
+
+}
