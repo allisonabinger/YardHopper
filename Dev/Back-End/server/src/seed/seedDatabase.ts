@@ -116,5 +116,54 @@ async function updateCategoryFormat() {
     }
 }
 
+async function updateCategoryFields() {
+    const listingsRef = db.collection('listings');
+
+    try {
+        const snapshot = await listingsRef.get();
+
+        if (snapshot.empty) {
+            console.log('No listings found');
+            return;
+        }
+
+        for (const doc of snapshot.docs) {
+            const data = doc.data() as any;
+
+            if (data.categories && Array.isArray(data.categories)) {
+                const subcategories: Record<string, string[]> = {}
+
+                const broadCategories: string[] = []
+                data.categories.forEach((category: string) => {
+                    const parts = category.split('-');
+
+                    if (parts.length === 1) {
+                        broadCategories.push(category);
+                    } else if (parts.length === 2) {
+                        const [parentCategory, childCategory] = parts;
+                        if (!subcategories[parentCategory]) {
+                            subcategories[parentCategory] = []
+                        }
+                        subcategories[parentCategory].push(childCategory)
+                    }
+                });
+
+                const updatedData: any = {
+                    categories: broadCategories,
+                    subcategories: subcategories
+                }
+                await listingsRef.doc(doc.id).update(updatedData);
+                console.log(`Updated document ID: ${doc.id}`);
+            } else {
+                console.warn(`Doc ${doc.id} doesnt have categories or isnt in correct format`)
+            }
+        }
+        console.log('All listings updated')
+    } catch (err) {
+        console.error('Error updating categories: ', err)
+    }
+}
+
 // seedDatabase();
-updateCategoryFormat()
+// updateCategoryFormat()
+updateCategoryFields()
