@@ -4,6 +4,7 @@ import {
       addImageToListing,
       getListings,
       postListing,
+      removeImageInDB,
       removeListingInDB,
       updateListingInDB,
 } from "../services/listingService";
@@ -13,7 +14,7 @@ import {
       generateCoordinatesByZipcode,
       generateGeo,
 } from "../services/geolocateService";
-import { uploadImageToFirebase } from "../services/uploadImage";
+import { getFilePathFromURI, removeImageInFirebase, uploadImageToFirebase } from "../services/imageService";
 
 export const fetchListings = async (req: Request, res: Response) => {
       const { lat, long, radius, categories, zipcode } = req.query;
@@ -140,11 +141,9 @@ export const createListing = async (req: Request, res: Response) => {
             // call func to get geohash and geopoint from coordinates
             const geolocation = await generateGeo(latitude, longitude);
             if (!geolocation) {
-                  return res
-                        .status(500)
-                        .json({
-                              message: "Unable to generate geolocation data.",
-                        });
+                  return res.status(500).json({
+                        message: "Unable to generate geolocation data.",
+                  });
             }
 
             // insert authentication here to attach userId
@@ -169,11 +168,9 @@ export const createListing = async (req: Request, res: Response) => {
                   .json({ message: "Listing created", listing: newListing });
       } catch (err) {
             console.log("Error: ", err);
-            return res
-                  .status(500)
-                  .json({
-                        error: "Failed to create listing. Internal Server Error",
-                  });
+            return res.status(500).json({
+                  error: "Failed to create listing. Internal Server Error",
+            });
       }
 };
 
@@ -249,6 +246,40 @@ export const addImage = async (req: Request, res: Response) => {
                   .json({ message: "Failed to update listing." });
       }
 };
+
+export const removeImage = async (req: Request, res: Response) => {
+    try {
+        const { postId } = req.params;
+        const { uri, caption } = req.body;
+
+        if (!postId) {
+              return res
+                    .status(400)
+                    .json({ message: "No postId provided." });
+        }
+
+        if (!uri) {
+            return res
+                  .status(400)
+                  .json({ message: "No image file provided." });
+      }
+
+      const imageDetails = {uri, caption}
+      // removes image in fb
+
+      const filePath = getFilePathFromURI(imageDetails.uri);
+      await removeImageInFirebase(filePath);
+      await removeImageInDB(postId, imageDetails)
+      res.status(200).json({ message: "Image removed successfully." });
+
+      // removes image in firestore
+  } catch (err) {
+        console.error("Error updating listing: ", err);
+        return res
+              .status(500)
+              .json({ message: "Failed to update listing." });
+  }
+}
 
 export const deleteListing = async (req: Request, res: Response) => {
       // needs auth

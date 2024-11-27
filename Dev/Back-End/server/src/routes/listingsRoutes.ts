@@ -7,6 +7,7 @@ import {
       createListing,
       deleteListing,
       fetchListings,
+      removeImage,
       updateListing,
 } from "../controllers/listingsController";
 // import { authenticate } from "../middlewares/authMiddleware"
@@ -165,7 +166,36 @@ const upload = multer({ storage: storage });
  *     responses:
  *       200:
  *         description: Image added successfully
+ *    delete:
+ *     summary: Removes an image from a listing
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - name: postId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique identifier of the listing
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               imageURI:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image path file to upload
+ *               caption:
+ *                 type: string
+ *                 description: Caption for the image
+ *     responses:
+ *       200:
+ *         description: Image deleted successfully
  */
+
 
 router.get("/", (req: Request, res: Response) => {
       fetchListings(req, res);
@@ -180,6 +210,9 @@ router.put("/:postId", (req: Request, res: Response) => { updateListing(req, res
 
 // put request for uploading images
 router.put("/:postId/images", upload.single("image"), (req: Request, res: Response) => { addImage(req, res);});
+
+// deletes an image from a listing
+router.delete("/:postId/images", (req: Request, res: Response) => { removeImage(req, res);});
 
 router.delete("/:postId", (req: Request, res: Response) => { deleteListing(req, res);});
 

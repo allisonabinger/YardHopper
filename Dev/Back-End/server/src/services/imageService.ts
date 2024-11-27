@@ -2,6 +2,7 @@ import * as multer from 'multer';
 import path from "path"
 import { db, storage } from '../config/firebase';
 import { v4 as uuidv4 } from "uuid"
+import { ENV } from '../config/environment';
 
 // ads image to firebase and returns uri
 export const uploadImageToFirebase = async (file: Express.Multer.File, postId: string): Promise<string> => {
@@ -57,4 +58,17 @@ export const removeFolderInFirebase = async (folderPath: string): Promise<void> 
         console.error(`Error deleting files in folder: ${folderPath}`, err);
         throw new Error(`Error deleting files in folder: ${folderPath}`);
     }
+}
+
+export const getFilePathFromURI = (imageURI: string): string => {
+
+    const bucketBaseURL = `https://storage.googleapis.com/${ENV.FIREBASE_STORAGE_BUCKET}`;
+
+    if (!imageURI.startsWith(bucketBaseURL)) {
+        throw new Error("Invalid image URI.")
+    }
+    const encodedPath = imageURI.replace(bucketBaseURL, "")
+    const decodedPath = decodeURIComponent(encodedPath)
+    return decodedPath.startsWith("/") ? decodedPath.slice(1) : decodedPath;
+
 }

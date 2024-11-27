@@ -185,37 +185,44 @@ export const removeListingInDB = async (
 };
 
 // removes image reference in Firestore (uri and caption)
-export const removeImageInDB = async (postId: string, imageDetails: {imageURI: string, caption: string}): Promise<void> => {
-    try {
-        const listingRef = db.collection("listings").doc(postId);
+export const removeImageInDB = async (
+      postId: string,
+      imageDetails: { uri: string; caption: string }
+): Promise<void> => {
+      try {
+            const listingRef = db.collection("listings").doc(postId);
 
-        const listingDoc = await listingRef.get();
+            const listingDoc = await listingRef.get();
 
-        if (!listingDoc.exists) {
-            throw new Error(`Cannot find listing with ID: ${postId}`);
-        }
+            if (!listingDoc.exists) {
+                  throw new Error(`Cannot find listing with ID: ${postId}`);
+            }
 
-        const listingData = listingDoc.data()
+            const listingData = listingDoc.data();
 
-        if (!listingData || !Array.isArray(listingData.images)) {
-            throw new Error(`Listing with ID ${postId} has no images`)
-        }
+            if (!listingData || !Array.isArray(listingData.images)) {
+                  throw new Error(`Listing with ID ${postId} has no images`);
+            }
 
-        const updatedImages = listingData.images.filter(
-            (image: { imageURI: string; caption: string }) =>
-                image.imageURI !== imageDetails.imageURI ||
-                image.caption !== imageDetails.caption
-        );
+            const updatedImages = listingData.images.filter((image: { uri: string; caption: string }) => {
+                console.log("Comparing:", { image, imageDetails });
+                return image.uri !== imageDetails.uri || image.caption !== imageDetails.caption;
+            });
 
-        await listingRef.update({images: updatedImages})
+            console.log("Updated images:", updatedImages);
 
-        console.log(`Image ${imageDetails.imageURI} removed frmm listing with ID: ${postId}`)
-    } catch (err) {
-        console.error(`Error remove image ${imageDetails.imageURI} reference from database.`, err);
-        throw new Error(`Error remove image ${imageDetails.imageURI} reference from database.`);
-    }
-}
-
+            await listingRef.update({ images: updatedImages });
+            console.log("Firestore update completed successfully.");
+      } catch (err) {
+            console.error(
+                  `Error remove image ${imageDetails.uri} reference from database.`,
+                  err
+            );
+            throw new Error(
+                  `Error remove image ${imageDetails.uri} reference from database.`
+            );
+      }
+};
 
 // Function to calculate the distance between to points using coordinates!
 // const haversineDistance = (lat1: number, long1: number, lat2: number, long2: number): number => {

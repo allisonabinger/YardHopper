@@ -50,6 +50,56 @@ Use the lat and long query parameters.
 
 
 ## API Core Structure
+The API aligns with the **Separation of Concerns**, which makes it more modular, testable, and maintainable. With this principle, the functionality is broken up so that one file or function is not handling too much at a time.
+
+### File Structure
+
+`src/`
+- Contains the main functionality of the API. All listed files and folders are within `src/`
+
+`app.ts`
+- Focuses on configuring the Express application (middlewares, routes, Swagger setup). It exports `{ app }` to be used in `server.ts`
+
+`server.ts`
+- Main entry point. Handles the responsibility of starting the server by binding to a post and opening for traffic.
+
+#### Configurations - config/
+
+- Sets up configurations for the server. 
+
+`environment.ts`
+- Establishes the environment variables from the local .env and exports the configs to be used from anywhere within the project. Exports `{ ENV }` to use as the variable containing the keys.
+
+`firebase.ts` 
+- Uses `{ ENV }` to connect to both the Firestore Database (NoSQL) and the Firebase Storage (Images). It exports `{ db }` for firestore, and `{ storage }` for firebase.
+
+#### Routes - routes/
+Establishes the routes to create the endpoints of the API
+
+`index.ts`
+- Establishes the `Express.Router()` and imports the modular routes. 
+
+`listingsRoutes.ts`
+- Establishes the `Express.Router()` for the routes pertaining to listings management. View the endpoints below. All functions called within the endpoints will be inside the `controllers/listingsController.ts`.
+
+`usersRoutes.ts`
+- Establishes the `Express.Router()` for the routes pertaining to user management. View the endpoints below. All functions called within the endpoints will be inside the `controllers/usersController.ts`.
+
+#### Controllers - controllers/
+Handles HTTP requests and client responses. 
+
+`listingsController.ts`
+- Parses incoming request data, validates the input data, and calls appropriate service functions. Then, constructs the HTTP response and status codes for the client. Functions include `fetchListings`, `createListing`, `updateListing`, `addImage`, and `deleteListing`.
+
+`usersControllers.ts`
+- Parses incoming request data, validates the input data, and calls appropriate service functions. Then, constructs the HTTP response and status codes for the client. Functions include `fetchUsers`, `fetchSavedListings`, `saveListing`, `removeSavedListings`, `fetchUserListings`, and `deleteUser`.
+
+#### Services - services/
+Handles database interaction and storage. Uses information sent from the `controllers` to access the DB and Storage. 
+
+`listingService.ts`
+Handles the /listings collection with the DB and the image storage in firestore. Functions include `getListings`, `postListing`, `updateListingInDB`,`addImageToListing`, and `removeListingInDB
+
 
 ### Framework
 Node.js, Express, Firebase, Firestore
