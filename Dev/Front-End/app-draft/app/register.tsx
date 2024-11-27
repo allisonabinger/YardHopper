@@ -152,7 +152,7 @@ export default function RegisterPage() {
         </Pressable>
 
         {/* "Register with Google" Section */}
-        <View
+        {/* <View
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -175,7 +175,7 @@ export default function RegisterPage() {
           >
             <Ionicons name="logo-google" size={24} />
           </Pressable>
-        </View>
+        </View> */}
 
         {/* Redirect to Login */}
         <View

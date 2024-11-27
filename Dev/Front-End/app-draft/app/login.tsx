@@ -75,6 +75,11 @@ export default function LoginScreen() {
             <Text style={styles.signupText}>No account? Sign up</Text>
           </Link>
         </View>
+        <View style={styles.signupContainer}>
+          <Link href="/forgot-password">
+            <Text style={styles.signupText}>Forgot password?</Text>
+          </Link>
+        </View>
       </View>
     </View>
   );
