@@ -4,15 +4,38 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Card from "@/components/Card";
 import FilterModal from "@/components/FilterModal";
+import mockData from "@/mockData.json";
 
-const salesData = [
-  { id: "1", title: "Yard Sale 1", description: "Furniture, clothes, and more!", image: require("@/assets/images/sale1.png") },
-  { id: "2", title: "Yard Sale 2", description: "Vintage items and antiques!", image: require("@/assets/images/sale2.png") },
-  { id: "3", title: "Yard Sale 3", description: "Electronics and appliances sale.", image: require("@/assets/images/sale3.png") },
-  { id: "4", title: "Yard Sale 4", description: "Books, toys, and more!", image: require("@/assets/images/sale4.png") },
-  { id: "5", title: "Yard Sale 5", description: "Fashion and accessories.", image: require("@/assets/images/sale5.png") },
-  { id: "6", title: "Yard Sale 6", description: "Home décor and art pieces.", image: require("@/assets/images/sale6.png") },
-];
+// Define the type for each listing
+type ListingItem = {
+  title: string;
+  description: string;
+  address: {
+    zip: number;
+    city: string;
+    street: string;
+    state: string;
+  };
+  dates: string[];
+  startTime: string;
+  endTime: string;
+  images: { uri: string; caption: string }[];
+  categories: string[];
+  subcategories: {
+    [category: string]: string[] | undefined;
+  };
+  postId: string;
+  generatedAt: string;
+  status: string;
+  g: {
+    geohash: string;
+    geopoint: {
+      _latitude: number;
+      _longitude: number;
+    };
+  };
+  userId: null | string;
+};
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -24,22 +47,33 @@ export default function HomeScreen() {
     setFilterModalVisible(!filterModalVisible);
   };
 
-  const renderItem = ({ item }: { item: typeof salesData[0] }) => (
+  // Render function for each listing item
+  const renderItem = ({ item }: { item: ListingItem }) => (
     <Card
       title={item.title}
       description={item.description}
-      image={item.image}
+      image={item.images[0]?.uri || "https://via.placeholder.com/150"}
       onPress={() =>
         router.push({
-          pathname: "./(sale)/[id]",
-          params: { id: item.id },
+          pathname: `/listing/[id]`,
+          params: {
+            postId: item.postId,
+            // title: item.title,
+            // description: item.description,
+            // address: `${item.address.street}, ${item.address.city}, ${item.address.state} ${item.address.zip}`,
+            // category: item.categories.join(", "),
+          },
         })
       }
+      date={item.dates[0]}
+      address={`${item.address.street}, ${item.address.city}, ${item.address.state} ${item.address.zip}`}
+      postId={item.postId}
     />
   );
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Home</Text>
         <TouchableOpacity onPress={toggleFilter}>
@@ -51,13 +85,15 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* List of Listings */}
       <FlatList
-        data={salesData}
+        data={mockData.listings}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.postId}
         contentContainerStyle={styles.listContent}
       />
 
+      {/* Filter Modal */}
       <FilterModal
         visible={filterModalVisible}
         onClose={toggleFilter}
@@ -70,6 +106,7 @@ export default function HomeScreen() {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

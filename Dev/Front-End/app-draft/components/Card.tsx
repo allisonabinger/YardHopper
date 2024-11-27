@@ -1,16 +1,25 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Image, GestureResponderEvent } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  GestureResponderEvent,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-// Define the type for props
 interface CardProps {
+  postId: string;
   title: string;
   description: string;
-  image: any; // Type for image can be `any` if you're passing different types of image sources
+  image: string;
+  date: string;
+  address: string;
   onPress: (event: GestureResponderEvent) => void;
 }
 
-const Card: React.FC<CardProps> = ({ title, description, image, onPress }) => {
+const Card: React.FC<CardProps> = ({ title, description, image, date, address, onPress }) => {
   const [liked, setLiked] = useState(false);
 
   const toggleLike = () => {
@@ -20,8 +29,7 @@ const Card: React.FC<CardProps> = ({ title, description, image, onPress }) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <View style={styles.imageContainer}>
-        {/* Displaying the image */}
-        <Image source={image} style={styles.image} resizeMode="cover" />
+        <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
         <TouchableOpacity style={styles.likeButton} onPress={toggleLike}>
           <Ionicons
             name={liked ? "heart" : "heart-outline"}
@@ -33,22 +41,25 @@ const Card: React.FC<CardProps> = ({ title, description, image, onPress }) => {
       <View style={styles.cardContent}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description}>{description}</Text>
+        <Text style={styles.date}>{date}</Text>
+        <Text style={styles.address}>{address}</Text>
       </View>
     </TouchableOpacity>
   );
-}
+};
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#D9D9D9",
     borderRadius: 10,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
     elevation: 4,
     marginBottom: 20,
-    marginVertical: 8,
     padding: 16,
+    margin: 15,
     width: "90%",
     alignSelf: "center",
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.6)',
+
   },
   imageContainer: {
     borderRadius: 10,
@@ -80,6 +91,16 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: "#777",
+  },
+  date: {
+    fontSize: 14,
+    color: "#777",
+    marginTop: 4,
+  },
+  address: {
+    fontSize: 12,
+    color: "#555",
+    marginTop: 4,
   },
 });
 
