@@ -89,16 +89,50 @@ Establishes the routes to create the endpoints of the API
 Handles HTTP requests and client responses. 
 
 `listingsController.ts`
-- Parses incoming request data, validates the input data, and calls appropriate service functions. Then, constructs the HTTP response and status codes for the client. Functions include `fetchListings`, `createListing`, `updateListing`, `addImage`, and `deleteListing`.
+- Parses incoming request data, validates the input data, and calls appropriate service functions. Then, constructs the HTTP response and status codes for the client. Functions include `fetchListings`, `createListing`, `updateListing`, `addImage`, `removeImage`, and `deleteListing`.
 
 `usersControllers.ts`
 - Parses incoming request data, validates the input data, and calls appropriate service functions. Then, constructs the HTTP response and status codes for the client. Functions include `fetchUsers`, `fetchSavedListings`, `saveListing`, `removeSavedListings`, `fetchUserListings`, and `deleteUser`.
 
 #### Services - services/
-Handles database interaction and storage. Uses information sent from the `controllers` to access the DB and Storage. 
+- Handles database interaction and storage. Uses information sent from the `controllers` to access the DB and Storage. 
 
 `listingService.ts`
-Handles the /listings collection with the DB and the image storage in firestore. Functions include `getListings`, `postListing`, `updateListingInDB`,`addImageToListing`, and `removeListingInDB
+- Handles the /listings collection with the DB and the image storage in firestore. Functions include `getListings`, `postListing`, `updateListingInDB`,`addImageToListing`, `removeImageInDB`, and `removeListingInDB`.
+
+`userService.ts`
+- (**not yet implemented**)
+
+`imageService.ts`
+- Handles connections to the Firebase storage for images. Functions include `uploadImageToFirebase`, `removeImageInFirebase`, `removeFolderInFirebase`, and `getFilePathFromURI`.
+
+`geolocateService.ts`
+- Handles geolocation services and access to the third-party API, GeoApify. Functions include `generateGeo`, `generateCoordinatesByAddress`, and `generateCoordinatesByZipcode`.
+
+#### Models - models/
+Contains interfaces and types used for consistency across the project. 
+
+`listingModel.ts`
+- Contains the most up to date interface of `Listing`, which is used across the project.
+
+#### Middleware - middlewares/
+Holds the middleware configurations needed for authentication and error handling (**not yet implemented**)
+
+`authMiddleware.ts`
+- (**not yet implemented**)
+
+`errorHandler.ts`
+- (**not yet implemented**)
+
+#### Seed - seed/
+Used to seeding the database. Contains lots of formatting for previous versions of data, and was updated frequently with new requests for posting documents. Should not be used to seed database, but housed for future implementations. Also hold images/ used in the project. 
+
+
+#### Documentation - swagger/
+Holds the configurations for the swaggerUI documentation.
+
+`swagger.json`
+- Contains most of the rules set up to build the UI for the API documentation.
 
 
 ### Framework
