@@ -173,6 +173,10 @@ export const updateListing = async (req: Request, res: Response) => {
         //     // console.log("Updated Fields: ", updatedFields)
         // }
 
+        if (!updatedFields) {
+            return res.status(400).json({error: "No fields provided to update"})
+        }
+
         const updatedListing = await updateListingInDB(postId, updatedFields);
 
         return res.status(200).json({
