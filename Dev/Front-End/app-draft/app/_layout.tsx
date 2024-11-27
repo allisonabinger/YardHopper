@@ -29,19 +29,21 @@ export default function RootLayout() {
   }
 
   return (
-    <SavedPostsProvider>
-      <ThemeProvider value={DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen name="register" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="add-listing-details" options={{ headerShown: false }} />
-          <Stack.Screen name="add-listing-details-2" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" options={{ headerShown: false }} />
-          <Stack.Screen name="listing/[id]" />
-        </Stack>
-      </ThemeProvider>
-      <StatusBar style="auto" />
-    </SavedPostsProvider>
+    <AuthProvider>
+      <SavedPostsProvider>
+        <ThemeProvider value={DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="register" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="add-listing-details" options={{ headerShown: false }} />
+            <Stack.Screen name="add-listing-details-2" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" options={{ headerShown: false }} />
+            <Stack.Screen name="listing/[id]" />
+          </Stack>
+        </ThemeProvider>
+        <StatusBar style="auto" />
+      </SavedPostsProvider>
+    </AuthProvider>
   );
 }
