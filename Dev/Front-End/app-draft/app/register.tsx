@@ -18,7 +18,7 @@ export default function RegisterPage() {
   async function handleRegister(email: string, password: string, confirmPassword: string) {
     if (password !== confirmPassword) {
       console.log("Passwords do not match");
-      Alert.alert("Error", "Passwords do not match");
+      alert("Passwords do not match");
       return;
     }
 
@@ -27,7 +27,7 @@ export default function RegisterPage() {
       await auth.register(email, password); // Call the register function from your AuthProvider
       router.replace("/(tabs)"); // Redirect after successful registration
     } catch (e) {
-      Alert.alert("Error", "Unable to create account");
+      alert("Unable to create account");
     }
   }
 
