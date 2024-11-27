@@ -17,6 +17,7 @@ export default function RegisterPage() {
 
   async function handleRegister(email: string, password: string, confirmPassword: string) {
     if (password !== confirmPassword) {
+      console.log("Passwords do not match");
       Alert.alert("Error", "Passwords do not match");
       return;
     }
