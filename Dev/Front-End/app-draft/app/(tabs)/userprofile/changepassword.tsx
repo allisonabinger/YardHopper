@@ -1,9 +1,45 @@
-import React from "react";
-import { View, TextInput, Pressable, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, TextInput, Pressable, Text, StyleSheet, Alert } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/components/AuthProvider";
+import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 
 export default function ChangePasswordPage() {
+  const { user } = useAuth();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      Alert.alert("Error", "New password and confirm password do not match.");
+      return;
+    }
+
+    if (!user) {
+      Alert.alert("Error", "User is not authenticated.");
+      return;
+    }
+
+    const auth = getAuth();
+    const credential = EmailAuthProvider.credential(user.email!, currentPassword);
+
+    try {
+      // Re-authenticate user with the current password
+      await reauthenticateWithCredential(auth.currentUser!, credential);
+
+      // Update the user's password
+      await updatePassword(auth.currentUser!, newPassword);
+
+      Alert.alert("Success", "Password changed successfully!");
+      router.push("/(tabs)/userprofile"); // Navigate back to profile or settings page
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to change password. Please try again.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Title */}
@@ -17,6 +53,8 @@ export default function ChangePasswordPage() {
           placeholderTextColor="#A9A9A9"
           secureTextEntry
           style={styles.input}
+          value={currentPassword}
+          onChangeText={setCurrentPassword}
         />
 
         {/* New Password Input */}
@@ -25,6 +63,8 @@ export default function ChangePasswordPage() {
           placeholderTextColor="#A9A9A9"
           secureTextEntry
           style={styles.input}
+          value={newPassword}
+          onChangeText={setNewPassword}
         />
 
         {/* Confirm New Password Input */}
@@ -33,18 +73,12 @@ export default function ChangePasswordPage() {
           placeholderTextColor="#A9A9A9"
           secureTextEntry
           style={styles.input}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
         />
 
         {/* Change Password Button */}
-        <Pressable
-          onPress={() => {
-            // Handle password change logic here
-            console.log("Change password pressed");
-            // Navigate back to settings or profile page
-            router.back();
-          }}
-          style={styles.button}
-        >
+        <Pressable onPress={handleChangePassword} style={styles.button}>
           <Text style={styles.buttonText}>Change Password</Text>
         </Pressable>
 
