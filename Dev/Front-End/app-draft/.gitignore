@@ -7,4 +7,4 @@ expo-env.d.ts
 
 .expo
 
-.env
+.env*
