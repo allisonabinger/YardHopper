@@ -5,6 +5,7 @@ import multer from "multer";
 import {
     addImage,
       createListing,
+      deleteListing,
       fetchListings,
       updateListing,
 } from "../controllers/listingsController";
@@ -180,6 +181,6 @@ router.put("/:postId", (req: Request, res: Response) => { updateListing(req, res
 // put request for uploading images
 router.put("/:postId/images", upload.single("image"), (req: Request, res: Response) => { addImage(req, res);});
 
-// router.delete("/listing/:listingId", removeListing);
+router.delete("/:postId", (req: Request, res: Response) => { deleteListing(req, res);});
 
 export default router;

@@ -144,6 +144,33 @@ export const addImageToListing = async (postId: string, imageURI: string, captio
     }
 }
 
+export const removeListingInDB = async (postId: string): Promise<Listing | null> => {
+    try {
+      const listingRef = db.collection("listings").doc(postId);
+  
+      // Get the listing to verify it exists
+      const listingDoc = await listingRef.get();
+  
+      if (!listingDoc.exists) {
+        console.log(`Listing with ID ${postId} does not exist.`);
+        return null;
+      }
+  
+      // Retrieve the data for the deleted listing (optional, for returning)
+      const listingData = listingDoc.data() as Listing;
+  
+      // Delete the document
+      await listingRef.delete();
+  
+      console.log(`Listing with ID ${postId} deleted.`);
+      return listingData;
+    } catch (err) {
+      console.error("Error occurred during removeListingInDB: ", err);
+      throw new Error("Error deleting listing from database");
+    }
+  };
+  
+
 // Function to calculate the distance between to points using coordinates!
 // const haversineDistance = (lat1: number, long1: number, lat2: number, long2: number): number => {
 //     const R = 6371; // earth's radius in km!
