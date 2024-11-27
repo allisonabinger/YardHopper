@@ -1,9 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Pressable, Text, StyleSheet } from "react-native";
+import { Pressable, Text, StyleSheet, ViewStyle } from "react-native";
 import { useAuth } from "@/components/AuthProvider";
 
-export default function LogoutComponent({ style }) {
+interface LogoutComponentProps {
+  style?: ViewStyle;
+}
+
+export default function LogoutComponent({ style }: LogoutComponentProps) {
   const router = useRouter();
   const { logout } = useAuth();
 
