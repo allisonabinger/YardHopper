@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   TextInput,
@@ -7,10 +7,28 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
+import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
+  const auth = useAuth();
   const router = useRouter();
+
+  // Form state for email and password
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  async function login(email: string, password: string) {
+    // setLoading(true);
+    try {
+      console.log(`logging in with ${email} and ${password}`)
+      await auth.login(email, password)
+      router.replace("/(tabs)");
+    } catch (e) {
+      alert("Email or password is incorrect");
+    }
+    // setLoading(false);
+  }
 
   return (
     <View style={styles.container}>
@@ -27,6 +45,11 @@ export default function LoginScreen() {
           placeholder="Email"
           placeholderTextColor="#A9A9A9"
           style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
         />
 
         {/* Password Input */}
@@ -35,23 +58,22 @@ export default function LoginScreen() {
           placeholderTextColor="#A9A9A9"
           secureTextEntry
           style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          autoCapitalize="none"
+          autoCorrect={false}
         />
 
         {/* Login Button */}
-        <Pressable
-          onPress={() => router.replace("/(tabs)/")}
-          style={styles.loginButton}
-        >
+        <Pressable onPress={() => login(email, password)} style={styles.loginButton}>
           <Text style={styles.loginButtonText}>Log In</Text>
         </Pressable>
 
         {/* Sign-up Redirect */}
         <View style={styles.signupContainer}>
-        <Pressable
-          onPress={() => router.push("/register")}
-        >
-          <Text style={styles.signupText}>No account? Sign up</Text>
-        </Pressable>
+          <Pressable onPress={() => router.push("/register")}>
+            <Text style={styles.signupText}>No account? Sign up</Text>
+          </Pressable>
         </View>
       </View>
     </View>
