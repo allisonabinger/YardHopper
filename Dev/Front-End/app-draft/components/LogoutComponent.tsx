@@ -1,18 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, Text, StyleSheet } from "react-native";
+import { useAuth } from "@/components/AuthProvider";
 
-export default function LogoutComponent({ children, style }) {
+export default function LogoutComponent({ style }) {
   const router = useRouter();
+  const { logout } = useAuth();
 
-  function logout() {
-    router.replace('/login');
+  async function handleLogout(){
+    try {
+      console.log("logging out");
+      await logout();
+      router.replace("/login");
+    } catch (error) {
+      console.error("Logout error: ", error);
+    }
   }
 
   return (
-    <Pressable onPress={logout} style={[styles.logoutButton, style]}>
+    <Pressable onPress={handleLogout} style={[styles.logoutButton, style]}>
       <Ionicons name="log-out-outline" size={24} style={{ marginRight: 2 }} />
-      {children}
     </Pressable>
   );
 }
