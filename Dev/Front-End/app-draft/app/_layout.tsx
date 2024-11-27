@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import { SavedPostsProvider } from './context/SavedPostsContext';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { AuthProvider } from '@/components/AuthProvider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -29,18 +30,20 @@ export default function RootLayout() {
   }
 
   return (
-    <SavedPostsProvider>
-      <ThemeProvider value={DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen name="register" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="add-listing-details" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" options={{ headerShown: false }} />
-          <Stack.Screen name="listing/[id]" />
-        </Stack>
-      </ThemeProvider>
-      <StatusBar style="auto" />
-    </SavedPostsProvider>
+    <AuthProvider>
+      <SavedPostsProvider>
+        <ThemeProvider value={DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="register" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="add-listing-details" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" options={{ headerShown: false }} />
+            <Stack.Screen name="listing/[id]" />
+          </Stack>
+        </ThemeProvider>
+        <StatusBar style="auto" />
+      </SavedPostsProvider>
+    </AuthProvider>
   );
 }
