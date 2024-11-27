@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useAuth } from "@/components/AuthProvider";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 
 export default function LoginScreen() {
   const auth = useAuth();
@@ -71,9 +71,9 @@ export default function LoginScreen() {
 
         {/* Sign-up Redirect */}
         <View style={styles.signupContainer}>
-          <Pressable onPress={() => router.push("/register")}>
+          <Link href="/register">
             <Text style={styles.signupText}>No account? Sign up</Text>
-          </Pressable>
+          </Link>
         </View>
       </View>
     </View>

@@ -1,9 +1,35 @@
-import React from "react";
-import { View, TextInput, TouchableOpacity, Pressable, Image, Text } from "react-native";
-import { Link, router } from "expo-router";
+import React, { useState } from "react";
+import { View, TextInput, TouchableOpacity, Pressable, Image, Text, Alert } from "react-native";
+import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function RegisterPage() {
+  const auth = useAuth();
+  const router = useRouter();
+
+  // State for form fields
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  async function handleRegister(email: string, password: string, confirmPassword: string) {
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+
+    try {
+      console.log(`Signing up with email: ${email}`);
+      await auth.register(email, password); // Call the register function from your AuthProvider
+      router.replace("/(tabs)"); // Redirect after successful registration
+    } catch (e) {
+      Alert.alert("Error", "Unable to create account");
+    }
+  }
+
   return (
     <View
       style={{
@@ -40,6 +66,8 @@ export default function RegisterPage() {
             backgroundColor: "#F0F0F0",
             width: "100%",
           }}
+          value={firstName}
+          onChangeText={setFirstName}
         />
 
         {/* Last Name Input */}
@@ -53,6 +81,8 @@ export default function RegisterPage() {
             backgroundColor: "#F0F0F0",
             width: "100%",
           }}
+          value={lastName}
+          onChangeText={setLastName}
         />
 
         {/* Email Input */}
@@ -66,6 +96,10 @@ export default function RegisterPage() {
             backgroundColor: "#F0F0F0",
             width: "100%",
           }}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
         />
 
         {/* Password Input */}
@@ -80,6 +114,8 @@ export default function RegisterPage() {
             backgroundColor: "#F0F0F0",
             width: "100%",
           }}
+          value={password}
+          onChangeText={setPassword}
         />
 
         {/* Confirm Password Input */}
@@ -94,11 +130,13 @@ export default function RegisterPage() {
             backgroundColor: "#F0F0F0",
             width: "100%",
           }}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
         />
 
         {/* Register Button */}
         <Pressable
-          onPress={() => router.replace("/(tabs)/")}
+          onPress={() => handleRegister(email, password, confirmPassword)}
           style={{
             backgroundColor: "#159636",
             borderRadius: 30,
@@ -108,7 +146,7 @@ export default function RegisterPage() {
           }}
         >
           <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "bold" }}>
-            Log In
+            Create Account
           </Text>
         </Pressable>
 
@@ -159,7 +197,6 @@ export default function RegisterPage() {
             </Text>
           </Link>
         </View>
-
       </View>
     </View>
   );
