@@ -1,26 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import { FlatList, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons"; 
+import { Ionicons } from "@expo/vector-icons";
 import Card from "@/components/Card";
+import FilterModal from "@/components/FilterModal";
 
-// Updated sales data with images
+// Updated sales data with images and categories
 const salesData = [
-  { id: "1", title: "Yard Sale 1", description: "Furniture, clothes, and more!", image: require("@/assets/images/sale1.png") },
-  { id: "2", title: "Yard Sale 2", description: "Vintage items and antiques!", image: require("@/assets/images/sale2.png") },
-  { id: "3", title: "Yard Sale 3", description: "Electronics and appliances sale.", image: require("@/assets/images/sale3.png") },
-  { id: "4", title: "Yard Sale 4", description: "Books, toys, and more!", image: require("@/assets/images/sale4.png") },
-  { id: "5", title: "Yard Sale 5", description: "Fashion and accessories.", image: require("@/assets/images/sale5.png") },
-  { id: "6", title: "Yard Sale 6", description: "Home décor and art pieces.", image: require("@/assets/images/sale6.png") },
+  { id: "1", title: "Yard Sale 1", description: "Furniture, clothes, and more!", image: require("@/assets/images/sale1.png"), category: "Furniture" },
+  { id: "2", title: "Yard Sale 2", description: "Vintage items and antiques!", image: require("@/assets/images/sale2.png"), category: "Decor & Art" },
+  { id: "3", title: "Yard Sale 3", description: "Electronics and appliances sale.", image: require("@/assets/images/sale3.png"), category: "Electronics" },
+  { id: "4", title: "Yard Sale 4", description: "Books, toys, and more!", image: require("@/assets/images/sale4.png"), category: "Books & Media" },
+  { id: "5", title: "Yard Sale 5", description: "Fashion and accessories.", image: require("@/assets/images/sale5.png"), category: "Clothing" },
+  { id: "6", title: "Yard Sale 6", description: "Home décor and art pieces.", image: require("@/assets/images/sale6.png"), category: "Decor & Art" },
 ];
 
 export default function SavedPosts() {
   const router = useRouter();
-  const [filterSelected, setFilterSelected] = React.useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [radius, setRadius] = useState(5);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [filteredData, setFilteredData] = useState(salesData);
 
   const toggleFilter = () => {
-    setFilterSelected(!filterSelected);
-    // Add your filter logic here
+    setFilterModalVisible(!filterModalVisible);
+  };
+
+  const applyFilters = () => {
+    const filtered = salesData.filter((item) =>
+      (selectedCategories.length === 0 || selectedCategories.includes(item.category))
+    );
+    setFilteredData(filtered);
+    toggleFilter(); // Close the modal after applying filters
   };
 
   const renderItem = ({ item }: { item: typeof salesData[0] }) => (
@@ -44,7 +55,7 @@ export default function SavedPosts() {
         <Text style={styles.headerText}>Saved Posts</Text>
         <TouchableOpacity onPress={toggleFilter}>
           <Ionicons
-            name={filterSelected ? "filter-circle" : "filter-circle-outline"}
+            name={filterModalVisible ? "filter-circle" : "filter-circle-outline"}
             size={28}
             color="#159636"
           />
@@ -53,10 +64,20 @@ export default function SavedPosts() {
 
       {/* List */}
       <FlatList
-        data={salesData}
+        data={filteredData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+      />
+
+      {/* Filter Modal */}
+      <FilterModal
+        visible={filterModalVisible}
+        onClose={applyFilters}
+        radius={radius}
+        setRadius={setRadius}
+        selectedCategories={selectedCategories}
+        setSelectedCategories={setSelectedCategories}
       />
     </View>
   );

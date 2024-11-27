@@ -14,10 +14,15 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar } from "react-native-calendars";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import ProgressTracker from "./(tabs)/ProgressTracker";
 
 export default function AddListingDetails() {
   const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1); // Page navigation state
+  const [isGeoActive, setIsGeoActive] = useState(false);
 
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [address, setAddress] = useState({
     street: "",
     city: "",
@@ -39,6 +44,7 @@ export default function AddListingDetails() {
           "Permission denied",
           "Location permission is required to auto-fill the address."
         );
+        setIsGeoActive(false);
         return;
       }
 
@@ -61,10 +67,12 @@ export default function AddListingDetails() {
         });
       } else {
         Alert.alert("Error", "Unable to fetch address information.");
+        setIsGeoActive(false);
       }
     } catch (error) {
       Alert.alert("Error", "An error occurred while fetching the location.");
       console.error(error);
+      setIsGeoActive(false);
     }
   };
 
@@ -102,32 +110,40 @@ export default function AddListingDetails() {
     return dates;
   };
 
-  const validateForm = () => {
+  const validatePage1 = () => {
     const missingFields = [];
 
-    if (!address.street) missingFields.push("Street Address");
-    if (!address.city) missingFields.push("City");
-    if (!address.state) missingFields.push("State");
-    if (!address.zip) missingFields.push("ZIP Code");
-    if (!startDate) missingFields.push("Start Date");
-    if (!endDate) missingFields.push("End Date");
-
-    return missingFields;
-  };
-
-  const handlePublish = () => {
-    const missingFields = validateForm();
+    if (!title.trim()) missingFields.push("Title");
+    if (!description.trim()) missingFields.push("Description");
+    if (!address.street.trim()) missingFields.push("Street Address");
+    if (!address.city.trim()) missingFields.push("City");
+    if (!address.state.trim()) missingFields.push("State");
+    if (!address.zip.trim()) missingFields.push("ZIP Code");
 
     if (missingFields.length > 0) {
       Alert.alert(
         "Incomplete Details",
-        `Please fill out the following fields before publishing:\n\n${missingFields.join(
+        `Please fill out the following fields before proceeding:\n\n${missingFields.join(
           "\n"
         )}`
       );
-    } else {
-      console.log("Publish Listing"); // Replace with actual publish logic
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleNext = () => {
+    if (validatePage1()) {
+      setCurrentPage(2);
+    }
+  };
+
+  const handlePublish = () => {
+    if (validatePage1() && startDate && endDate) {
       Alert.alert("Success", "Your listing has been published!");
+    } else {
+      Alert.alert("Error", "Please complete all required fields.");
     }
   };
 
@@ -135,94 +151,122 @@ export default function AddListingDetails() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Text style={styles.backArrow}>←</Text>
-            </TouchableOpacity>
-            <View style={styles.progressBar}>
-              <View style={[styles.progress, { width: "100%" }]} />
-            </View>
-          </View>
+          {/* Header */}
+          <ProgressTracker step={2} steps={3} height={10} />
 
-          <Text style={styles.title}>Add Listing Details</Text>
+          {/* Page Content */}
+          {currentPage === 1 ? (
+            <View style={styles.form}>
+              {/* Page 1: Title, Description, and Address */}
+              <Text style={styles.title}>Add Listing Details</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter title"
+                value={title}
+                onChangeText={setTitle}
+              />
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Enter description"
+                multiline
+                numberOfLines={4}
+                value={description}
+                onChangeText={setDescription}
+              />
 
-          <View style={styles.form}>
-            <TextInput style={styles.input} placeholder="Enter title" />
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Enter description"
-              multiline
-              numberOfLines={4}
-            />
+              <View style={styles.addressHeader}>
+                <Text style={styles.label}>Address</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.geoButton,
+                    isGeoActive && styles.geoButtonActive,
+                  ]}
+                  onPress={() => {
+                    setIsGeoActive((prev) => !prev);
+                    fetchGeolocation();
+                  }}
+                >
+                  <MaterialIcons
+                    name="my-location"
+                    size={20}
+                    color={isGeoActive ? "#fff" : "#7f7f7f"}
+                  />
+                </TouchableOpacity>
+              </View>
 
-            <View style={styles.addressHeader}>
-              <Text style={styles.label}>Address</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Street Address"
+                value={address.street}
+                onChangeText={(text) =>
+                  setAddress((prev) => ({ ...prev, street: text }))
+                }
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="City"
+                value={address.city}
+                onChangeText={(text) =>
+                  setAddress((prev) => ({ ...prev, city: text }))
+                }
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="State"
+                value={address.state}
+                onChangeText={(text) =>
+                  setAddress((prev) => ({ ...prev, state: text }))
+                }
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="ZIP Code"
+                keyboardType="numeric"
+                value={address.zip}
+                onChangeText={(text) =>
+                  setAddress((prev) => ({ ...prev, zip: text }))
+                }
+              />
+
               <TouchableOpacity
-                style={styles.geoButton}
-                onPress={fetchGeolocation}
+                style={styles.publishButton}
+                onPress={handleNext} // Validate and navigate to page 2
               >
-                <MaterialIcons name="my-location" size={24} color="#7f7f7f" />
+                <Text style={styles.publishText}>Next</Text>
               </TouchableOpacity>
             </View>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Street Address"
-              value={address.street}
-              onChangeText={(text) =>
-                setAddress((prev) => ({ ...prev, street: text }))
-              }
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="City"
-              value={address.city}
-              onChangeText={(text) =>
-                setAddress((prev) => ({ ...prev, city: text }))
-              }
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="State"
-              value={address.state}
-              onChangeText={(text) =>
-                setAddress((prev) => ({ ...prev, state: text }))
-              }
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="ZIP Code"
-              keyboardType="numeric"
-              value={address.zip}
-              onChangeText={(text) =>
-                setAddress((prev) => ({ ...prev, zip: text }))
-              }
-            />
-
-            <Text style={styles.calenderLabel}>Select Start and End Dates</Text>
-            <Calendar
-              onDayPress={handleDayPress}
-              markedDates={{
-                ...(startDate && endDate
-                  ? getDatesInRange(startDate, endDate)
-                  : {}),
-                [startDate]: {
-                  selected: true,
-                  startingDay: true,
-                  color: "#159636",
-                  textColor: "white",
-                },
-                [endDate]: {
-                  selected: true,
-                  endingDay: true,
-                  color: "#159636",
-                  textColor: "white",
-                },
-              }}
-              markingType="period"
-              style={{ marginBottom: 24 }}
-            />
-
+          ) : (
+            <View style={styles.form}>
+            {/* Page 2: Start/End Dates and Times */}
+            <Text style={styles.title}>Select Dates and Times</Text>
+          
+            {/* Calendar Card */}
+            <View style={styles.card}>
+              <Calendar
+                onDayPress={handleDayPress}
+                markedDates={{
+                  ...(startDate && endDate
+                    ? getDatesInRange(startDate, endDate)
+                    : {}),
+                  [startDate]: {
+                    selected: true,
+                    startingDay: true,
+                    color: "#159636",
+                    textColor: "white",
+                  },
+                  [endDate]: {
+                    selected: true,
+                    endingDay: true,
+                    color: "#159636",
+                    textColor: "white",
+                  },
+                }}
+                markingType="period"
+                style={styles.calendar}
+              />
+            </View>
+          
+            {/* Time Selectors */}
             <View style={styles.timePickerWrapper}>
               <View style={styles.timePickerRow}>
                 <View style={styles.timePickerContainer}>
@@ -234,10 +278,9 @@ export default function AddListingDetails() {
                     onChange={(event, selectedTime) => {
                       if (selectedTime) setStartTime(selectedTime);
                     }}
-                    style={styles.timePicker}
                   />
                 </View>
-
+          
                 <View style={styles.timePickerContainer}>
                   <Text style={styles.label}>End Time</Text>
                   <DateTimePicker
@@ -254,19 +297,22 @@ export default function AddListingDetails() {
                         );
                       }
                     }}
-                    style={styles.timePicker}
                   />
                 </View>
               </View>
             </View>
-
-            <TouchableOpacity
-              style={styles.publishButton}
-              onPress={handlePublish}
-            >
-              <Text style={styles.publishText}>Publish</Text>
-            </TouchableOpacity>
+          
+            {/* Navigation Buttons */}
+            <View style={styles.navigationButtons}>
+              <TouchableOpacity
+                style={styles.publishButton}
+                onPress={handlePublish}
+              >
+                <Text style={styles.publishText}>Publish</Text>
+              </TouchableOpacity>
+            </View>
           </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -281,7 +327,7 @@ const styles = StyleSheet.create({
   backArrow: { fontSize: 24, marginRight: 8 },
   title: { fontSize: 24, fontWeight: "bold", color: "#159636", marginBottom: 24 },
   form: { flex: 1, marginTop: 16 },
-  label: { fontSize: 16, fontWeight: "bold", color: "#555", marginBottom: 8, textAlign: "center" },
+  label: { fontSize: 16, fontWeight: "bold", color: "#159636", marginBottom: 13, marginLeft: 13 },
   calenderLabel: { fontSize: 16, fontWeight: "bold", color: "#555", marginBottom: 24 },
   input: {
     borderWidth: 1,
@@ -291,6 +337,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: "#555",
     fontSize: 16,
+    backgroundColor: "#f0f0f0",
   },
   textArea: { height: 100, textAlignVertical: "top", marginBottom: 24 },
   addressHeader: {
@@ -304,6 +351,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+  },
+  geoButtonActive: {
+    backgroundColor: "#159636",
   },
   publishButton: {
     backgroundColor: "#159636",
@@ -334,13 +384,29 @@ const styles = StyleSheet.create({
   timePickerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "80%",
+    width: "80%"
   },
   timePickerContainer: {
     flex: 1,
     marginHorizontal: 8,
+    marginTop: 16,  
   },
-  timePicker: {
-    marginVertical: 10,
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+    elevation: 4, // For Android shadow
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#159636",
+    marginBottom: 12,
+  },
+  calendar: {
+    borderRadius: 8,
+    overflow: "hidden",
   },
 });
