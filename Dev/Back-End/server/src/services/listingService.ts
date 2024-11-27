@@ -5,6 +5,7 @@ import { GeoFirestore } from "geofirestore";
 import * as admin from "firebase-admin";
 import { Listing } from "../models/listingModel";
 import { error } from "console";
+import { removeFolderInFirebase } from "./imageService";
 // import { generateCoordinates, generateGeo } from "./geolocateService";
 
 const geoFirestore = new GeoFirestore(db);
@@ -103,11 +104,11 @@ export const updateListingInDB = async (
       updatedFields: Record<string, any>
 ) => {
       try {
-        if (Object.keys(updatedFields).length === 0) {
-            throw new Error("No fields to update.");
-          }
+            if (Object.keys(updatedFields).length === 0) {
+                  throw new Error("No fields to update.");
+            }
             const listingRef = db.collection("listings").doc(postId);
-            console.log("Updating firestore doc: ", listingRef.path)
+            console.log("Updating firestore doc: ", listingRef.path);
 
             await listingRef.update(updatedFields);
 
@@ -119,57 +120,102 @@ export const updateListingInDB = async (
       }
 };
 
-export const addImageToListing = async (postId: string, imageURI: string, caption: string): Promise<any> => {
+export const addImageToListing = async (
+      postId: string,
+      imageURI: string,
+      caption: string
+): Promise<any> => {
+      try {
+            const listingRef = db.collection("listings").doc(postId);
+
+            const listingDoc = await listingRef.get();
+
+            if (!listingDoc.exists) {
+                  console.log("listing not found: ", postId);
+                  throw new Error("Listing not found.");
+            }
+            const listingData = listingDoc.data();
+            const currentImages = listingData?.images || [];
+
+            const updatedImages = [
+                  ...currentImages,
+                  { uri: imageURI, caption: caption },
+            ];
+
+            await listingRef.update({ images: updatedImages });
+
+            const updatedDoc = await listingRef.get();
+            return updatedDoc.exists ? updatedDoc.data() : null;
+      } catch (err) {
+            console.error("Error updating listing in firestore with new image");
+            throw new Error("Failed to add image to listing");
+      }
+};
+
+export const removeListingInDB = async (
+      postId: string
+): Promise<Listing | null> => {
+      try {
+            const listingRef = db.collection("listings").doc(postId);
+
+            // Get the listing to verify it exists
+            const listingDoc = await listingRef.get();
+
+            const storagePath = `listings/${postId}`;
+
+            await removeFolderInFirebase(storagePath);
+
+            if (!listingDoc.exists) {
+                  console.log(`Listing with ID ${postId} does not exist.`);
+                  return null;
+            }
+
+            // Retrieve the data for the deleted listing (optional, for returning)
+            const listingData = listingDoc.data() as Listing;
+
+            // Delete the document
+            await listingRef.delete();
+
+            console.log(`Listing with ID ${postId} deleted.`);
+            return listingData;
+      } catch (err) {
+            console.error("Error occurred during removeListingInDB: ", err);
+            throw new Error("Error deleting listing from database");
+      }
+};
+
+// removes image reference in Firestore (uri and caption)
+export const removeImageInDB = async (postId: string, imageDetails: {imageURI: string, caption: string}): Promise<void> => {
     try {
-        const listingRef = db.collection("listings").doc(postId)
+        const listingRef = db.collection("listings").doc(postId);
 
         const listingDoc = await listingRef.get();
 
         if (!listingDoc.exists) {
-            console.log("listing not found: ", postId)
-            throw new Error("Listing not found.")
+            throw new Error(`Cannot find listing with ID: ${postId}`);
         }
-        const listingData = listingDoc.data();
-        const currentImages = listingData?.images || [];
 
-        const updatedImages = [...currentImages, {uri: imageURI, caption: caption}]
+        const listingData = listingDoc.data()
+
+        if (!listingData || !Array.isArray(listingData.images)) {
+            throw new Error(`Listing with ID ${postId} has no images`)
+        }
+
+        const updatedImages = listingData.images.filter(
+            (image: { imageURI: string; caption: string }) =>
+                image.imageURI !== imageDetails.imageURI ||
+                image.caption !== imageDetails.caption
+        );
 
         await listingRef.update({images: updatedImages})
 
-        const updatedDoc = await listingRef.get();
-        return updatedDoc.exists ? updatedDoc.data() : null;
+        console.log(`Image ${imageDetails.imageURI} removed frmm listing with ID: ${postId}`)
     } catch (err) {
-        console.error("Error updating listing in firestore with new image");
-        throw new Error("Failed to add image to listing")
+        console.error(`Error remove image ${imageDetails.imageURI} reference from database.`, err);
+        throw new Error(`Error remove image ${imageDetails.imageURI} reference from database.`);
     }
 }
 
-export const removeListingInDB = async (postId: string): Promise<Listing | null> => {
-    try {
-      const listingRef = db.collection("listings").doc(postId);
-  
-      // Get the listing to verify it exists
-      const listingDoc = await listingRef.get();
-  
-      if (!listingDoc.exists) {
-        console.log(`Listing with ID ${postId} does not exist.`);
-        return null;
-      }
-  
-      // Retrieve the data for the deleted listing (optional, for returning)
-      const listingData = listingDoc.data() as Listing;
-  
-      // Delete the document
-      await listingRef.delete();
-  
-      console.log(`Listing with ID ${postId} deleted.`);
-      return listingData;
-    } catch (err) {
-      console.error("Error occurred during removeListingInDB: ", err);
-      throw new Error("Error deleting listing from database");
-    }
-  };
-  
 
 // Function to calculate the distance between to points using coordinates!
 // const haversineDistance = (lat1: number, long1: number, lat2: number, long2: number): number => {

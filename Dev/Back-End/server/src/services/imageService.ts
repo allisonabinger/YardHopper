@@ -1,8 +1,9 @@
 import * as multer from 'multer';
 import path from "path"
-import { storage } from '../config/firebase';
+import { db, storage } from '../config/firebase';
 import { v4 as uuidv4 } from "uuid"
 
+// ads image to firebase and returns uri
 export const uploadImageToFirebase = async (file: Express.Multer.File, postId: string): Promise<string> => {
     const imageId = uuidv4();
     const fileName = `${imageId}-${file.originalname}`;
@@ -25,6 +26,7 @@ export const uploadImageToFirebase = async (file: Express.Multer.File, postId: s
     }
 }
 
+// removes image stored in Firebase from bucket
 export const removeImageInFirebase = async (filePath: string): Promise<void> => {
     try {
         const file = storage.bucket().file(filePath);
