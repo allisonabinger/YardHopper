@@ -1,0 +1,138 @@
+{
+    "/api/listings": {
+        "get": {
+          "summary": "Fetch all listings near the user, requires location parameters",
+          "description": "Either `lat` and `lng` or `zipcode` must be provided in the query parameters.",
+          "tags": ["Listings"],
+          "parameters": [
+            {
+              "name": "lat",
+              "in": "query",
+              "required": false,
+              "schema": { "type": "number" },
+              "description": "Latitude of the area to search for listings"
+            },
+            {
+              "name": "lng",
+              "in": "query",
+              "required": false,
+              "schema": { "type": "number" },
+              "description": "Longitude of the area to search for listings"
+            },
+            {
+              "name": "zipcode",
+              "in": "query",
+              "required": false,
+              "schema": { "type": "string" },
+              "description": "Zip code to search for listings"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "A list of listings matching the query",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Listing" }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Validation error if neither coordinates nor zip are provided"
+            }
+          }
+        }
+      },
+    "/api/listings/{postId}": {
+      "put": {
+        "summary": "Update a listing's text fields",
+        "tags": ["Listings"],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Unique identifier of the listing"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Fields to update in the listing"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Listing updated successfully" }
+        }
+      }
+    },
+    "/api/listings/{postId}/images": {
+      "put": {
+        "summary": "Upload an image for a listing",
+        "tags": ["Listings"],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Unique identifier of the listing"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Image file to upload"
+                  },
+                  "caption": {
+                    "type": "string",
+                    "description": "Optional caption for the image"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Image added successfully" }
+        }
+      }
+    },
+    "/api/listing/{listingId}": {
+      "delete": {
+        "summary": "Remove a listing",
+        "tags": ["Listings"],
+        "parameters": [
+          {
+            "name": "listingId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Unique identifier of the listing to delete"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Listing deleted successfully" }
+        }
+      }
+    }
+  }
+  
