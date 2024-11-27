@@ -25,9 +25,18 @@ const ProgressTracker = ({ step, steps, height, onBack }) => {
     return (
         <View style={styles.container}>
             {/* Back Button */}
-            <TouchableOpacity onPress={() => router.push("/")} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color="black" />
-            </TouchableOpacity>
+            <TouchableOpacity
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back(); // Navigate back if possible
+            } else {
+              router.push("../(tabs)/index"); // Redirect to homepage explicitly
+            }
+          }}
+          style={styles.backButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
 
 
             {/* Progress Tracker */}
