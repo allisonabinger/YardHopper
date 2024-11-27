@@ -2,67 +2,31 @@ import React from "react";
 import {
   View,
   TextInput,
-  TouchableOpacity,
   Pressable,
   Image,
   Text,
+  StyleSheet,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
-type RootStackParamList = {
-  Login: undefined;
-  Main: undefined;
-  Signup: undefined;
-};
-
-type LoginScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "Login"
->;
-
-interface LoginScreenProps {
-  navigation: LoginScreenNavigationProp;
-}
-
-export default function LoginScreen({ navigation }: LoginScreenProps) {
+export default function LoginScreen() {
   const router = useRouter();
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#FFFFFF",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-      }}
-    >
+    <View style={styles.container}>
       {/* Logo */}
       <Image
         source={require("../assets/images/logo.png")}
-        style={{
-          width: 200,
-          height: 280,
-          marginBottom: 60,
-          padding: 30
-        }}
+        style={styles.logo}
       />
 
       {/* Form Container */}
-      <View style={{ width: "100%", paddingHorizontal: 20 }}>
+      <View style={styles.formContainer}>
         {/* Email Input */}
         <TextInput
           placeholder="Email"
           placeholderTextColor="#A9A9A9"
-          style={{
-            marginBottom: 20,
-            padding: 10,
-            borderRadius: 30,
-            backgroundColor: "#F0F0F0",
-            width: "100%",
-          }}
+          style={styles.input}
         />
 
         {/* Password Input */}
@@ -70,79 +34,77 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           placeholder="Password"
           placeholderTextColor="#A9A9A9"
           secureTextEntry
-          style={{
-            marginBottom: 20,
-            padding: 10,
-            borderRadius: 30,
-            backgroundColor: "#F0F0F0",
-            width: "100%",
-          }}
+          style={styles.input}
         />
 
         {/* Login Button */}
         <Pressable
           onPress={() => router.replace("/(tabs)/")}
-          style={{
-            backgroundColor: "#159636",
-            borderRadius: 30,
-            padding: 15,
-            alignItems: "center",
-            marginTop: 20,
-          }}
+          style={styles.loginButton}
         >
-          <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "bold" }}>
-            Log In
-          </Text>
+          <Text style={styles.loginButtonText}>Log In</Text>
         </Pressable>
 
-        {/* "Log in with" Section */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            marginTop: 20,
-          }}
-        >
-          <Text style={{ fontSize: 16, color: "#333", marginRight: 8 }}>
-            Log in with
-          </Text>
-          <Pressable
-            onPress={() => {
-              console.log("Google login pressed");
-            }}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              padding: 10,
-            }}
-          >
-            <Ionicons name="logo-google" size={24} />
-          </Pressable>
-        </View>
-
         {/* Sign-up Redirect */}
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#FFFFFF",
-          }}
+        <View style={styles.signupContainer}>
+        <Pressable
+          onPress={() => router.push("/register")}
         >
-          <Link href="/register" replace style={{ marginTop: 30 }}>
-            <Text
-              style={{
-                textAlign: "center",
-                color: "#159636",
-                fontSize: 16,
-              }}
-            >
-              No account? Sign up
-            </Text>
-          </Link>
+          <Text style={styles.signupText}>No account? Sign up</Text>
+        </Pressable>
         </View>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  logo: {
+    width: 230,
+    height: 282,
+    marginBottom: 60,
+    padding: 30,
+  },
+  formContainer: {
+    width: "100%",
+    paddingHorizontal: 20,
+  },
+  input: {
+    marginBottom: 20,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: "#F0F0F0",
+    width: "100%",
+  },
+  loginButton: {
+    backgroundColor: "#159636",
+    borderRadius: 30,
+    padding: 15,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  loginButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  signupContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    marginTop: 30,
+  },
+  signupText: {
+    color: "#159636",
+    fontSize: 16,
+    fontWeight: "500",
+    textAlign: "center",
+  },
+});
