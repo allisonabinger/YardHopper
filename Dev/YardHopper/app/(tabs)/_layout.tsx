@@ -1,10 +1,11 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
+import { Platform } from 'react-native';
+import { HapticTab } from '@/components/HapticTab';
+import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import LogoutComponent from '@/components/LogoutComponent';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -13,49 +14,66 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: true,
-        headerRight: () => <LogoutComponent/>
+        headerShown: false,
+        tabBarButton: HapticTab,
+        tabBarBackground: TabBarBackground,
+        tabBarStyle: Platform.select({
+          ios: {
+            position: 'absolute',
+          },
+          default: {},
+        }),
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
           title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
-          ),
+            <Ionicons size={28}
+              name={focused ? 'navigate-circle' : 'navigate-circle-outline'}
+              color={"#159636"}
+            />
+          )
         }}
       />
       <Tabs.Screen
-        name="addPost"
+        name="add-listing"
         options={{
-          title: 'Add Post',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'add' : 'add-outline'} color={color} />
+            <Ionicons size={28}
+              name={focused ? 'add-outline' : 'add'}
+              color={"#159636"}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="settings/index"
+        name="userprofile/index"
         options={{
-          title: 'Settings',
+          title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'settings' : 'settings-outline'} color={color} />
+            <Ionicons size={28}
+            name={focused ? 'person' : 'person-outline'}
+            color={"#159636"}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="settings/[id]"
+        name="userprofile/changepassword"
         options={{
-          title: 'Settings',
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="userprofile/mylistings"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="userprofile/savedposts"
+        options={{
           href: null,
         }}
       />
