@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Easing } from "react-native";
+import ProgressTracker from "./ProgressTracker";
 
 const categories = [
   { id: "1", name: "Decor & Art", subcategories: ["Paintings", "Sculptures", "Wall Art", "Pottery", "Mirrors", "Candles", "Clocks"] },
@@ -168,16 +169,9 @@ export default function AddListingPage() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container2}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push("/")}>
-          <Text style={styles.backArrow}>←</Text>
-        </TouchableOpacity>
-        <View style={styles.progressBar}>
-          <View style={styles.progress}></View>
-        </View>
-      </View>
+      <ProgressTracker step={1} steps={3} height={10} />
 
       {/* Title */}
       <Text style={styles.title}>Create your listing</Text>
@@ -213,6 +207,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#ffffff",
+  },
+  container2: {
+    flex: 1,
+    marginTop: 40,
   },
   header: {
     flexDirection: "row",
