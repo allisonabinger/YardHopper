@@ -1,5 +1,5 @@
 # API
-This directory will contain the server used as the restful API that will be hosted on Render as the in between for the front-end and Firestore
+The server directory contains the source code for the YardHopperAPI hosted on Render. Please navigate to https://yardhopperapi.onrender.com/api-docs for the Swagger UI on the endpoints, or view [Endpoints](#endpoints) below.
 
 ## Usage
 This server will be hosted on a service to manage incoming and outgoing traffic and database operations. The Firestore database is set up with mock data that should be identical to the data used in production.
@@ -83,7 +83,6 @@ The API will respond with the public fields in an array of listings. Here is an 
 ]
 
 ```
-
 
 ### POST /api/listings
 The endpoint will handle parsing the user information and generating the metadata for the db to query later. It accepts the listing data in the body. 
@@ -183,11 +182,7 @@ DEL https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs/images
 **Request Params**
 postId: "DOcNhHR25vTD70cmlySs"
 
-
-
-
-
-
+---
 
 ## API Core Structure
 The API aligns with the **Separation of Concerns**, which makes it more modular, testable, and maintainable. With this principle, the functionality is broken up so that one file or function is not handling too much at a time.
@@ -341,8 +336,4 @@ Users will be able to archive their posts, and once a post has been archived, th
 
 
 ## Auto-Cleanup
-There are several options for removing expired or archived posts from feeds, but we want to preserve a user's previous sales for their viewing. We will set up a cron service to check every 12 hours for listings that have the "active" status and change it to "archived" for the user to view later. This way expired listings are not filling up the feed. The service will run at 2am and 2pm, to keep the feed relevant and clear. 
-
-The cron service will also remove the image stored in the firebase image storage to perserve the storage space.
-
-Our options include using a Cloud Function with Firestore, or setting up an endpoint and using a cron service to call the endpoint. We will likely use the Cloud Function with Firestore unless issues arise. 
+There is currently one cloud function service that will check for any listings that should be archived. At midnight each day, it looks at the listings for their active dates and compares it to the current date. It will then update the `status` of the sale accordingly to ensure no expired sales are shown, and upcoming sales are switched to `active` when the day arrives. 
