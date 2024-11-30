@@ -15,6 +15,7 @@ import {
       generateGeo,
 } from "../services/geolocateService";
 import { getFilePathFromURI, removeImageInFirebase, uploadImageToFirebase } from "../services/imageService";
+import { hashUid } from "./usersController";
 
 export const fetchListings = async (req: Request, res: Response) => {
       const { lat, long, radius, categories, zipcode } = req.query;
@@ -98,8 +99,10 @@ export const createListing = async (req: Request, res: Response) => {
                   endTime,
                   categories,
                   subcategories,
+                  userId
             } = req.body;
 
+            const hashedUserId = hashUid(userId)
             if (
                   !title ||
                   !description ||
@@ -107,12 +110,14 @@ export const createListing = async (req: Request, res: Response) => {
                   !dates ||
                   !startTime ||
                   !endTime ||
-                  !categories
+                  !categories ||
+                  !hashedUserId
             ) {
                   return res
                         .status(400)
                         .json({ error: "Missing required fields" });
             }
+            console.log(hashedUserId)
 
             // generate timestamp for generatedAt (format = YYYY-MM-DDTHH:mm:ss.sssZ )
             const now = new Date();
@@ -146,7 +151,7 @@ export const createListing = async (req: Request, res: Response) => {
 
             // insert authentication here to attach userId
             // call user auth and attach userId to listingData below:
-            const listingData: Omit<Listing, "images" | "postId" | "userId"> = {
+            const listingData: Omit<Listing, "images" | "postId" > = {
                   title,
                   description,
                   address,
@@ -158,6 +163,7 @@ export const createListing = async (req: Request, res: Response) => {
                   generatedAt: generatedAt,
                   status: status,
                   g: geolocation,
+                  userId: hashedUserId,
             };
 
             const newListing = await postListing(listingData);

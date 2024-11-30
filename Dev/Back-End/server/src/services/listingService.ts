@@ -71,13 +71,12 @@ export const getListings = async ({
 };
 
 export const postListing = async (
-      listingData: Omit<Listing, "images" | "postId" | "userId">
+      listingData: Omit<Listing, "images" | "postId">
 ) => {
       try {
             const preparedListingData = {
                   ...listingData,
                   images: null,
-                  userId: null,
             };
 
             const listingRef = await db
