@@ -41,7 +41,7 @@ export default function HomeScreen() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
-  const [viewMode, setViewMode] = useState<"list" | "map">("list"); // Default to "list"
+  const [viewMode, setViewMode] = useState<"list" | "map">("list"); 
   const fadeAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
 
   const toggleFilter = () => {
