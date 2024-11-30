@@ -58,6 +58,7 @@ export const getListings = async ({
                         categories: data.categories,
                         status: data.status,
                         g: data.g,
+                        postId: data.postId
                   };
             });
 
