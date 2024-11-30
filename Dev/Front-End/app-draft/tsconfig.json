@@ -1,8 +1,11 @@
+// AB - added firebase/auth that was causing linter issues within firebase for getReactNativePersistence
+// inside of firebaseConfig. imports weren't working
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
     "paths": {
+        "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"],
       "@/*": [
         "./*"
       ]
@@ -13,5 +16,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "app/add-listing-details-2.tsx"  ]
 }

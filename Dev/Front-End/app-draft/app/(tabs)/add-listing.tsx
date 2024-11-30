@@ -11,7 +11,9 @@ import {
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Easing } from "react-native";
-import ProgressTracker from "./ProgressTracker";
+import ProgressTracker from "../ProgressTracker";
+import PageLayout from "../PageLayout";
+import Page from "..";
 
 const categories = [
   { id: "1", name: "Decor & Art", subcategories: ["Paintings", "Sculptures", "Wall Art", "Pottery", "Mirrors", "Candles", "Clocks"] },
@@ -169,9 +171,9 @@ export default function AddListingPage() {
   };
 
   return (
+    <PageLayout step={1} steps={3}>
     <View style={styles.container2}>
       {/* Header */}
-      <ProgressTracker step={1} steps={3} height={10} />
 
       {/* Title */}
       <Text style={styles.title}>Create your listing</Text>
@@ -200,6 +202,7 @@ export default function AddListingPage() {
               }
             />
           </View>
+        </PageLayout>
         );
       }
 
@@ -210,7 +213,7 @@ const styles = StyleSheet.create({
   },
   container2: {
     flex: 1,
-    marginTop: 40,
+    marginTop: 16,
   },
   header: {
     flexDirection: "row",
@@ -255,7 +258,7 @@ const styles = StyleSheet.create({
   category: {
     alignItems: "center",
     paddingVertical: 20,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "lightgray",
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#e0e0e0",
@@ -278,14 +281,12 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     overflow: "hidden",
-    marginLeft: 16,
   },
   subcategoriesLabel: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#555",
-    marginBottom: 8,
-    marginLeft: 16,
+    marginBottom: 10,
   },
   subcategory: {
     alignItems: "center",
@@ -293,9 +294,10 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     borderWidth: 1,
     borderColor: "#c7d3c0",
-    marginBottom: 8,
+    marginBottom: 10,
     marginLeft: 16,
-    marginRight: 16,
+    marginRight: 3,
+    backgroundColor: "lightgray",
   },
   selectedSubcategory: {
     backgroundColor: "#4caf50",
