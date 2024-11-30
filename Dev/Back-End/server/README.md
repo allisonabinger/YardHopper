@@ -136,7 +136,7 @@ Holds the configurations for the swaggerUI documentation.
 
 
 ### Framework
-Node.js, Express, Firebase, Firestore
+Node.js, Express, Firebase, Firestore, Swagger
 
 ### Endpoints
 | Description | Action | Endpoint | Query Parameters | Headers | Body | Server Actions | DB Actions | Response | Documentation Link | Notes |
