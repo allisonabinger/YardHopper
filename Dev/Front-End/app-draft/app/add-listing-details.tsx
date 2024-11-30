@@ -14,7 +14,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar } from "react-native-calendars";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import ProgressTracker from "./(tabs)/ProgressTracker";
+import PageLayout from "./PageLayout";
 
 export default function AddListingDetails() {
   const router = useRouter();
@@ -135,7 +135,7 @@ export default function AddListingDetails() {
 
   const handleNext = () => {
     if (validatePage1()) {
-      setCurrentPage(2);
+      router.push("/add-listing-details-2"); // Navigate to the second page
     }
   };
 
@@ -147,13 +147,12 @@ export default function AddListingDetails() {
     }
   };
 
+
   return (
+    <PageLayout step={2} steps={3}>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          {/* Header */}
-          <ProgressTracker step={2} steps={3} height={10} />
-
           {/* Page Content */}
           {currentPage === 1 ? (
             <View style={styles.form}>
@@ -232,11 +231,12 @@ export default function AddListingDetails() {
                 style={styles.publishButton}
                 onPress={handleNext} // Validate and navigate to page 2
               >
-                <Text style={styles.publishText}>Next</Text>
+                <Text style={styles.publishText}>Continue</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.form}>
+
             {/* Page 2: Start/End Dates and Times */}
             <Text style={styles.title}>Select Dates and Times</Text>
           
@@ -316,18 +316,19 @@ export default function AddListingDetails() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </PageLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#fff" },
-  scrollContainer: { flexGrow: 1, paddingBottom: 50 },
-  container: { flex: 1, padding: 16 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 24 },
+  safeArea: { flex: 1, backgroundColor: "#white", marginTop: -50 },
+  scrollContainer: { flexGrow: 1, marginBottom: 0 },
+  container: { flex: 1 },
+  header: { flexDirection: "row", alignItems: "center"},
   backArrow: { fontSize: 24, marginRight: 8 },
-  title: { fontSize: 24, fontWeight: "bold", color: "#159636", marginBottom: 24 },
-  form: { flex: 1, marginTop: 16 },
-  label: { fontSize: 16, fontWeight: "bold", color: "#159636", marginBottom: 13, marginLeft: 13 },
+  title: { fontSize: 24, fontWeight: "bold", color: "#159636", marginBottom: 24},
+  form: { flex: 1 },
+  label: { fontSize: 16, fontWeight: "bold", color: "#159636" },
   calenderLabel: { fontSize: 16, fontWeight: "bold", color: "#555", marginBottom: 24 },
   input: {
     borderWidth: 1,

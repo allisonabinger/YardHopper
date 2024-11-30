@@ -47,9 +47,15 @@ function resetPassword(email: string) {
 export function AuthProvider({children}: {children: ReactNode}){
   const [user, setUser] = useState(auth.currentUser);
 
+
+  // AB - changed log statement. 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      console.log("Auth state changed:", user);
+        if (user) {
+            console.log('User signed in:', { email: user.email, uid: user.uid });
+          } else {
+            console.log('User signed out');
+          }
       setUser(user);
     });
     return unsubscribe;
