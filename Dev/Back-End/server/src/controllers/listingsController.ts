@@ -18,7 +18,7 @@ import { getFilePathFromURI, removeImageInFirebase, uploadImageToFirebase } from
 
 export const fetchListings = async (req: Request, res: Response) => {
       const { lat, long, radius, categories, zipcode } = req.query;
-      console.log("fetchListings called");
+    //   console.log("fetchListings called");
 
       try {
             let latitude: number | undefined;
@@ -60,7 +60,7 @@ export const fetchListings = async (req: Request, res: Response) => {
             let parsedCategories: string[] = [];
             if (categories) {
                   try {
-                        parsedCategories = JSON.parse(categories as string);
+                    parsedCategories = (categories as string).split(',').map((cat) => cat.trim());
                   } catch (error) {
                         return res
                               .status(400)
