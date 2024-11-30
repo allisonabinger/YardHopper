@@ -120,17 +120,15 @@ export const createListing = async (req: Request, res: Response) => {
 
             // generate status based on the current date, sale date, and start time.
             let status: Status;
-            const firstSaleDate = new Date(`${dates[0]}T${startTime}:00`);
 
-            if (
-                  now >= firstSaleDate &&
-                  now.toISOString().split("T")[0] <= dates[0]
-            ) {
-                  status = "active";
-            } else {
-                  status = "upcoming";
-            }
-
+            const today = new Date().toISOString().split("T")[0];
+            if (dates.some((date: string) => date === today)) {
+                status = "active"; // Sale is today
+              } else if (dates.some((date: string) => new Date(date) > new Date(today))) {
+                status = "upcoming"; // Sale is in the future
+              } else {
+                status = "archived"; // Sale is in the past
+              }
             // call api to get coordinates from address (geoapify)
             const coordinates = await generateCoordinatesByAddress(address);
             if (!coordinates) {
