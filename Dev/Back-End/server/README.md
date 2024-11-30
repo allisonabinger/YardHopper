@@ -24,29 +24,169 @@ $ npm run dev
 
 Using Postman, your browser, or `curl`, you can now utilize the endpoints. 
 
-### GET /listings
-The `GET /listings` endpoint will need accept coordinates or zipcode in order to find listings in the area. As of now, database has listings in Tulsa, Jenks, and Sand Springs. **The request must have a latitude and longitude or a zipcode query in order to find listings.** This is because a user will need to allow location services and send their location with the listing, or they must provide their zipcode. They can always extend the radius regardless.
+## Endpoints
+The following endpoints are up to date with what is hosted on Render.
 
-The endpoint can also accept a radius to search by. The default search radius is 15 miles. 
 
-Finally, the endpoint can accept categories to search by. The categories are structured as "Category" or "Category > Subcategory".
+### GET /api/listings
+The `GET /api/listings` endpoint will need accept coordinates or zipcode in order to find listings in the area. As of now, database has listings in Tulsa, Jenks, and Sand Springs. **The request must have a latitude and longitude or a zipcode query in order to find listings.** This is because a user will need to allow location services and send their location with the listing, or they must provide their zipcode. They can always extend the radius regardless.
 
-#### By Coordinates
-Use the lat and long query parameters.
+The endpoint can also accept a radius to search by. The default search radius is 15 miles. It will also accept searching by categories, but not subcategories
 
-**URL**: http://localhost:4000/api/listings?lat=36.1555&long=-95.9950
+**Request Endpoint Example**
 
-#### By Zipcode
-**URL**: http://localhost:4000/api/listings?zipcode=74105
+With coordinates:
+https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950
 
-#### With Categories (No Subcategories)
-**URL**: http://localhost:4000/api/listings?zipcode=74105&categories=["Furniture"]
+With zipcode:
+https://yardhopperapi.onrender.com/api/listings?zipcode=74105
 
-#### With Categories and Subcategories
-**URL**: http://localhost:4000/api/listings?zipcode=74105&categories=["Decor/Art", "Decor/Art > Pottery"]
+With categories
+https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950categories=Furniture,Clothing
 
-#### With Radius
-**URL**: http://localhost:4000/api/listings?zipcode=74105&radius=5
+With specified zipcode
+http://localhost:4000/api/listings?zipcode=74105&radius=5
+
+The API will respond with the public fields in an array of listings. Here is an example:
+
+```
+"listings": [
+        {
+            "title": "Gadget & Electronics Sale",
+            "description": "Great deals on TVs, gaming consoles, and home entertainment systems.",
+            "address": {
+                "zip": 74113,
+                "city": "Tulsa",
+                "street": "3123 Riverside Dr",
+                "state": "OK"
+            },
+            "dates": [
+                "2024-12-16"
+            ],
+            "startTime": "09:00",
+            "endTime": "15:00",
+            "images": null,
+            "categories": [
+                "Electronics"
+            ],
+            "status": "upcoming",
+            "g": {
+                "geohash": "9y7trz42v",
+                "geopoint": {
+                    "_latitude": 36.1177021,
+                    "_longitude": -95.98421015865983
+                }
+            },
+            postId: "oRMe8Lq7KcPtf9JyMyWG"
+        },
+        ...
+]
+
+```
+
+
+### POST /api/listings
+The endpoint will handle parsing the user information and generating the metadata for the db to query later. It accepts the listing data in the body. 
+
+**Request Endpoint Example**
+PUT https://yardhopperapi.onrender.com/api/listings/
+
+
+**Request Body Examples**
+```
+  {
+    "title": string,
+    "description": string,
+      "address": object {
+        "zip": number,
+        "city": string,
+        "street": string,
+        "state": string
+      },
+    "dates": array [string],
+    "startTime": string,
+    "endTime": string,
+    "categories": array [string],
+    "subcategories": object {
+      Broad Category (string): array [string]
+    },
+    "userId": string
+  }
+```
+
+Here is an example of user submitted listing data that is sufficient to post to the API:
+```
+  {
+    "title": "Home Improvement & Tools Sale",
+    "description": "Tools, power equipment, and automotive parts at unbeatable prices.",
+      "address": {
+        "zip": 74113,
+        "city": "Tulsa",
+        "street": "3123 Riverside Dr",
+        "state": "OK"
+      },
+    "dates": ["2024-12-16"],
+    "startTime": "09:00",
+    "endTime": "15:00",
+    "categories": ["Tools/Parts"],
+    "subcategories": {
+      "Tools/Parts": ["Power Tools", "Automotive"]
+    },
+    "userId": "h8KUzPZ8LLeWP8Fx3I6GvhFf8Xo2"
+  }
+```
+
+### PUT /api/listings/:postId
+This route is used for updating the text fields of the listing, such as `title`, `description`, or `startTime`. The `postId` is necessary for the server to find the right post to update, and must accept updated fields in the body to update the post.
+
+**Request Endpoint Example**
+PUT https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
+
+**Request Params**
+postId: "DOcNhHR25vTD70cmlySs"
+
+**Request Body**
+```
+  {
+    "startTime": "07:00",
+  }
+```
+
+### PUT /api/listings/:postId/images
+This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string, and the `postId` in the parameters.
+
+**Request Endpoint Example**
+PUT https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs/images
+
+**Request Params**
+postId: "DOcNhHR25vTD70cmlySs"
+caption: "Picture of items"
+
+**Request File**
+(accepts all image types, preferrably jpeg)
+
+### DEL /api/listings/:postId
+This route is user for deleting a listing. It will delete the data stored in the firestore database, as well as any images attached to the listing. It accepts the `postId` as the parameter.
+
+**Request Endpoint Example**
+DEL https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
+
+**Request Params**
+postId: "DOcNhHR25vTD70cmlySs"
+
+### DEL /api/listings/:postId/images
+This route is user for deleting an image within a listing. Since it has to delete the image in firestore and firebase, it has it's own endpoint to handle the single deletion of an image.
+
+**Request Endpoint Example**
+DEL https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs/images
+
+**Request Params**
+postId: "DOcNhHR25vTD70cmlySs"
+
+
+
+
+
 
 
 ## API Core Structure
@@ -138,20 +278,6 @@ Holds the configurations for the swaggerUI documentation.
 ### Framework
 Node.js, Express, Firebase, Firestore, Swagger
 
-### Endpoints
-| Description | Action | Endpoint | Query Parameters | Headers | Body | Server Actions | DB Actions | Response | Documentation Link | Notes |
-|---|---|---|---|---|---|---|---|---|---|---|
-|  |  |  |  |  |  |  |  |  |  |  |
-| User views all listings | GET | /listings | lat(float) - latitude of sale lng(float) - longitude of sale radius(int) - radius in miles for distance filtering city(string) - city of sale categories(object) categories to find in sale, name and subcategories |  |  | parse parameters access db based on query retrieve public listings pagination | getDocs collection query where | Public fields of active or upcoming listings | Queries |  |
-| User saves a listing | POST | /users/:userId/saved |  | Authorization: Bearer <token> (firebase-id-token) | listingId | Auth | setDoc collection where |  |  |  |
-| User views their saved listings | GET | /users/:userId/saved |  | Authorization: Bearer <token> (firebase-id-token) | listingId | Auth | getDocs collection | Public fields of active or upcoming saved listings |  |  |
-| User updates user info | PUT | /users/:userId |  | Authorization: Bearer <token> (firebase-id-token) | savedLocation categories subcategories | Auth | setDoc |  |  | Must set up proper auth for accessing user data |
-| User deletes their account | DELETE | /users/:userId /listings/:listingId |  | Authorization: Bearer <token> (firebase-id-token) |  | retrieve userId w/ auth delete user information from firestore delete all listings made by user delete all images stored by user | ? |  |  | Must set up proper auth for accessing user data |
-| User posts new listing | POST | /listings |  | Authorization: Bearer <token> (firebase-id-token) | JSON key-values:  title, description, address [street, city, state, zip], dates, startTime, images[uri, caption], categories, subcategories | Auth, generate postId, generatedAt, status, lng, lat | setDoc |  |  |  |
-| User uploads image to their sale | POST | /listings/:listingId/images |  | Authorization: Bearer <token> (firebase-id-token) | base64 image, image caption | auth, upload to firebase, retrieve uri, set firestore data with image data | setDoc, firebase upload |  |  |  |
-| User archives a sale | PUT | /listings/:listingId /listings/:listingId/images |  | Authorization: Bearer <token> (firebase-id-token) |  | auth, images are deleted from the firebase storage, status updated to archived | setDoc, firebase deletion |  |  |  |
-| User deletes a sale | DELETE | /listings/:listingId /listings/:listingId/images |  | Authorization: Bearer <token> (firebase-id-token) |  | auth, images are deleted from the firebase storage, sale is removed from firestore | setDoc, firebase deletion |  |  |  |
-| User updates/adds details to listing (text) | PUT | /listings/:listingId |  | Authorization: Bearer <token> (firebase-id-token) | fields to update |  | setDoc |  |  |  |
 ### Firestore
 Firestore will manage our listings and user data. `server.js` will utilize the Firebase Admin SDK to interact with Firebase Storage and the Firestore Database
 
