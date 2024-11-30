@@ -77,6 +77,12 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="userprofile/ProgressTracker"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
