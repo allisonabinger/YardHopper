@@ -3,3 +3,9 @@
 **/seed/seedDataGeo.*
 **/updateG.ts
 .prettierrc
+
+
+functions/
+.firebaserc
+
+firebase.json
