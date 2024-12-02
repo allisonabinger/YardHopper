@@ -18,6 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import mockData from "@/mockData.json";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { router } from "expo-router";
 
 type ListingItem = {
   title: string;
@@ -42,7 +43,7 @@ type ListingItem = {
 
 type RootStackParamList = {
   Home: undefined;
-  Listing: { id: string };
+  listing: { id: string };
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "Home">;
@@ -86,6 +87,12 @@ export default function HomeScreen() {
 
   const toggleFilter = () => {
     setFilterModalVisible(!filterModalVisible);
+  };
+
+  const formatDate = (dateString: string): string => {
+    const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "long", year: "numeric" };
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-US", options).format(date);
   };
 
   const toggleLike = (postId: string) => {
@@ -160,6 +167,7 @@ export default function HomeScreen() {
             color={isLiked ? "#159636" : "gray"}
           />
         </TouchableOpacity>
+
         <Image
           source={{ uri: item.images[0]?.uri || "https://via.placeholder.com/150" }}
           style={styles.cardImage}
@@ -170,12 +178,7 @@ export default function HomeScreen() {
         </Text>
 
         {isExpanded && (
-          <Animated.View
-            style={[
-              styles.expandedDetails,
-              { opacity: fadeAnimation },
-            ]}
-          >
+          <Animated.View style={[styles.expandedDetails, { opacity: fadeAnimation }]}>
             <Text style={styles.sectionTitle}>Description</Text>
             <Text style={styles.sectionContent}>{item.description}</Text>
 
@@ -188,11 +191,12 @@ export default function HomeScreen() {
               ))}
             </View>
 
-            <Text style={styles.date}>Date: {item.dates[0]}</Text>
+            {/* Apply the formatDate function */}
+            <Text style={styles.date}>Date: {formatDate(item.dates[0])}</Text>
 
             <TouchableOpacity
               style={styles.seeMoreButton}
-              onPress={() => navigation.navigate("Listing", { id: item.postId })}
+              onPress={() => router.push(`/listing/${item.postId}`)}
             >
               <Text style={styles.seeMoreText}>See More Details</Text>
             </TouchableOpacity>
@@ -201,6 +205,7 @@ export default function HomeScreen() {
       </TouchableOpacity>
     );
   };
+
 
   return (
     <View style={styles.container}>
@@ -351,7 +356,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.4,
     shadowRadius: 6,
   },
   likeButton: {
@@ -365,7 +370,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 4,
   },
   cardImage: {
@@ -425,7 +430,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 10,
     backgroundColor: "#159636",
-    borderRadius: 8,
+    borderRadius: 20,
     alignItems: "center",
   },
   seeMoreText: {
