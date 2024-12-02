@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -19,6 +20,7 @@ export default function AddListingDetailsPage2() {
   const [endDate, setEndDate] = useState(null);
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
+  const [currentPicker, setCurrentPicker] = useState(null); // 'start' or 'end'
 
   const handleDayPress = (day) => {
     if (!startDate || (startDate && endDate)) {
@@ -36,6 +38,24 @@ export default function AddListingDetailsPage2() {
     }
   };
 
+  const getDatesInRange = (start, end) => {
+    const dates = {};
+    let currentDate = new Date(start);
+    const lastDate = new Date(end);
+
+    while (currentDate <= lastDate) {
+      const dateString = currentDate.toISOString().split("T")[0];
+      dates[dateString] = {
+        selected: true,
+        color: "#159636",
+        textColor: "white",
+      };
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
+  };
+
   const handlePublish = () => {
     if (startDate && endDate) {
       Alert.alert("Success", "Your listing has been published!");
@@ -48,7 +68,7 @@ export default function AddListingDetailsPage2() {
     <PageLayout step={3} steps={3}>
       <ScrollView>
         <View style={styles.container}>
-          <Text style={styles.title}>Select Dates and Times</Text>
+          <Text style={styles.title}>Select Dates & Times</Text>
           <View style={styles.card}>
             <Calendar
               onDayPress={handleDayPress}
@@ -70,40 +90,82 @@ export default function AddListingDetailsPage2() {
                 },
               }}
               markingType="period"
+              theme={{
+                arrowColor: "#159636",
+                textMonthFontWeight: "semibold",
+                todayTextColor: "#159636",
+              }}
             />
           </View>
 
           <View style={styles.timePickerRow}>
-      <View style={styles.timePickerContainer}>
-        <Text style={styles.label}>Start Time</Text>
-        <DateTimePicker
-          value={startTime}
-          mode="time"
-          display="default"
-          onChange={(event, selectedTime) => {
-            if (selectedTime) setStartTime(selectedTime);
-          }}
-        />
-      </View>
-      <View style={styles.timePickerContainer}>
-        <Text style={styles.label}>End Time</Text>
-        <DateTimePicker
-          value={endTime}
-          mode="time"
-          display="default"
-          onChange={(event, selectedTime) => {
-            if (selectedTime >= startTime) {
-              setEndTime(selectedTime);
-            } else {
-              Alert.alert(
-                "Invalid Time",
-                "End time cannot be before start time."
-              );
-            }
-          }}
-        />
-      </View>
-    </View>
+            <View style={styles.timePickerContainer}>
+              <Text style={styles.label}>Start Time</Text>
+              <TouchableOpacity
+                style={styles.timeButton}
+                onPress={() => setCurrentPicker("start")}
+              >
+                <Text>{startTime.toLocaleTimeString()}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.timePickerContainer}>
+              <Text style={styles.label}>End Time</Text>
+              <TouchableOpacity
+                style={styles.timeButton}
+                onPress={() => setCurrentPicker("end")}
+              >
+                <Text>{endTime.toLocaleTimeString()}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Modal for Time Picker */}
+            <Modal
+              visible={currentPicker !== null}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setCurrentPicker(null)}
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>
+                    {currentPicker === "start"
+                      ? "Select Start Time"
+                      : "Select End Time"}
+                  </Text>
+                  <DateTimePicker
+                    value={currentPicker === "start" ? startTime : endTime}
+                    mode="time"
+                    is24Hour={true}
+                    display="spinner"
+                    onChange={(event, selectedTime) => {
+                      if (selectedTime) {
+                        if (currentPicker === "start") {
+                          setStartTime(selectedTime);
+                        } else if (currentPicker === "end") {
+                          if (selectedTime > startTime) {
+                            setEndTime(selectedTime);
+                          } else {
+                            Alert.alert(
+                              "Invalid Time",
+                              "End time must be after start time."
+                            );
+                          }
+                        }
+                      }
+                      setCurrentPicker(null); // Close the modal
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={styles.closeModalButton}
+                    onPress={() => setCurrentPicker(null)}
+                  >
+                    <Text style={styles.closeModalButtonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+          </View>
 
           <TouchableOpacity style={styles.publishButton} onPress={handlePublish}>
             <Text style={styles.publishText}>Publish</Text>
@@ -115,93 +177,87 @@ export default function AddListingDetailsPage2() {
 }
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: "#white", marginTop: -50 },
-    scrollContainer: { flexGrow: 1, marginBottom: 0 },
-    container: { flex: 1 },
-    header: { flexDirection: "row", alignItems: "center"},
-    backArrow: { fontSize: 24, marginRight: 8 },
-    title: { fontSize: 24, fontWeight: "bold", color: "#159636", marginBottom: 24, marginTop: 16 },
-    form: { flex: 1 },
-    label: { fontSize: 16, fontWeight: "bold", color: "#159636", marginTop: 0, marginBottom: 8, marginLeft: 8 }, 
-    calenderLabel: { fontSize: 16, fontWeight: "bold", color: "#555", marginBottom: 24 },
-    input: {
-      borderWidth: 1,
-      borderColor: "#e0e0e0",
-      borderRadius: 8,
-      padding: 12,
-      marginBottom: 16,
-      color: "#555",
-      fontSize: 16,
-      backgroundColor: "#f0f0f0",
-    },
-    textArea: { height: 100, textAlignVertical: "top", marginBottom: 24 },
-    addressHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 24,
-    },
-    geoButton: {
-      padding: 8,
-      borderRadius: 8,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    geoButtonActive: {
-      backgroundColor: "#159636",
-    },
-    publishButton: {
-      backgroundColor: "#159636",
-      paddingVertical: 12,
-      paddingHorizontal: 32,
-      borderRadius: 50,
-      alignItems: "center",
-      alignSelf: "center",
-      marginTop: 40,
-    },
-    publishText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
-    progressBar: {
-      flex: 1,
-      height: 4,
-      backgroundColor: "#e0e0e0",
-      borderRadius: 2,
-    },
-    progress: {
-      height: "100%",
-      backgroundColor: "#159636",
-      width: "100%",
-      borderRadius: 3,
-    },
-    timePickerWrapper: {
-      alignItems: "center",
-      marginBottom: 24,
-    },
-    timePickerRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      width: "100%"
-    },
-    timePickerContainer: {
-      flex: 1,
-      alignItems: "center",
-      marginTop: 16,  
-    },
-    card: {
-      backgroundColor: "#fff",
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 24,
-      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-      elevation: 4, // For Android shadow
-    },
-    cardTitle: {
-      fontSize: 18,
-      fontWeight: "bold",
-      color: "#159636",
-      marginBottom: 12,
-    },
-    calendar: {
-      borderRadius: 8,
-      overflow: "hidden",
-    },
-  });
+  container: { flex: 1, padding: 16 },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#159636",
+    marginBottom: 24,
+    marginTop: 16,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    elevation: 4, // Android shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  timePickerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  timePickerContainer: {
+    flex: 1,
+    alignItems: "center",
+    marginTop: 16,
+  },
+  label: {
+    fontSize: 16,
+    color: "#159636",
+    marginBottom: 8,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    padding: 20,
+    width: "80%",
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#159636",
+    marginBottom: 20,
+  },
+  closeModalButton: {
+    backgroundColor: "#159636",
+    padding: 10,
+    borderRadius: 25,
+    marginTop: 10,
+    width: "40%",
+  },
+  closeModalButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  timeButton: {
+    padding: 10,
+    backgroundColor: "#F0F0F0",
+    borderRadius: 8,
+    alignItems: "center",
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
+  },
+  publishButton: {
+    backgroundColor: "#159636",
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 50,
+    alignItems: "center",
+    alignSelf: "center",
+    marginTop: 40,
+  },
+  publishText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+});

@@ -22,7 +22,7 @@ const salesData = [
   { id: "6", title: "Yard Sale 6", description: "Home décor and art pieces.", image: require("@/assets/images/sale6.png"), category: "Decor & Art", g: { geopoint: { _latitude: 37.7949, _longitude: -122.4594 } } },
 ];
 
-export default function SavedPosts() {
+export default function SavedPostsContext() {
   const router = useRouter();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [radius, setRadius] = useState(5);
@@ -42,13 +42,10 @@ export default function SavedPosts() {
       title={item.title}
       description={item.description}
       image={item.image}
-      onPress={() =>
-        router.push({
-          pathname: "./(sale)/[id]",
-          params: { id: item.id },
-        })
-      }
-    />
+      onPress={() => router.push({
+        pathname: "./(sale)/[id]",
+        params: { id: item.id },
+      })} postId={""} date={""} address={""}    />
   );
 
   return (
