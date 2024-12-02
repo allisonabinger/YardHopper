@@ -127,9 +127,9 @@ export const postListing = async (
                   postId,
             });
 
-            console.log(
-                  `Listing ${listingData.title} posted with ID: ${postId}`
-            );
+            // console.log(
+            //       `Listing ${listingData.title} posted with ID: ${postId}`
+            // );
       } catch (err) {
             console.log("Error: ", err);
             throw new Error("Error posting listing to DB");
@@ -150,7 +150,25 @@ export const updateListingInDB = async (
             await listingRef.update(updatedFields);
 
             const updatedDoc = await listingRef.get();
-            return updatedDoc.exists ? updatedDoc.data() : null;
+            const data = updatedDoc.data();
+
+            if (!data) {
+              throw new Error('listing not found');
+              return null;
+            }
+            return {
+              title: data.title,
+              description: data.description,
+              address: data.address,
+              dates: data.dates,
+              startTime: data.startTime,
+              endTime: data.endTime,
+              images: data.images,
+              categories: data.categories,
+              status: data.status,
+              g: data.g,
+              postId: data.postId
+        };
       } catch (err) {
             console.error("Error updating listing in Firestore: ", err);
             throw error;
@@ -185,7 +203,25 @@ export const addImageToListing = async (
             await listingRef.update({ images: updatedImages });
 
             const updatedDoc = await listingRef.get();
-            return updatedDoc.exists ? updatedDoc.data() : null;
+            const data = updatedDoc.data();
+
+            if (!data) {
+              throw new Error('listing not found');
+              return null;
+            }
+            return {
+              title: data.title,
+              description: data.description,
+              address: data.address,
+              dates: data.dates,
+              startTime: data.startTime,
+              endTime: data.endTime,
+              images: data.images,
+              categories: data.categories,
+              status: data.status,
+              g: data.g,
+              postId: data.postId
+        };
       } catch (err) {
             console.error("Error updating listing in firestore with new image");
             throw new Error("Failed to add image to listing");
@@ -194,7 +230,7 @@ export const addImageToListing = async (
 
 export const removeListingInDB = async (
       postId: string
-): Promise<Listing | null> => {
+) => {
       try {
             const listingRef = db.collection("listings").doc(postId);
 
@@ -216,8 +252,8 @@ export const removeListingInDB = async (
             // Delete the document
             await listingRef.delete();
 
-            console.log(`Listing with ID ${postId} deleted.`);
-            return listingData;
+            // console.log(`Listing with ID ${postId} deleted.`);
+            // return listingData;
       } catch (err) {
             console.error("Error occurred during removeListingInDB: ", err);
             throw new Error("Error deleting listing from database");
@@ -326,7 +362,25 @@ export const changeCaptionInDB = async (
         await listingRef.update({ images: updatedImages });
 
         const updatedDoc = await listingRef.get();
-        return updatedDoc.exists ? updatedDoc.data() : null;
+        const data = updatedDoc.data();
+
+        if (!data) {
+          throw new Error('listing not found');
+          return null;
+        }
+        return {
+          title: data.title,
+          description: data.description,
+          address: data.address,
+          dates: data.dates,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          images: data.images,
+          categories: data.categories,
+          status: data.status,
+          g: data.g,
+          postId: data.postId
+    };
     } catch (err) {
         console.error(`Error updating caption for image ${uri} in listing ${postId}.`, err);
         throw new Error(`Error updating caption for image ${uri} in listing ${postId}.`);
