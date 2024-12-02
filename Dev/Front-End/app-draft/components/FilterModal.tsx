@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
+  TouchableWithoutFeedback,
 } from "react-native";
 import Slider from "@react-native-community/slider";
 
@@ -47,58 +48,62 @@ const FilterModal: React.FC<FilterModalProps> = ({
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Filter</Text>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalOverlay}>
+          <TouchableWithoutFeedback>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Filter</Text>
 
-          {/* Radius Slider */}
-          <Text style={styles.sliderLabel}>Radius: {radius} miles</Text>
-          <Slider
-            style={styles.slider}
-            minimumValue={15}
-            maximumValue={50}
-            step={5}
-            value={radius}
-            onValueChange={setRadius}
-            minimumTrackTintColor="#159636"
-            maximumTrackTintColor="#EFEFF0"
-            thumbTintColor="#159636"
-          />
+              {/* Radius Slider */}
+              <Text style={styles.sliderLabel}>Radius: {radius} miles</Text>
+              <Slider
+                style={styles.slider}
+                minimumValue={15}
+                maximumValue={50}
+                step={5}
+                value={radius}
+                onValueChange={setRadius}
+                minimumTrackTintColor="#159636"
+                maximumTrackTintColor="#EFEFF0"
+                thumbTintColor="#159636"
+              />
 
-          {/* Categories */}
-          <Text style={styles.categoriesTitle}>Categories</Text>
-          <ScrollView style={styles.categoriesContainer}>
-            <View style={styles.categoriesWrapper}>
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category}
-                  style={[
-                    styles.categoryButton,
-                    selectedCategories.includes(category) &&
-                      styles.selectedCategory,
-                  ]}
-                  onPress={() => toggleCategory(category)}
-                >
-                  <Text
-                    style={[
-                      styles.categoryText,
-                      selectedCategories.includes(category) &&
-                        styles.selectedCategoryText,
-                    ]}
-                  >
-                    {category}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {/* Categories */}
+              <Text style={styles.categoriesTitle}>Categories</Text>
+              <ScrollView style={styles.categoriesContainer}>
+                <View style={styles.categoriesWrapper}>
+                  {categories.map((category) => (
+                    <TouchableOpacity
+                      key={category}
+                      style={[
+                        styles.categoryButton,
+                        selectedCategories.includes(category) &&
+                          styles.selectedCategory,
+                      ]}
+                      onPress={() => toggleCategory(category)}
+                    >
+                      <Text
+                        style={[
+                          styles.categoryText,
+                          selectedCategories.includes(category) &&
+                            styles.selectedCategoryText,
+                        ]}
+                      >
+                        {category}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+
+              {/* Apply Button */}
+              <TouchableOpacity style={styles.applyButton} onPress={onClose}>
+                <Text style={styles.applyButtonText}>Apply Filters</Text>
+              </TouchableOpacity>
             </View>
-          </ScrollView>
-
-          {/* Apply Button */}
-          <TouchableOpacity style={styles.applyButton} onPress={onClose}>
-            <Text style={styles.applyButtonText}>Apply Filters</Text>
-          </TouchableOpacity>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
@@ -176,3 +181,4 @@ const styles = StyleSheet.create({
 });
 
 export default FilterModal;
+
