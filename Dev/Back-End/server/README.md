@@ -88,7 +88,7 @@ The API will respond with the public fields in an array of listings. Here is an 
 The `GET /api/listings` endpoint serves to provide data for a single listing. It accepts no parameters.
 
 **Request Endpoint Example**
-GET https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
+GET https://yardhopperapi.onrender.com/api/listing/KwLTqIjazVDMMPkS3ldZ
 
 
 ```
