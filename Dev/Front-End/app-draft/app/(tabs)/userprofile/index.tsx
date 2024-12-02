@@ -40,11 +40,6 @@ export default function SettingsScreen() {
 
         <Text style={styles.sectionTitle}>Account Settings</Text>
 
-        <Pressable style={styles.menuItem}>
-          <Ionicons name="share-outline" size={24} color="#333" />
-          <Text style={styles.menuText}>Share</Text>
-        </Pressable>
-
         <Link href="/userprofile/savedposts" asChild>
           <Pressable style={styles.menuItem}>
             <Ionicons name="bookmark-outline" size={24} color="#333" />
@@ -70,7 +65,6 @@ export default function SettingsScreen() {
         </Link>
 
         <LogoutComponent style={styles.menuItem}>
-          <Text style={styles.menuText}>Log out</Text>
         </LogoutComponent>
       </View>
     </View>
