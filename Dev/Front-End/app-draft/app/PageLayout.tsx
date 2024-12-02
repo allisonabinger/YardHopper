@@ -33,7 +33,7 @@ const PageLayout = ({ children, step = 1, steps = 3 }) => {
         }}
         style={styles.backButton}
       >
-        <Ionicons name="arrow-back" size={24} color="black" />
+        <Ionicons name="arrow-back" size={28} color="black" />
       </TouchableOpacity>
         <View style={styles.progressBar}>
           <Animated.View
