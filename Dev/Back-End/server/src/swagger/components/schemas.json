@@ -1,0 +1,174 @@
+{
+    "Listing": {
+      "type": "object",
+      "description": "A single listing to view on a user's feed. Uploaded by users.",
+      "properties": {
+        "address": {
+          "type": "object",
+          "description": "Address details",
+          "properties": {
+            "city": {
+              "type": "string",
+              "example": "Jenks"
+            },
+            "state": {
+              "type": "string",
+              "example": "OK"
+            },
+            "street": {
+              "type": "string",
+              "example": "300 Aquarium Drive"
+            },
+            "zip": {
+              "type": "number",
+              "example": 74037
+            }
+          }
+        },
+        "caption": {
+          "type": "string",
+          "description": "Caption for the listing",
+          "example": "Sale2"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the listing",
+          "example": "Lots of clothes, office supplies, electronics, and more."
+        },
+        "endTime": {
+          "type": "string",
+          "description": "End time of the event",
+          "example": "14:00"
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the listing was generated",
+          "example": "2024-11-20T20:29:00.923Z"
+        },
+        "images": {
+          "type": "array",
+          "description": "Array of images associated with the listing",
+          "items": {
+            "type": "object",
+            "properties": {
+              "uri": {
+                "type": "string",
+                "description": "URI of the image",
+                "example": "https://example.com/image1.jpg"
+              },
+              "caption": {
+                "type": "string",
+                "description": "Caption for the image",
+                "example": "Main sale table"
+              }
+            }
+          }
+        },
+        "postId": {
+          "type": "string",
+          "description": "Unique identifier for the listing",
+          "example": "DOcNhHR25vTD70cmlySs"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Start time of the event",
+          "example": "10:00"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the listing",
+          "enum": ["active", "upcoming", "postponed", "archived"],
+          "example": "upcoming"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the listing",
+          "example": "Multi Family Sale"
+        },
+        "userId": {
+          "type": ["string", "null"],
+          "description": "ID of the user who created the listing. Null if not set.",
+          "example": null
+        }
+      }
+    },
+    "publicListing": {
+        "type": "object",
+        "description": "The response given by the API, only shows public values",
+        "properties": {
+          "address": {
+            "type": "object",
+            "description": "Address details",
+            "properties": {
+              "city": {
+                "type": "string",
+                "example": "Jenks"
+              },
+              "state": {
+                "type": "string",
+                "example": "OK"
+              },
+              "street": {
+                "type": "string",
+                "example": "300 Aquarium Drive"
+              },
+              "zip": {
+                "type": "number",
+                "example": 74037
+              }
+            }
+          },
+          "caption": {
+            "type": "string",
+            "description": "Caption for the listing",
+            "example": "Sale2"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the listing",
+            "example": "Lots of clothes, office supplies, electronics, and more."
+          },
+          "endTime": {
+            "type": "string",
+            "description": "End time of the event",
+            "example": "14:00"
+          },
+          "images": {
+            "type": "array",
+            "description": "Array of images associated with the listing",
+            "items": {
+              "type": "object",
+              "properties": {
+                "uri": {
+                  "type": "string",
+                  "description": "URI of the image",
+                  "example": "https://example.com/image1.jpg"
+                },
+                "caption": {
+                  "type": "string",
+                  "description": "Caption for the image",
+                  "example": "Main sale table"
+                }
+              }
+            }
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Start time of the event",
+            "example": "10:00"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the listing",
+            "enum": ["active", "upcoming", "postponed", "archived"],
+            "example": "upcoming"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the listing",
+            "example": "Multi Family Sale"
+          }
+        }
+      }
+  }

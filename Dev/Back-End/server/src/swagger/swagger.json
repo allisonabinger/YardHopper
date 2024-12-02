@@ -1,0 +1,358 @@
+{
+      "openapi": "3.0.0",
+      "info": {
+            "title": "YardHopperAPI",
+            "version": "1.0.0",
+            "description": "API for managing listings and users within YardHopper"
+      },
+      "servers": [
+            {
+                  "url": "http://localhost:4000",
+                  "description": "Local server"
+            }
+      ],
+      "paths": {
+            "/api/listings": {
+                  "get": {
+                        "summary": "Fetch all listings near the user, requires location parameters.",
+                        "description": "Either `lat` and `lng` or `zipcode` must be provided in the query parameters. Base radius is 15 unless otherwise specified",
+                        "tags": ["Listings"],
+                        "parameters": [
+                              {
+                                    "name": "lat",
+                                    "in": "query",
+                                    "required": false,
+                                    "schema": {
+                                          "type": "number",
+                                          "example": 36.153981
+                                    },
+                                    "description": "Latitude of the area to search for listings"
+                              },
+                              {
+                                    "name": "long",
+                                    "in": "query",
+                                    "required": false,
+                                    "schema": {
+                                          "type": "number",
+                                          "example": -95.992775
+                                    },
+                                    "description": "Longitude of the area to search for listings"
+                              },
+                              {
+                                    "name": "zipcode",
+                                    "in": "query",
+                                    "required": false,
+                                    "schema": { "type": "string" },
+                                    "description": "Zip code to search for listings"
+                              },
+                              {
+                                    "name": "radius",
+                                    "in": "query",
+                                    "required": false,
+                                    "schema": { "type": "number" },
+                                    "description": "Radius in miles for the query to search"
+                              }
+                        ],
+                        "responses": {
+                              "200": {
+                                    "description": "An array of listings matching the query, only returns public data",
+                                    "content": {
+                                          "application/json": {
+                                                "schema": {
+                                                      "type": "array",
+                                                      "items": {
+                                                            "type": "object",
+                                                            "description": "The response given by the API, only shows public values",
+                                                            "properties": {
+                                                                  "address": {
+                                                                        "type": "object",
+                                                                        "description": "Address details",
+                                                                        "properties": {
+                                                                              "city": {
+                                                                                    "type": "string",
+                                                                                    "example": "Jenks"
+                                                                              },
+                                                                              "state": {
+                                                                                    "type": "string",
+                                                                                    "example": "OK"
+                                                                              },
+                                                                              "street": {
+                                                                                    "type": "string",
+                                                                                    "example": "300 Aquarium Drive"
+                                                                              },
+                                                                              "zip": {
+                                                                                    "type": "number",
+                                                                                    "example": 74037
+                                                                              }
+                                                                        }
+                                                                  },
+                                                                  "caption": {
+                                                                        "type": "string",
+                                                                        "description": "Caption for the listing",
+                                                                        "example": "Sale2"
+                                                                  },
+                                                                  "description": {
+                                                                        "type": "string",
+                                                                        "description": "Detailed description of the listing",
+                                                                        "example": "Lots of clothes, office supplies, electronics, and more."
+                                                                  },
+                                                                  "endTime": {
+                                                                        "type": "string",
+                                                                        "description": "End time of the event",
+                                                                        "example": "14:00"
+                                                                  },
+                                                                  "images": {
+                                                                        "type": "array",
+                                                                        "description": "Array of images associated with the listing",
+                                                                        "items": {
+                                                                              "type": "object",
+                                                                              "properties": {
+                                                                                    "uri": {
+                                                                                          "type": "string",
+                                                                                          "description": "URI of the image",
+                                                                                          "example": "https://example.com/image1.jpg"
+                                                                                    },
+                                                                                    "caption": {
+                                                                                          "type": "string",
+                                                                                          "description": "Caption for the image",
+                                                                                          "example": "Main sale table"
+                                                                                    }
+                                                                              }
+                                                                        }
+                                                                  },
+                                                                  "startTime": {
+                                                                        "type": "string",
+                                                                        "description": "Start time of the event",
+                                                                        "example": "10:00"
+                                                                  },
+                                                                  "status": {
+                                                                        "type": "string",
+                                                                        "description": "Status of the listing",
+                                                                        "enum": [
+                                                                              "active",
+                                                                              "upcoming",
+                                                                              "postponed",
+                                                                              "archived"
+                                                                        ],
+                                                                        "example": "upcoming"
+                                                                  },
+                                                                  "title": {
+                                                                        "type": "string",
+                                                                        "description": "Title of the listing",
+                                                                        "example": "Multi Family Sale"
+                                                                  }
+                                                            }
+                                                      }
+                                                }
+                                          }
+                                    }
+                              },
+                              "400": {
+                                    "description": "Validation error if neither coordinates nor zip are provided"
+                              }
+                        }
+                  }
+            },
+            "/api/listings/{postId}": {
+                  "put": {
+                        "summary": "Update a listing's text fields.",
+                        "description": "This endpoint demonstrates how to update a listing. To ensure no data is changed, this cannot be tested",
+                        "tags": ["Listings"],
+                        "parameters": [
+                              {
+                                    "name": "postId",
+                                    "in": "path",
+                                    "required": true,
+                                    "schema": { "type": "string" },
+                                    "description": "Unique identifier of the listing"
+                              }
+                        ],
+                        "requestBody": {
+                              "required": true,
+                              "content": {
+                                    "application/json": {
+                                          "schema": {
+                                                "type": "object",
+                                                "additionalProperties": {
+                                                      "type": "string"
+                                                },
+                                                "description": "Fields to update in the listing"
+                                          }
+                                    }
+                              }
+                        },
+                        "responses": {
+                              "200": {
+                                    "description": "Listing updated successfully"
+                              }
+                        }
+                  }
+            },
+            "/api/listings/{postId}/images": {
+                  "put": {
+                        "summary": "Upload an image for a listing",
+                        "description": "This endpoint demonstrates how to update a listing with an image. To ensure no data is changed, this cannot be tested",
+                        "tags": ["Listings"],
+                        "parameters": [
+                              {
+                                    "name": "postId",
+                                    "in": "path",
+                                    "required": true,
+                                    "schema": { "type": "string" },
+                                    "description": "Unique identifier of the listing"
+                              }
+                        ],
+                        "requestBody": {
+                              "required": true,
+                              "content": {
+                                    "multipart/form-data": {
+                                          "schema": {
+                                                "type": "object",
+                                                "properties": {
+                                                      "image": {
+                                                            "type": "string",
+                                                            "format": "binary",
+                                                            "description": "Image file to upload"
+                                                      },
+                                                      "caption": {
+                                                            "type": "string",
+                                                            "description": "Optional caption for the image"
+                                                      }
+                                                }
+                                          }
+                                    }
+                              }
+                        },
+                        "responses": {
+                              "200": {
+                                    "description": "Image added successfully"
+                              }
+                        }
+                  }
+            },
+            "/api/listing/{listingId}": {
+                  "delete": {
+                        "summary": "Remove a listing",
+                        "description": "This endpoint demonstrates how to update a listing. To ensure no data is changed, this cannot be tested",
+                        "tags": ["Listings"],
+                        "parameters": [
+                              {
+                                    "name": "listingId",
+                                    "in": "path",
+                                    "required": true,
+                                    "schema": { "type": "string" },
+                                    "description": "Unique identifier of the listing to delete"
+                              }
+                        ],
+                        "responses": {
+                              "200": {
+                                    "description": "Listing deleted successfully"
+                              }
+                        }
+                  }
+            }
+      },
+      "components": {
+            "schemas": {
+                  "Listing": {
+                        "type": "object",
+                        "description": "A single listing to view on a user's feed. Uploaded by users.",
+                        "properties": {
+                              "address": {
+                                    "type": "object",
+                                    "description": "Address details",
+                                    "properties": {
+                                          "city": {
+                                                "type": "string",
+                                                "example": "Jenks"
+                                          },
+                                          "state": {
+                                                "type": "string",
+                                                "example": "OK"
+                                          },
+                                          "street": {
+                                                "type": "string",
+                                                "example": "300 Aquarium Drive"
+                                          },
+                                          "zip": {
+                                                "type": "number",
+                                                "example": 74037
+                                          }
+                                    }
+                              },
+                              "caption": {
+                                    "type": "string",
+                                    "description": "Caption for the listing",
+                                    "example": "Sale2"
+                              },
+                              "description": {
+                                    "type": "string",
+                                    "description": "Detailed description of the listing",
+                                    "example": "Lots of clothes, office supplies, electronics, and more."
+                              },
+                              "endTime": {
+                                    "type": "string",
+                                    "description": "End time of the event",
+                                    "example": "14:00"
+                              },
+                              "generatedAt": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Timestamp of when the listing was generated",
+                                    "example": "2024-11-20T20:29:00.923Z"
+                              },
+                              "images": {
+                                    "type": "array",
+                                    "description": "Array of images associated with the listing",
+                                    "items": {
+                                          "type": "object",
+                                          "properties": {
+                                                "uri": {
+                                                      "type": "string",
+                                                      "description": "URI of the image",
+                                                      "example": "https://example.com/image1.jpg"
+                                                },
+                                                "caption": {
+                                                      "type": "string",
+                                                      "description": "Caption for the image",
+                                                      "example": "Main sale table"
+                                                }
+                                          }
+                                    }
+                              },
+                              "postId": {
+                                    "type": "string",
+                                    "description": "Unique identifier for the listing",
+                                    "example": "DOcNhHR25vTD70cmlySs"
+                              },
+                              "startTime": {
+                                    "type": "string",
+                                    "description": "Start time of the event",
+                                    "example": "10:00"
+                              },
+                              "status": {
+                                    "type": "string",
+                                    "description": "Status of the listing",
+                                    "enum": [
+                                          "active",
+                                          "upcoming",
+                                          "postponed",
+                                          "archived"
+                                    ],
+                                    "example": "upcoming"
+                              },
+                              "title": {
+                                    "type": "string",
+                                    "description": "Title of the listing",
+                                    "example": "Multi Family Sale"
+                              },
+                              "userId": {
+                                    "type": ["string", "null"],
+                                    "description": "ID of the user who created the listing. Null if not set.",
+                                    "example": null
+                              }
+                        }
+                  }
+            }
+      }
+}

@@ -13,6 +13,10 @@
         "subcategories": ["Mens", "Womens", "Winter", "Summer", "Kids", "Outerwear"]
       },
       {
+        "name": "Kids",
+        "subcategories": ["Clothes", "Toys", "Nursery"]
+      },
+      {
         "name": "Furniture",
         "subcategories": ["Seating", "Tables/Desks", "Storage", "Bedroom", "Outdoor", "Office", "Children's", "Nursery"]
       },
@@ -50,7 +54,7 @@
       },
       {
         "name": "Kitchenware",
-        "subcategories": ["Cups/Glasses", "Crystal", "Silverware", "Diningware", "Utensils", "Gadgets"]
+        "subcategories": ["Cups/Glasses", "Crystal", "Silverware", "Dining", "Utensils", "Gadgets"]
       },
       {
         "name": "Textiles",

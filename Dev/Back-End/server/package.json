@@ -1,0 +1,45 @@
+{
+  "name": "yardhopper-server",
+  "version": "1.0.0",
+  "description": "This directory will contain the server used as the restful API that will be hosted on Render as the in between for the front-end and Firestore",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest",
+    "dev": "ts-node-dev src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/ngeohash": "^0.6.8",
+    "@types/node": "^22.9.1",
+    "@types/swagger-ui-express": "^4.1.7",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@types/multer": "^1.4.12",
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "firebase": "^9.23.0",
+    "firebase-admin": "^13.0.0",
+    "geofire": "^6.0.0",
+    "geofire-common": "^6.0.0",
+    "geofirestore": "^4.3.0",
+    "multer": "^1.4.5-lts.1",
+    "ngeohash": "^0.6.3",
+    "swagger": "^0.0.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
