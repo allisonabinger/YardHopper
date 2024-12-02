@@ -9,3 +9,6 @@ functions/
 .firebaserc
 
 firebase.json
+
+**/fetchUsers.ts
+**/user-data.json
