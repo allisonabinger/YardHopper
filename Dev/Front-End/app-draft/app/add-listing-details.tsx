@@ -149,7 +149,7 @@ export default function AddListingDetails() {
 
 
   return (
-    <PageLayout step={2} steps={3}>
+    <PageLayout step={2} steps={4}>
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>

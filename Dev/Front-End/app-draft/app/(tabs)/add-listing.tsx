@@ -171,7 +171,7 @@ export default function AddListingPage() {
   };
 
   return (
-    <PageLayout step={1} steps={3}>
+    <PageLayout step={1} steps={4}>
     <View style={styles.container2}>
       {/* Header */}
 

@@ -58,14 +58,14 @@ export default function AddListingDetailsPage2() {
 
   const handlePublish = () => {
     if (startDate && endDate) {
-      Alert.alert("Success", "Your listing has been published!");
+      router.push("/add-listing-details-3");
     } else {
       Alert.alert("Error", "Please select valid dates and times.");
     }
   };
 
   return (
-    <PageLayout step={3} steps={3}>
+    <PageLayout step={3} steps={4}>
       <ScrollView>
         <View style={styles.container}>
           <Text style={styles.title}>Select Dates & Times</Text>
