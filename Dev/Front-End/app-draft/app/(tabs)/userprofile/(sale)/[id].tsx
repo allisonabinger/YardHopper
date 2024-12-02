@@ -127,247 +127,222 @@ const toggleTemporaryCategory = (category) => {
 
 const [currentPicker, setCurrentPicker] = useState(null); // 'start' or 'end'
 
-  return (
-    <ScrollView style={ styles.container }>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={28} color="#000000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Update Listing</Text>
-      </View>
-
-      <View style={styles.cardContainer}>
-        <Image source={sale.image} style={styles.image} />
-        <TouchableOpacity style={styles.imageButton}>
-          <Text style={styles.buttonText}>Change Photo</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.inputLabel}>Update Title</Text>
-        <TextInput
-          style={styles.input}
-          value={sale.title}
-          onChangeText={(text) => setSale(prevSale => ({ ...prevSale, title: text }))}
-          placeholder="Sale Title"
-        />
-
-        <Text style={styles.inputLabel}>Update Description</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={sale.description}
-          onChangeText={(text) => setSale(prevSale => ({ ...prevSale, description: text }))}
-          placeholder="Sale Description"
-          multiline
-        />
-
-        <View style={styles.card}>
-          <Calendar
-            onDayPress={handleDayPress}
-            markedDates={{
-              ...(startDate && endDate
-                ? getDatesInRange(startDate, endDate)
-                : {}),
-              [startDate]: {
-                selected: true,
-                startingDay: true,
-                color: "#159636",
-                textColor: "white",
-              },
-              [endDate]: {
-                selected: true,
-                endingDay: true,
-                color: "#159636",
-                textColor: "white",
-              },
-            }}
-            markingType="period"
-            theme={{
-              arrowColor: "#159636",
-              textMonthFontWeight: "semibold",
-              todayTextColor: "#159636",
-            }}
-          />
-        </View>
-
-        <View style={styles.timePickerWrapper}>
-  <View style={styles.timePickerRow}>
-    {/* Start Time */}
-    <View style={styles.timePickerContainer}>
-      <Text style={styles.label}>Start Time</Text>
-      <TouchableOpacity
-        style={styles.timeButton}
-        onPress={() => setCurrentPicker('start')}
-      >
-        <Text>{startTime.toLocaleTimeString()}</Text>
+return (
+  <ScrollView style={styles.container}>
+    {/* Header */}
+    <View style={styles.header}>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={28} color="#000000" />
       </TouchableOpacity>
+      <Text style={styles.headerTitle}>Update Listing</Text>
     </View>
 
-    {/* End Time */}
-    <View style={styles.timePickerContainer}>
-      <Text style={styles.label}>End Time</Text>
-      <TouchableOpacity
-        style={styles.timeButton}
-        onPress={() => setCurrentPicker('end')}
-      >
-        <Text>{endTime.toLocaleTimeString()}</Text>
+    {/* Sale Details */}
+    <View style={styles.cardContainer}>
+      <Image source={sale.image} style={styles.image} />
+      <TouchableOpacity style={styles.imageButton}>
+        <Text style={styles.buttonText}>Change Photo</Text>
       </TouchableOpacity>
-    </View>
-  </View>
 
-  {/* Modal for Time Picker */}
-  <Modal
-    visible={currentPicker !== null}
-    transparent={true}
-    animationType="slide"
-    onRequestClose={() => setCurrentPicker(null)}
-  >
-    <View style={styles.modalContainer}>
-      <View style={styles.modalContent}>
-        <Text style={styles.modalTitle}>
-          {currentPicker === 'start' ? 'Select Start Time' : 'Select End Time'}
-        </Text>
-        <DateTimePicker
-          value={currentPicker === 'start' ? startTime : endTime}
-          mode="time"
-          is24Hour={true}
-          display="spinner"
-          onChange={(event, selectedTime) => {
-            if (selectedTime) {
-              if (currentPicker === 'start') {
-                setStartTime(selectedTime);
-              } else if (currentPicker === 'end') {
-                if (selectedTime > startTime) {
-                  setEndTime(selectedTime);
-                } else {
-                  Alert.alert('Invalid Time', 'End time must be after start time.');
-                }
-              }
-            }
-            setCurrentPicker(null); // Close the modal
+      <Text style={styles.inputLabel}>Update Title</Text>
+      <TextInput
+        style={styles.input}
+        value={sale.title}
+        onChangeText={(text) => setSale((prevSale) => ({ ...prevSale, title: text }))}
+        placeholder="Sale Title"
+      />
+
+      <Text style={styles.inputLabel}>Update Description</Text>
+      <TextInput
+        style={[styles.input, styles.textArea]}
+        value={sale.description}
+        onChangeText={(text) => setSale((prevSale) => ({ ...prevSale, description: text }))}
+        placeholder="Sale Description"
+        multiline
+      />
+
+      {/* Calendar */}
+      <View style={styles.card}>
+        <Calendar
+          onDayPress={handleDayPress}
+          markedDates={{
+            ...(startDate && endDate ? getDatesInRange(startDate, endDate) : {}),
+            [startDate]: {
+              selected: true,
+              startingDay: true,
+              color: "#159636",
+              textColor: "white",
+            },
+            [endDate]: {
+              selected: true,
+              endingDay: true,
+              color: "#159636",
+              textColor: "white",
+            },
+          }}
+          markingType="period"
+          theme={{
+            arrowColor: "#159636",
+            textMonthFontWeight: "semibold",
+            todayTextColor: "#159636",
           }}
         />
-        <TouchableOpacity
-          style={styles.closeModalButton}
-          onPress={() => setCurrentPicker(null)}
+      </View>
+
+      {/* Time Picker */}
+      <View style={styles.timePickerWrapper}>
+        <View style={styles.timePickerRow}>
+          {/* Start Time */}
+          <View style={styles.timePickerContainer}>
+            <Text style={styles.label}>Start Time</Text>
+            <TouchableOpacity
+              style={styles.timeButton}
+              onPress={() => setCurrentPicker("start")}
+            >
+              <Text>
+                {startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* End Time */}
+          <View style={styles.timePickerContainer}>
+            <Text style={styles.label}>End Time</Text>
+            <TouchableOpacity
+              style={styles.timeButton}
+              onPress={() => setCurrentPicker("end")}
+            >
+              <Text>
+                {endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Time Picker Modal */}
+        <Modal
+          visible={currentPicker !== null}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setCurrentPicker(null)}
         >
-          <Text style={styles.closeModalButtonText}>Close</Text>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                {currentPicker === "start" ? "Select Start Time" : "Select End Time"}
+              </Text>
+              <DateTimePicker
+                value={currentPicker === "start" ? startTime : endTime}
+                mode="time"
+                is24Hour={true}
+                display="spinner"
+                onChange={(event, selectedTime) => {
+                  if (selectedTime) {
+                    if (currentPicker === "start") {
+                      setStartTime(selectedTime);
+                    } else if (currentPicker === "end") {
+                      if (selectedTime > startTime) {
+                        setEndTime(selectedTime);
+                      } else {
+                        Alert.alert("Invalid Time", "End time must be after start time.");
+                      }
+                    }
+                  }
+                  setCurrentPicker(null); // Close the modal
+                }}
+              />
+              <TouchableOpacity
+                style={styles.closeModalButton}
+                onPress={() => setCurrentPicker(null)}
+              >
+                <Text style={styles.closeModalButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
+
+      {/* Categories */}
+      <View style={styles.categoriesContainer}>
+        <Text style={styles.sectionTitle}>Categories</Text>
+        <View style={styles.selectedCategories}>
+          {Array.from(selectedCategories).map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={styles.categoryChip}
+              onPress={() => removeCategory(category)}
+            >
+              <Text style={styles.categoryChipText}>{category}</Text>
+              <Ionicons name="close-circle" size={16} color="#FFF" />
+            </TouchableOpacity>
+          ))}
+        </View>
+        <TouchableOpacity
+          style={styles.addCategoryButton}
+          onPress={() => setShowAddCategory(true)}
+        >
+          <Text style={styles.addCategoryButtonText}>Add Category</Text>
         </TouchableOpacity>
       </View>
-    </View>
-  </Modal>
-</View>
 
-        <View style={styles.categoriesContainer}>
-          <Text style={styles.sectionTitle}>Categories</Text>
-          <View style={styles.selectedCategories}>
-            {Array.from(selectedCategories).map((category) => (
+      {/* Update and Delete Buttons */}
+      <TouchableOpacity style={styles.updateButton} onPress={handleUpdateSale}>
+        <Text style={styles.buttonText}>Update Sale</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteSale}>
+        <Text style={styles.buttonText}>Delete Sale</Text>
+      </TouchableOpacity>
+    </View>
+
+    {/* Add Category Modal */}
+    <Modal
+      visible={showAddCategory}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowAddCategory(false)}
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Select Categories</Text>
+          <ScrollView style={styles.categoryList}>
+            {allCategories.map((category) => (
               <TouchableOpacity
                 key={category}
-                style={styles.categoryChip}
-                onPress={() => removeCategory(category)}
+                style={[
+                  styles.categoryItem,
+                  temporarySelectedCategories.has(category) &&
+                    styles.modalCategoryItemSelected,
+                ]}
+                onPress={() => toggleTemporaryCategory(category)}
               >
-                <Text style={styles.categoryChipText}>{category}</Text>
-                <Ionicons name="close-circle" size={16} color="#FFF" />
+                <Text
+                  style={[
+                    styles.categoryItemText,
+                    temporarySelectedCategories.has(category) &&
+                      styles.modalCategoryTextSelected,
+                  ]}
+                >
+                  {category}
+                </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
           <TouchableOpacity
-            style={styles.addCategoryButton}
-            onPress={() => setShowAddCategory(true)}
+            style={styles.confirmButton}
+            onPress={() => {
+              setSelectedCategories(new Set(temporarySelectedCategories));
+              setShowAddCategory(false);
+            }}
           >
-            <Text style={styles.addCategoryButtonText}>Add Category</Text>
+            <Text style={styles.confirmButtonText}>Confirm</Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.updateButton} onPress={handleUpdateSale}>
-          <Text style={styles.buttonText}>Update Sale</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteSale}>
-          <Text style={styles.buttonText}>Delete Sale</Text>
-        </TouchableOpacity>
       </View>
-
-      <Modal
-  visible={showAddCategory}
-  transparent={true}
-  animationType="slide"
-  onRequestClose={() => setShowAddCategory(false)}
->
-  <View style={styles.modalContainer}>
-    <View style={styles.modalContent}>
-      <Text style={styles.modalTitle}>Select Categories</Text>
-
-      {/* Temporary state for category selections */}
-      <ScrollView style={styles.categoryList}>
-        {allCategories.map((category) => (
-          <TouchableOpacity
-            key={category}
-            style={[
-              styles.categoryItem,
-              temporarySelectedCategories.has(category) &&
-                styles.modalCategoryItemSelected,
-            ]}
-            onPress={() => toggleTemporaryCategory(category)}
-          >
-            <Text
-              style={[
-                styles.categoryItemText,
-                temporarySelectedCategories.has(category) &&
-                  styles.modalCategoryTextSelected,
-              ]}
-            >
-              {category}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Confirm and Close Buttons */}
-      <TouchableOpacity
-        style={styles.confirmButton}
-        onPress={() => {
-          setSelectedCategories(new Set(temporarySelectedCategories));
-          setShowAddCategory(false);
-        }}
-      >
-        <Text style={styles.confirmButtonText}>Confirm</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
-
-      {showStartTimePicker && (
-        <DateTimePicker
-          value={startTime}
-          mode="time"
-          is24Hour={true}
-          display="default"
-          onChange={(event, selectedTime) => {
-            setShowStartTimePicker(false);
-            if (selectedTime) setStartTime(selectedTime);
-          }}
-        />
-      )}
-
-      {showEndTimePicker && (
-        <DateTimePicker
-          value={endTime}
-          mode="time"
-          is24Hour={true}
-          display="default"
-          onChange={(event, selectedTime) => {
-            setShowEndTimePicker(false);
-            if (selectedTime && selectedTime > startTime) {
-              setEndTime(selectedTime);
-            } else {
-              Alert.alert("Invalid Time", "End time must be after start time.");
-            }
-          }}
-        />
-      )}
-      <View style={{ height: 70 }}/>
-    </ScrollView>
-  );
-}
+    </Modal>
+    <View style={{ height: 70 }} />
+  </ScrollView>
+);
+};
 
 const styles = StyleSheet.create({
   container: {

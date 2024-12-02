@@ -65,6 +65,7 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
                 date={item.dates[0]}
                 address={`${item.address.street}, ${item.address.city}`}
                 onPress={handleCardPress} // Redirect to listing/[id]
+                startTime={""} endTime={""}
               />
             </View>
           </Animated.View>
@@ -81,7 +82,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
   container: {
