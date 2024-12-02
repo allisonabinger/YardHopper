@@ -116,6 +116,53 @@
       "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57"
     },
     {
+      "title": "Test Title",
+      "description": "Test Description",
+      "address": {
+        "zip": 74103,
+        "street": "15 N Cheyenne Ave",
+        "state": "OK",
+        "city": "Tulsa"
+      },
+      "dates": [
+        "2024-12-14"
+      ],
+      "startTime": "09:00",
+      "endTime": "13:00",
+      "categories": [
+        "Clothing",
+        "Shoes/Accessories",
+        "Textiles"
+      ],
+      "subcategories": {
+        "Clothing": [
+          "Mens",
+          "Womens",
+          "Kids"
+        ],
+        "Shoes/Accessories": [
+          "Jewelry",
+          "Bags",
+          "Belts"
+        ],
+        "Textiles": [
+          "Bedding",
+          "Towels"
+        ]
+      },
+      "postId": "KwLTqIjazVDMMPkS3ldZ",
+      "generatedAt": "2024-12-02T22:00:16.182Z",
+      "status": "upcoming",
+      "g": {
+        "geohash": "9y7txtfw2",
+        "geopoint": {
+          "_latitude": 36.15573785714285,
+          "_longitude": -95.99505942857142
+        }
+      },
+      "userId": "86ee898bd6e2e8d1847c85c380b706776f9cf41006148b93a359ba39d609794f"
+    },
+    {
       "title": "Rustic Decor and Furniture Sale",
       "description": "A collection of rustic decor items and vintage furniture.",
       "address": {
