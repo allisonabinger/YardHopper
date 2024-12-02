@@ -126,6 +126,7 @@ export const postListing = async (
             await listingRef.update({
                   postId,
             });
+            return { postId }; 
 
             // console.log(
             //       `Listing ${listingData.title} posted with ID: ${postId}`
@@ -237,21 +238,21 @@ export const removeListingInDB = async (
             // Get the listing to verify it exists
             const listingDoc = await listingRef.get();
 
-            const storagePath = `listings/${postId}`;
-
-            await removeFolderInFirebase(storagePath);
-
             if (!listingDoc.exists) {
-                  console.log(`Listing with ID ${postId} does not exist.`);
-                  return null;
+                // console.log(`Listing with ID ${postId} does not exist.`);
+                return null;
             }
-
-            // Retrieve the data for the deleted listing (optional, for returning)
             const listingData = listingDoc.data() as Listing;
+
+            const storagePath = `listings/${postId}`;
+            await removeFolderInFirebase(storagePath);
 
             // Delete the document
             await listingRef.delete();
-
+            return {
+                title: listingData.title,
+                postId: listingData.postId
+          };
             // console.log(`Listing with ID ${postId} deleted.`);
             // return listingData;
       } catch (err) {

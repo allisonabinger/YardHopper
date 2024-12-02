@@ -129,7 +129,7 @@ export const createListing = async (req: Request, res: Response) => {
                   userId
             } = req.body;
 
-            const hashedUserId = hashUid(userId)
+
             if (
                   !title ||
                   !description ||
@@ -138,13 +138,13 @@ export const createListing = async (req: Request, res: Response) => {
                   !startTime ||
                   !endTime ||
                   !categories ||
-                  !hashedUserId
+                  !userId
             ) {
                   return res
                         .status(400)
-                        .json({ error: "Missing required fields" });
+                        .json({ error: "Missing required fields. Required: title, description, address, dates, startTime, endTime, categories, and userId" });
             }
-            console.log(hashedUserId)
+            const hashedUserId = hashUid(userId)
 
             // generate timestamp for generatedAt (format = YYYY-MM-DDTHH:mm:ss.sssZ )
             const now = new Date();
@@ -194,9 +194,7 @@ export const createListing = async (req: Request, res: Response) => {
             };
 
             const newListing = await postListing(listingData);
-            return res
-                  .status(201)
-                  .json({ message: "Listing created", listing: newListing });
+            return res.status(201).json({ "Listing created with new postId": newListing.postId });
       } catch (err) {
             console.log("Error: ", err);
             return res.status(500).json({
