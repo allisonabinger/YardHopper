@@ -31,14 +31,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
   radius,
   setRadius,
   selectedCategories,
-  setSelectedCategories,
 }) => {
   const toggleCategory = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
+    console.log(`Category toggled: ${category}`);
+    console.log(`Current selected categories: ${selectedCategories}`);
   };
 
   return (
@@ -75,22 +71,10 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   {categories.map((category) => (
                     <TouchableOpacity
                       key={category}
-                      style={[
-                        styles.categoryButton,
-                        selectedCategories.includes(category) &&
-                          styles.selectedCategory,
-                      ]}
+                      style={styles.categoryButton}
                       onPress={() => toggleCategory(category)}
                     >
-                      <Text
-                        style={[
-                          styles.categoryText,
-                          selectedCategories.includes(category) &&
-                            styles.selectedCategoryText,
-                        ]}
-                      >
-                        {category}
-                      </Text>
+                      <Text style={styles.categoryText}>{category}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -107,6 +91,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
     </Modal>
   );
 };
+
 
 const styles = StyleSheet.create({
   modalOverlay: {
@@ -181,4 +166,3 @@ const styles = StyleSheet.create({
 });
 
 export default FilterModal;
-
