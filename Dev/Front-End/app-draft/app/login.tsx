@@ -8,6 +8,9 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -74,57 +77,65 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Logo */}
-      <Image
-        source={require("../assets/images/logo.png")}
-        style={styles.logo}
-      />
-
-      {/* Form Container */}
-      <View style={styles.formContainer}>
-        {/* Email Input */}
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#A9A9A9"
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Logo */}
+        <Image
+          source={require("../assets/images/logo.png")}
+          style={styles.logo}
         />
 
-        {/* Password Input */}
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#A9A9A9"
-          secureTextEntry
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+        {/* Form Container */}
+        <View style={styles.formContainer}>
+          {/* Email Input */}
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#A9A9A9"
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-        {/* Login Button */}
-        <Pressable onPress={() => login(email, password)} style={styles.loginButton}>
-          <Text style={styles.loginButtonText}>Log In</Text>
-        </Pressable>
+          {/* Password Input */}
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#A9A9A9"
+            secureTextEntry
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-        {/* Sign-up Redirect */}
-        <View style={styles.signupContainer}>
-          <Link href="/register">
-            <Text style={styles.signupText}>No account? Sign up</Text>
-          </Link>
+          {/* Login Button */}
+          <Pressable onPress={() => login(email, password)} style={styles.loginButton}>
+            <Text style={styles.loginButtonText}>Log In</Text>
+          </Pressable>
+
+          {/* Sign-up Redirect */}
+          <View style={styles.signupContainer}>
+            <Link href="/register">
+              <Text style={styles.signupText}>No account? Sign up</Text>
+            </Link>
+          </View>
+          <View style={styles.signupContainer}>
+            <Link href="/forgot-password">
+              <Text style={styles.signupText}>Forgot password?</Text>
+            </Link>
+          </View>
         </View>
-        <View style={styles.signupContainer}>
-          <Link href="/forgot-password">
-            <Text style={styles.signupText}>Forgot password?</Text>
-          </Link>
-        </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -132,6 +143,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  scrollViewContent: {
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -178,3 +192,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+

@@ -49,5 +49,5 @@ export default function Page() {
   }
 
   // Redirect based on authentication state
-  return isAuthenticated ? <Redirect href="/dashboard" /> : <Redirect href="/login" />;
+  return isAuthenticated ? <Redirect href="/(tabs)" /> : <Redirect href="/login" />;
 }
