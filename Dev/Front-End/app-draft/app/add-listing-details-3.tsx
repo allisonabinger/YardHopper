@@ -25,14 +25,14 @@ const ImageUploadScreen = () => {
       Alert.alert("Error", "No image selected to upload.");
       return;
     }
-
+  
     const formData = new FormData();
     formData.append("image", {
       uri: image,
       name: "upload.jpg",
       type: "image/jpeg",
     });
-
+  
     try {
       const response = await fetch("https://your-backend-api/upload", {
         method: "POST",
@@ -41,9 +41,19 @@ const ImageUploadScreen = () => {
         },
         body: formData,
       });
-
+  
       if (response.ok) {
-        Alert.alert("Success", "Image uploaded successfully!");
+        Alert.alert(
+          "Success",
+          "Your listing has been created!",
+          [
+            {
+              text: "OK",
+              onPress: () => router.push("./(tabs)/index"), // Navigate to the Explore tab
+            },
+          ],
+          { cancelable: false }
+        );
         reset(); // Clear the image after successful upload
       } else {
         Alert.alert("Error", "Failed to upload the image.");
