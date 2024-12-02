@@ -22,6 +22,7 @@
     "@react-native-community/slider": "^4.5.5",
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
+    "@react-navigation/stack": "^7.0.18",
     "babel": "^6.23.0",
     "dotenv": "^16.4.5",
     "expo": "~52.0.7",
@@ -30,8 +31,10 @@
     "expo-font": "~13.0.1",
     "expo-haptics": "~14.0.0",
     "expo-linking": "~7.0.2",
+    "expo-local-authentication": "~15.0.1",
     "expo-location": "~18.0.2",
     "expo-router": "^4.0.7",
+    "expo-secure-store": "~14.0.0",
     "expo-splash-screen": "~0.29.11",
     "expo-status-bar": "~2.0.0",
     "expo-symbols": "~0.2.0",
@@ -51,9 +54,7 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "react-native-web-maps": "^0.3.0",
-    "react-native-webview": "13.12.2",
-    "expo-secure-store": "~14.0.0",
-    "expo-local-authentication": "~15.0.1"
+    "react-native-webview": "13.12.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
