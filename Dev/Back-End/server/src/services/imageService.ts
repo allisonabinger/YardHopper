@@ -12,14 +12,15 @@ export const uploadImageToFirebase = async (file: Express.Multer.File, postId: s
     const imagePath = `listings/${postId}/${fileName}`;
 
     try {
-        const fileUpload = storage.bucket().file(imagePath);
+        const bucket = storage.bucket();
+        const fileUpload = bucket.file(imagePath);
 
         await fileUpload.save(file.buffer, {
             contentType: file.mimetype,
-            public: true
+            public: false,
         });
-
-        const fileUri = fileUpload.publicUrl()
+        const encodedPath = encodeURIComponent(imagePath);
+        const fileUri = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media`
         return fileUri;
     } catch (err) {
         console.error("Error uploading image to Firebase", err);
@@ -60,15 +61,19 @@ export const removeFolderInFirebase = async (folderPath: string): Promise<void> 
     }
 }
 
+// updated with new URI format AB 12/2/24 12:17pm
 export const getFilePathFromURI = (imageURI: string): string => {
 
-    const bucketBaseURL = `https://storage.googleapis.com/${ENV.FIREBASE_STORAGE_BUCKET}`;
+    const bucketBaseURL = `https://firebasestorage.googleapis.com/v0/b/${ENV.FIREBASE_STORAGE_BUCKET}/o/`;
 
+    // console.log(bucketBaseURL)
+    // console.log(imageURI)
     if (!imageURI.startsWith(bucketBaseURL)) {
         throw new Error("Invalid image URI.")
     }
-    const encodedPath = imageURI.replace(bucketBaseURL, "")
-    const decodedPath = decodeURIComponent(encodedPath)
-    return decodedPath.startsWith("/") ? decodedPath.slice(1) : decodedPath;
+    const encodedPath = imageURI.replace(bucketBaseURL, "").split("?")[0];
+    const decodedPath = decodeURIComponent(encodedPath);
+
+    return decodedPath;
 
 }

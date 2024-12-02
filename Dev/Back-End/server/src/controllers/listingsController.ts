@@ -2,6 +2,8 @@
 import { Request, Response } from "express";
 import {
       addImageToListing,
+      changeCaptionInDB,
+      getListing,
       getListings,
       postListing,
       removeImageInDB,
@@ -88,6 +90,31 @@ export const fetchListings = async (req: Request, res: Response) => {
       }
 };
 
+export const fetchSingleListing = async (req: Request, res: Response) => {
+    const { postId } = req.params;
+  //   console.log("fetchListings called");
+
+    try {
+        if (!postId) {
+            return res
+                  .status(400)
+                  .json({ message: "No postId provided." });
+      }
+          // call query function in services with formatted filters
+          const listing = await getListing(postId);
+          if (!listing) {
+                console.log("No listing with postId: ", postId);
+                res.status(500).json({ message: "No listing found with that id." });
+          }
+          // console.log(listings)
+
+          res.status(200).json({ listing });
+    } catch (err) {
+          console.log(err);
+          res.status(500).json({ error: err });
+    }
+};
+
 export const createListing = async (req: Request, res: Response) => {
       try {
             const {
@@ -102,7 +129,7 @@ export const createListing = async (req: Request, res: Response) => {
                   userId
             } = req.body;
 
-            const hashedUserId = hashUid(userId)
+
             if (
                   !title ||
                   !description ||
@@ -111,13 +138,13 @@ export const createListing = async (req: Request, res: Response) => {
                   !startTime ||
                   !endTime ||
                   !categories ||
-                  !hashedUserId
+                  !userId
             ) {
                   return res
                         .status(400)
-                        .json({ error: "Missing required fields" });
+                        .json({ error: "Missing required fields. Required: title, description, address, dates, startTime, endTime, categories, and userId" });
             }
-            console.log(hashedUserId)
+            const hashedUserId = hashUid(userId)
 
             // generate timestamp for generatedAt (format = YYYY-MM-DDTHH:mm:ss.sssZ )
             const now = new Date();
@@ -167,9 +194,7 @@ export const createListing = async (req: Request, res: Response) => {
             };
 
             const newListing = await postListing(listingData);
-            return res
-                  .status(201)
-                  .json({ message: "Listing created", listing: newListing });
+            return res.status(201).json({ "Listing created with new postId": newListing.postId });
       } catch (err) {
             console.log("Error: ", err);
             return res.status(500).json({
@@ -254,7 +279,7 @@ export const addImage = async (req: Request, res: Response) => {
 export const removeImage = async (req: Request, res: Response) => {
     try {
         const { postId } = req.params;
-        const { uri, caption } = req.body;
+        const { uri } = req.query;
 
         if (!postId) {
               return res
@@ -262,18 +287,13 @@ export const removeImage = async (req: Request, res: Response) => {
                     .json({ message: "No postId provided." });
         }
 
-        if (!uri) {
-            return res
-                  .status(400)
-                  .json({ message: "No image file provided." });
-      }
+        if (!uri || typeof uri !== "string") {
+            return res.status(400).json({ message: "No valid image URI provided." });
+        }
 
-      const imageDetails = {uri, caption}
-      // removes image in fb
-
-      const filePath = getFilePathFromURI(imageDetails.uri);
+      const filePath = getFilePathFromURI(uri);
       await removeImageInFirebase(filePath);
-      await removeImageInDB(postId, imageDetails)
+      await removeImageInDB(postId, uri)
       res.status(200).json({ message: "Image removed successfully." });
 
       // removes image in firestore
@@ -283,6 +303,41 @@ export const removeImage = async (req: Request, res: Response) => {
               .status(500)
               .json({ message: "Failed to update listing." });
   }
+}
+
+export const changeCaption = async(req: Request, res: Response) => {
+    try {
+        const { postId } = req.params;
+        const { uri, caption } = req.body;
+
+        // console.log(`Caption: ${caption}`)
+        if (!postId) {
+              return res
+                    .status(400)
+                    .json({ message: "No postId provided." });
+        }
+
+        if (!uri || typeof uri !== "string") {
+            return res.status(400).json({ message: "No valid image URI provided." });
+        }
+
+        if (!caption || typeof caption !== "string") {
+            return res.status(400).json({ message: "No valid new caption provided." });
+        }
+
+      const updatedListing = await changeCaptionInDB(postId, uri, caption);
+      if (!updatedListing) {
+        return res.status(404).json({ message: "Listing not found or image URI does not exist." });
+    }
+
+    res.status(200).json({
+        message: "Caption updated successfully.",
+        listing: updatedListing,
+    });
+    } catch (err) {
+        console.error("Error updating caption:", err);
+        res.status(500).json({ message: "Failed to update caption." });
+    }
 }
 
 export const deleteListing = async (req: Request, res: Response) => {

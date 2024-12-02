@@ -16,11 +16,11 @@
       "endTime": "13:00",
       "images": [
         {
-          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2F9XUAxe4LtsgdDH2f3SRc%2Fimage1.jpg?generation=1732134542246214&alt=media",
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.appspot.com/o/listings%2F9XUAxe4LtsgdDH2f3SRc%2Fimage1.jpg?alt=media",
           "caption": "Suits"
         },
         {
-          "uri": "https://storage.googleapis.com/download/storage/v1/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2F9XUAxe4LtsgdDH2f3SRc%2Fimage2.jpg?generation=1732134542577615&alt=media",
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.appspot.com/o/listings%2F9XUAxe4LtsgdDH2f3SRc%2Fimage2.jpg?alt=media",
           "caption": ""
         }
       ],

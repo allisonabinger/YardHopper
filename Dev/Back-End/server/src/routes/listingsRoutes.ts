@@ -4,9 +4,11 @@ import { Request, Response } from "express";
 import multer from "multer";
 import {
     addImage,
+      changeCaption,
       createListing,
       deleteListing,
       fetchListings,
+      fetchSingleListing,
       removeImage,
       updateListing,
 } from "../controllers/listingsController";
@@ -197,10 +199,17 @@ const upload = multer({ storage: storage });
  */
 
 
+// gets all listings within a radius
 router.get("/", (req: Request, res: Response) => {
       fetchListings(req, res);
 });
 
+// gets a single listing
+router.get("/:postId", (req: Request, res: Response) => {
+    fetchSingleListing(req, res);
+});
+
+// creates a new listing
 router.post("/", (req: Request, res: Response) => {
       createListing(req, res);
 });
@@ -208,12 +217,17 @@ router.post("/", (req: Request, res: Response) => {
 // put request for text fields (title, description, etc)
 router.put("/:postId", (req: Request, res: Response) => { updateListing(req, res);});
 
+// deletes the listing and any images attached to it
+router.delete("/:postId", (req: Request, res: Response) => { deleteListing(req, res);});
+
 // put request for uploading images
-router.put("/:postId/images", upload.single("image"), (req: Request, res: Response) => { addImage(req, res);});
+router.post("/:postId/images", upload.single("image"), (req: Request, res: Response) => { addImage(req, res);});
+
+// update caption for a specific image
+router.put("/:postId/images", (req: Request, res: Response) => { changeCaption(req, res);});
 
 // deletes an image from a listing
 router.delete("/:postId/images", (req: Request, res: Response) => { removeImage(req, res);});
 
-router.delete("/:postId", (req: Request, res: Response) => { deleteListing(req, res);});
 
 export default router;

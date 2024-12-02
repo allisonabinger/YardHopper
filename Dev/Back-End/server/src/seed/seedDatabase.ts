@@ -12,13 +12,13 @@ const seedDatabase = async() => {
         for (const listing of listings) {
             const docRef = db.collection("listings").doc();
             const postId = docRef.id
-            const now = new Date()
+            // const now = new Date()
 
-            // assigns new ID to listing postId
-            listing.postId = postId;
+            // // assigns new ID to listing postId
+            // listing.postId = postId;
             
-            // generate timestamp
-            listing.generatedAt = now.toISOString()
+            // // generate timestamp
+            // listing.generatedAt = now.toISOString()
 
             // image upload
             if (listing.images && listing.images.length > 0) {
@@ -53,14 +53,14 @@ const seedDatabase = async() => {
                     
                 }
             }
-            const firstSaleDate = new Date(`${listing.dates[0]}T${listing.startTime}:00`)
-            if (now >= firstSaleDate && now.toISOString().split("T")[0] <= listing.dates[0]) {
-                listing.status = "active"
-            } else {
-                listing.status = "upcoming"
-            }
-            await docRef.set(listing);
-            console.log(`Seeded listing: ${listing.title}`)
+            // const firstSaleDate = new Date(`${listing.dates[0]}T${listing.startTime}:00`)
+            // if (now >= firstSaleDate && now.toISOString().split("T")[0] <= listing.dates[0]) {
+            //     listing.status = "active"
+            // } else {
+            //     listing.status = "upcoming"
+            // }
+            // await docRef.set(listing);
+            // console.log(`Seeded listing: ${listing.title}`)
         }
         console.log(`Seeding completed successfully.`)
     } catch (err) {
@@ -164,6 +164,89 @@ async function updateCategoryFields() {
     }
 }
 
+
+async function updateImageURLS() {
+    const listingsRef = db.collection('listings');
+
+    try {
+        const snapshot = await listingsRef.get();
+
+        if (snapshot.empty) {
+            console.log('No listings found');
+            return;
+        }
+
+        for (const doc of snapshot.docs) {
+            const data = doc.data() as any;
+            if (data.images && Array.isArray(data.images)) {
+                const updatedImages = data.images.map((image: { uri: string, caption?: string }) => {
+                    if (!image.uri) return image; // Skip if no URI exists
+                    
+                    const transformedUri = transformUrl(image.uri); // Transform the URL
+                    return { ...image, uri: transformedUri };
+                });
+
+                // update Firestore document with transformed URLs
+                await doc.ref.update({ images: updatedImages });
+            }
+
+        }
+        console.log('All listings updated')
+    } catch (err) {
+        console.error('Error updating categories: ', err)
+    }
+}
+
+function transformUrl(originalUrl: string): string {
+    const match = originalUrl.match(/\/o\/(.*?)\?/);
+    const filePath = match ? match[1] : null;
+
+    if (!filePath) {
+        console.error('Invalid Firebase Storage URL:', originalUrl);
+        return originalUrl;
+    }
+
+    return `https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.appspot.com/o/${filePath}?alt=media`;
+}
+
+async function getNewImageUrls(postId: string): Promise<string[]> {
+  const bucket = storage.bucket();
+  const folderPath = `listings/${postId}/`;
+
+  try {
+    const [files] = await bucket.getFiles({ prefix: folderPath });
+
+    if (files.length === 0) {
+      console.log(`No files found for postId: ${postId}`);
+      return [];
+    }
+
+    const urls = files.map((file) => {
+      const encodedPath = encodeURIComponent(file.name);
+      return `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media`;
+    });
+
+    return urls;
+  } catch (error) {
+    console.error(`Error fetching files for postId ${postId}:`, error);
+    throw new Error('Unable to fetch image URLs.');
+  }
+}
+
+async function updateListingImages(postId: string) {
+  try {
+    const newUrls = await getNewImageUrls(postId);
+    console.log(`New URLs for postId ${postId}:`, newUrls);
+
+    return newUrls;
+  } catch (error) {
+    console.error('Error updating listing images:', error);
+  }
+}
+
+updateListingImages('DOcNhHR25vTD70cmlySs');
+
+
 // seedDatabase();
 // updateCategoryFormat()
-updateCategoryFields()
+// 

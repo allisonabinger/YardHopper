@@ -84,6 +84,48 @@ The API will respond with the public fields in an array of listings. Here is an 
 
 ```
 
+### GET /api/listings/:postId
+The `GET /api/listings` endpoint serves to provide data for a single listing. It accepts no parameters.
+
+**Request Endpoint Example**
+GET https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
+
+
+```
+{
+    "listing": {
+        "title": "Test Title",
+        "description": "Test Description",
+        "address": {
+            "zip": 74103,
+            "street": "15 N Cheyenne Ave",
+            "state": "OK",
+            "city": "Tulsa"
+        },
+        "dates": [
+            "2024-12-14"
+        ],
+        "startTime": "09:00",
+        "endTime": "13:00",
+        "images": null,
+        "categories": [
+            "Clothing",
+            "Shoes/Accessories",
+            "Textiles"
+        ],
+        "status": "upcoming",
+        "g": {
+            "geohash": "9y7txtfw2",
+            "geopoint": {
+                "_latitude": 36.15573785714285,
+                "_longitude": -95.99505942857142
+            }
+        },
+        "postId": "KwLTqIjazVDMMPkS3ldZ"
+    }
+}
+```
+
 ### POST /api/listings
 The endpoint will handle parsing the user information and generating the metadata for the db to query later. It accepts the listing data in the body. 
 
@@ -134,35 +176,28 @@ Here is an example of user submitted listing data that is sufficient to post to 
     "userId": "h8KUzPZ8LLeWP8Fx3I6GvhFf8Xo2"
   }
 ```
+The API will respond with the postId of the newly created listing:
+```
+{
+    "postId": "KwLTqIjazVDMMPkS3ldZ"
+}
+```
 
 ### PUT /api/listings/:postId
 This route is used for updating the text fields of the listing, such as `title`, `description`, or `startTime`. The `postId` is necessary for the server to find the right post to update, and must accept updated fields in the body to update the post.
 
 **Request Endpoint Example**
-PUT https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
+PUT https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
 
 **Request Params**
-postId: "DOcNhHR25vTD70cmlySs"
+postId: "KwLTqIjazVDMMPkS3ldZ"
 
-**Request Body**
+**Request Body - JSON**
 ```
   {
-    "startTime": "07:00",
+    "startTime": "07:00"
   }
 ```
-
-### PUT /api/listings/:postId/images
-This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string, and the `postId` in the parameters.
-
-**Request Endpoint Example**
-PUT https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs/images
-
-**Request Params**
-postId: "DOcNhHR25vTD70cmlySs"
-caption: "Picture of items"
-
-**Request File**
-(accepts all image types, preferrably jpeg)
 
 ### DEL /api/listings/:postId
 This route is user for deleting a listing. It will delete the data stored in the firestore database, as well as any images attached to the listing. It accepts the `postId` as the parameter.
@@ -173,14 +208,71 @@ DEL https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
 **Request Params**
 postId: "DOcNhHR25vTD70cmlySs"
 
-### DEL /api/listings/:postId/images
-This route is user for deleting an image within a listing. Since it has to delete the image in firestore and firebase, it has it's own endpoint to handle the single deletion of an image.
+
+### POST /api/listings/:postId/images
+This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string in the body, and the `postId` in the parameters.
+
+```
+    { postId } = req.params;
+    { caption } = req.body;
+    { file } = req;
+```
 
 **Request Endpoint Example**
-DEL https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs/images
+POST https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ/images
 
 **Request Params**
-postId: "DOcNhHR25vTD70cmlySs"
+postId: "KwLTqIjazVDMMPkS3ldZ"
+
+**Request Body**
+```
+    "caption": "More Items",
+```
+
+**Request Body - File**
+(accepts all image types, preferrably jpeg)
+The `key` for the file must be `image`, and the type set to file. The `value` is the actual file submitted. There is no `description` needed.
+
+
+
+### PUT /api/listings/:postId/images
+This route is used for updating the caption of an image. It accepts the `postId` as the parameter of an image, and the `uri` and `caption` to update. 
+
+```
+    { postId } = req.params;
+    { uri, caption } = req.body;
+```
+
+**Request Endpoint Example**
+PUT https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ/images
+
+**Request Params**
+postId: "KwLTqIjazVDMMPkS3ldZ"
+
+**Request Body - JSON**
+```
+  {
+    uri: "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media",
+    "caption": "Updated Caption",
+  }
+```
+
+
+### DEL /api/listings/:postId/images
+This route is user for deleting an image within a listing. It will delete the image stored in Firebase, and then removes any reference to the image and caption. It accepts the `uri` and `postId` as parameters.
+
+```
+    { postId } = req.params;
+    { uri } = req.query;
+```
+
+**Request Endpoint Example**
+DEL https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ/images
+
+**Request Params**
+postId: "KwLTqIjazVDMMPkS3ldZ"
+uri: "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media"
+
 
 ---
 
