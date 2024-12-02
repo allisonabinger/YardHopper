@@ -38,6 +38,7 @@ type ListingItem = {
 };
 
 export default function HomeScreen() {
+  const [listings, setListings] = useState<ListingItem[]>([]);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [radius, setRadius] = useState(5);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -61,6 +62,20 @@ export default function HomeScreen() {
     };
 
     loadLikedPosts();
+  }, []);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const response = await fetch("https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950&postId=DOcNhHR25vTD70cmlySs"); // Replace with your API endpoint
+        const data = await response.json();
+        setListings(data.listings); // Adjust the path based on the API response structure
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+      }
+    };
+
+    fetchListings();
   }, []);
 
   const saveLikedPosts = async (updatedLikedPosts: { [key: string]: boolean }) => {
@@ -211,7 +226,7 @@ export default function HomeScreen() {
 
       {viewMode === "list" ? (
         <FlatList
-          data={mockData.listings}
+          data={listings}
           renderItem={renderItem}
           keyExtractor={(item) => item.postId}
           contentContainerStyle={styles.listContent}
@@ -226,7 +241,7 @@ export default function HomeScreen() {
             longitudeDelta: 0.1,
           }}
         >
-          {mockData.listings.map((item) => (
+          {listings.map((item) => (
             <Marker
               key={item.postId}
               coordinate={{
