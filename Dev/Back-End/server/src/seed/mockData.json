@@ -1,0 +1,430 @@
+{
+  "listings": [
+    {
+      "title": "Lots of clothes!",
+      "description": "Affordable clothing, shoes, and accessories.",
+      "address": {
+        "zip": 74063,
+        "city": "Sand Springs",
+        "street": "9 E Broadway St",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-12-14"
+      ],
+      "startTime": "09:00",
+      "endTime": "13:00",
+      "images": [
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2F9XUAxe4LtsgdDH2f3SRc%2F1dfab122-178c-4aaf-928b-5bd4aba0b419-Generic1.jpeg?alt=media",
+          "caption": "Vintage Items"
+        },
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2F9XUAxe4LtsgdDH2f3SRc%2Fab60c3e4-f4e2-46bd-bfaa-1adb7e4bc277-Suits.jpeg?alt=media",
+          "caption": "Suits"
+        }
+      ],
+      "categories": [
+        "Clothing",
+        "Shoes/Accessories",
+        "Textiles"
+      ],
+      "subcategories": {
+        "Clothing": [
+          "Mens",
+          "Womens",
+          "Kids"
+        ],
+        "Shoes/Accessories": [
+          "Jewelry",
+          "Bags",
+          "Belts"
+        ],
+        "Textiles": [
+          "Bedding",
+          "Towels"
+        ]
+      },
+      "postId": "9XUAxe4LtsgdDH2f3SRc",
+      "generatedAt": "2024-11-20T20:29:01.822Z",
+      "status": "upcoming",
+      "g": {
+        "geohash": "9y7tsgncv",
+        "geopoint": {
+          "_latitude": 36.1398660597748,
+          "_longitude": -96.10989445439044
+        }
+      },
+      "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57"
+    },
+    {
+      "title": "Multi Family Sale",
+      "description": "Lots of clothes, office supplies, electronics, and more.",
+      "address": {
+        "zip": 74037,
+        "city": "Jenks",
+        "street": "300 Aquarium Drive",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-12-14"
+      ],
+      "startTime": "10:00",
+      "endTime": "\"14:00\"",
+      "images": [
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FDOcNhHR25vTD70cmlySs%2F396ea9d4-79a2-4b68-aa1f-e8582ad4ca90-Electronics.jpeg?alt=media",
+          "caption": "Electronics"
+        },
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FDOcNhHR25vTD70cmlySs%2Fb354066b-c04d-4a9c-bce1-a22c9d8184c7-Generic2.jpeg?alt=media",
+          "caption": "More Items"
+        }
+      ],
+      "categories": [
+        "Electronics",
+        "Furniture",
+        "Books/Media"
+      ],
+      "subcategories": {
+        "Electronics": [
+          "Computers/Accessories",
+          "Gaming",
+          "Music/Audio"
+        ],
+        "Furniture": [
+          "Office",
+          "Seating",
+          "Storage"
+        ],
+        "Books/Media": [
+          "Reference Books",
+          "Novels",
+          "CDs"
+        ]
+      },
+      "postId": "DOcNhHR25vTD70cmlySs",
+      "generatedAt": "2024-11-20T20:29:00.923Z",
+      "status": "upcoming",
+      "g": {
+        "geohash": "9y7ubmnm3",
+        "geopoint": {
+          "_latitude": 36.019589116194474,
+          "_longitude": -95.95694318593097
+        }
+      },
+      "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57"
+    },
+    {
+      "title": "Rustic Decor and Furniture Sale",
+      "description": "A collection of rustic decor items and vintage furniture.",
+      "address": {
+        "zip": 74113,
+        "city": "Tulsa",
+        "street": "3123 Riverside Dr",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-12-14",
+        "2024-12-15"
+      ],
+      "startTime": "08:00",
+      "endTime": "15:00",
+      "images": [
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FSi1twfMDLzV2bSb7aEU8%2Fc7a0e667-2dc5-42ce-9db1-e4b5f9f70cc2-RusticDecor.jpeg?alt=media",
+          "caption": "Rustic Decor"
+        },
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FSi1twfMDLzV2bSb7aEU8%2Fe4dbe909-cac5-4cf9-baf1-bad0cce01689-Generic4.jpeg?alt=media",
+          "caption": "More Items"
+        }
+      ],
+      "categories": [
+        "Decor/Art",
+        "Furniture",
+        "Textiles"
+      ],
+      "subcategories": {
+        "Decor/Art": [
+          "Wall Art",
+          "Pottery",
+          "Mirrors"
+        ],
+        "Furniture": [
+          "Seating",
+          "Tables/Desks",
+          "Outdoor"
+        ],
+        "Textiles": [
+          "Bedding",
+          "Rugs"
+        ]
+      },
+      "postId": "Si1twfMDLzV2bSb7aEU8",
+      "generatedAt": "2024-11-20T20:28:56.424Z",
+      "status": "upcoming",
+      "g": {
+        "geohash": "9y7trz43y",
+        "geopoint": {
+          "_latitude": 36.11788240290836,
+          "_longitude": -95.98417771188453
+        }
+      },
+      "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57"
+    },
+    {
+      "title": "Holiday Decorations Bonanza",
+      "description": "Everything you need for the holidays: decor, costumes, and more.",
+      "address": {
+        "zip": 74104,
+        "city": "Tulsa",
+        "street": "1123 South Zunis Avenue East",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-11-22"
+      ],
+      "startTime": "08:00",
+      "endTime": "12:00",
+      "images": [
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Fd8TEFyzDJPU2kLkynXoU%2Fc4461fc5-9b95-4b03-bc3d-15b8deb7061f-HolidayDecor.jpeg?alt=media",
+          "caption": "Holiday Decor"
+        },
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Fd8TEFyzDJPU2kLkynXoU%2Fa9d214ee-f54d-49d0-8a6a-d4bfadfc3610-Generic3.jpeg?alt=media",
+          "caption": "More Items"
+        }
+      ],
+      "categories": [
+        "Seasonal/Holiday",
+        "Textiles",
+        "Decor/Art"
+      ],
+      "subcategories": {
+        "Seasonal/Holiday": [
+          "Christmas",
+          "Halloween",
+          "Gift/Wrapping"
+        ],
+        "Textiles": [
+          "Fabrics",
+          "Rugs",
+          "Bedding"
+        ],
+        "Decor/Art": [
+          "Candles",
+          "Mirrors"
+        ]
+      },
+      "postId": "d8TEFyzDJPU2kLkynXoU",
+      "generatedAt": "2024-11-20T20:29:00.166Z",
+      "status": "archived",
+      "g": {
+        "geohash": "9y7v8k7vt",
+        "geopoint": {
+          "_latitude": 36.14733710591523,
+          "_longitude": -95.96019160280154
+        }
+      },
+      "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57"
+    },
+    {
+      "title": "Gadget & Electronics Sale",
+      "description": "Great deals on TVs, gaming consoles, and home entertainment systems.",
+      "address": {
+        "zip": 74037,
+        "city": "Jenks",
+        "street": "300 Aquarium Drive",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-12-16"
+      ],
+      "startTime": "09:00",
+      "endTime": "15:00",
+      "images": [
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Ff2mq3QX1bSVGRX8zkYLH%2F0ddf0601-0fa2-4c21-ac03-3d2c30ddd3a1-Electronics.jpeg?alt=media",
+          "caption": "Electronics"
+        },
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Ff2mq3QX1bSVGRX8zkYLH%2F26cb7e30-b70d-4a4e-a815-e8fb06552933-Generic5.jpeg?alt=media",
+          "caption": "More Items"
+        }
+      ],
+      "categories": [
+        "Electronics"
+      ],
+      "subcategories": {
+        "Electronics": [
+          "TVs/Home Entertainment",
+          "Gaming"
+        ]
+      },
+      "postId": "f2mq3QX1bSVGRX8zkYLH",
+      "generatedAt": "2024-11-30T21:19:11.958Z",
+      "status": "upcoming",
+      "g": {
+        "geohash": "9y7ubmnmd",
+        "geopoint": {
+          "_latitude": 36.01965545,
+          "_longitude": -95.95690706606644
+        }
+      },
+      "userId": "2f7df41cb3512eb27054f258f7a9c0abedd558d2f9e4d97d69cc984aae582f6e"
+    },
+    {
+      "title": "Kids' Clothing and Toys Sale",
+      "description": "Affordable kids' clothes, toys, and games.",
+      "address": {
+        "zip": 74103,
+        "city": "Tulsa",
+        "street": "15 N Cheyenne Ave",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-11-20"
+      ],
+      "startTime": "07:30",
+      "endTime": "14:00",
+      "images": [
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2ForKr1XXBosvl9JDxRg63%2Ff0663033-a673-47c7-a82c-50f98f76720c-ToysBooks.jpeg?alt=media",
+          "caption": "Toys and books"
+        },
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2ForKr1XXBosvl9JDxRg63%2F2d84bc82-662e-445f-8d08-442dbe66b806-Generic6.jpeg?alt=media",
+          "caption": "More Items"
+        }
+      ],
+      "categories": [
+        "Clothing",
+        "Hobbies",
+        "Books/Media"
+      ],
+      "subcategories": {
+        "Clothing": [
+          "Kids",
+          "Winter",
+          "Outerwear"
+        ],
+        "Hobbies": [
+          "Kids Crafts",
+          "Floral/Decorative"
+        ],
+        "Books/Media": [
+          "Picture Books",
+          "Novels",
+          "CDs"
+        ]
+      },
+      "postId": "orKr1XXBosvl9JDxRg63",
+      "generatedAt": "2024-11-20T20:28:58.647Z",
+      "status": "archived",
+      "g": {
+        "geohash": "9y7txtfw2",
+        "geopoint": {
+          "_latitude": 36.1557379,
+          "_longitude": -95.9950594
+        }
+      },
+      "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57"
+    },
+    {
+      "title": "Sports Gear and Tools Clearance",
+      "description": "Selling camping gear, tools, and more.",
+      "address": {
+        "zip": 74114,
+        "city": "Tulsa",
+        "street": "2445 S Peoria Ave",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-11-20"
+      ],
+      "startTime": "09:00",
+      "endTime": "15:00",
+      "images": [
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Fw0whNL9DV7eshUTYs0cA%2F6e0fa6e4-4b3f-4dca-afd4-d8150a8136ff-SportsGear.jpeg?alt=media",
+          "caption": "Sports Gear"
+        }
+      ],
+      "categories": [
+        "Sports/Outdoors",
+        "Tools/Parts",
+        "Appliances"
+      ],
+      "subcategories": {
+        "Sports/Outdoors": [
+          "Camping Gear",
+          "Fishing",
+          "Bikes/Scooters"
+        ],
+        "Tools/Parts": [
+          "Power Tools",
+          "Hand Tools",
+          "Lawn/Garden"
+        ],
+        "Appliances": [
+          "Outdoor",
+          "Kitchen Appliances"
+        ]
+      },
+      "postId": "w0whNL9DV7eshUTYs0cA",
+      "generatedAt": "2024-11-20T20:28:59.421Z",
+      "status": "archived",
+      "g": {
+        "geohash": "9y7v81413",
+        "geopoint": {
+          "_latitude": 36.12875645342699,
+          "_longitude": -95.97373819493207
+        }
+      },
+      "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57"
+    },
+    {
+      "title": "Multi-Family",
+      "description": "Multi-Family sale with electronics",
+      "address": {
+        "zip": 74103,
+        "city": "Tulsa",
+        "street": "15 N Cheyenne Ave",
+        "state": "OK"
+      },
+      "dates": [
+        "2024-12-16"
+      ],
+      "startTime": "09:00",
+      "endTime": "15:00",
+      "images": [
+        {
+          "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FzHWhrSUwDqaJogmWghSw%2F4d11c6a1-6984-4a54-8c02-713fe54d7389-Generic8.jpeg?alt=media",
+          "caption": "Items"
+        }
+      ],
+      "categories": [
+        "Electronics"
+      ],
+      "subcategories": {
+        "Electronics": [
+          "TVs/Home Entertainment",
+          "Gaming"
+        ]
+      },
+      "postId": "zHWhrSUwDqaJogmWghSw",
+      "generatedAt": "2024-11-30T21:20:44.805Z",
+      "status": "upcoming",
+      "g": {
+        "geohash": "9y7txtfw2",
+        "geopoint": {
+          "_latitude": 36.15573785714285,
+          "_longitude": -95.99505942857142
+        }
+      },
+      "userId": "2f7df41cb3512eb27054f258f7a9c0abedd558d2f9e4d97d69cc984aae582f6e"
+    }
+  ]
+}

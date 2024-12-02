@@ -71,6 +71,43 @@ export const getListings = async ({
       }
 };
 
+export const getListing = async (
+    postId: string,
+) => {
+    try {
+          const listingRef = db.collection("listings").doc(postId);
+          const listingDoc = await listingRef.get();
+
+          if (!listingDoc.exists) {
+            // console.log("listing not found: ", postId);
+            throw new Error("Listing not found.");
+      }
+
+          const data = listingDoc.data();
+
+          if (!data) {
+            throw new Error('listing not found')
+          }
+          return {
+            title: data.title,
+            description: data.description,
+            address: data.address,
+            dates: data.dates,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            images: data.images,
+            categories: data.categories,
+            status: data.status,
+            g: data.g,
+            postId: data.postId
+      };
+
+    } catch (err) {
+          console.error("Error finding listing in Firestore: ", err);
+          throw error;
+    }
+};
+
 export const postListing = async (
       listingData: Omit<Listing, "images" | "postId">
 ) => {

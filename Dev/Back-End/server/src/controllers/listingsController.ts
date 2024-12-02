@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import {
       addImageToListing,
       changeCaptionInDB,
+      getListing,
       getListings,
       postListing,
       removeImageInDB,
@@ -87,6 +88,31 @@ export const fetchListings = async (req: Request, res: Response) => {
             console.log(err);
             res.status(500).json({ error: err });
       }
+};
+
+export const fetchSingleListing = async (req: Request, res: Response) => {
+    const { postId } = req.params;
+  //   console.log("fetchListings called");
+
+    try {
+        if (!postId) {
+            return res
+                  .status(400)
+                  .json({ message: "No postId provided." });
+      }
+          // call query function in services with formatted filters
+          const listing = await getListing(postId);
+          if (!listing) {
+                console.log("No listing with postId: ", postId);
+                res.status(500).json({ message: "No listing found with that id." });
+          }
+          // console.log(listings)
+
+          res.status(200).json({ listing });
+    } catch (err) {
+          console.log(err);
+          res.status(500).json({ error: err });
+    }
 };
 
 export const createListing = async (req: Request, res: Response) => {

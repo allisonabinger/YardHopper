@@ -8,6 +8,7 @@ import {
       createListing,
       deleteListing,
       fetchListings,
+      fetchSingleListing,
       removeImage,
       updateListing,
 } from "../controllers/listingsController";
@@ -200,6 +201,10 @@ const upload = multer({ storage: storage });
 
 router.get("/", (req: Request, res: Response) => {
       fetchListings(req, res);
+});
+
+router.get("/:postId", (req: Request, res: Response) => {
+    fetchSingleListing(req, res);
 });
 
 router.post("/", (req: Request, res: Response) => {
