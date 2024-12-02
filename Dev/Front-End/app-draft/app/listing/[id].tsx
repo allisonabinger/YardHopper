@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
@@ -7,13 +14,16 @@ import mockData from "@/mockData.json";
 
 export default function ListingDetail() {
   const router = useRouter();
-  const { postId } = useLocalSearchParams<{ postId?: string }>();
+  const { id } = useLocalSearchParams<{ id?: string }>();
 
-  if (!postId) {
+  if (!id) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>Error: Missing post ID</Text>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={28} color="#159636" />
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -21,13 +31,16 @@ export default function ListingDetail() {
     );
   }
 
-  const listing = mockData.listings.find((item) => item.postId === postId);
+  const listing = mockData.listings.find((item) => item.postId === id);
 
   if (!listing) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>Error: Listing not found</Text>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={28} color="#159636" />
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -43,13 +56,16 @@ export default function ListingDetail() {
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={28} color="#159636" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{title}</Text>
       </View>
 
-      {/* Card Container */}
+      {/* Additional Details */}
       <View style={styles.cardContainer}>
         {/* Image Carousel */}
         <ScrollView horizontal pagingEnabled style={styles.imageCarousel}>
@@ -93,16 +109,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
+    paddingTop: 50,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: 25,
+    // fontWeight: "semibold",
     color: "#159636",
     textAlign: "center",
-    flex: 1,
+    // flex: 1,
+  },
+  headerText: {
+    fontSize: 25,
+    fontWeight: "500",
+    color: "#159636",
   },
   backButton: {
     flexDirection: "row",
@@ -114,15 +136,16 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   cardContainer: {
-    backgroundColor: "#D9D9D9",
+    backgroundColor: "white",
     borderRadius: 10,
-    margin: 25,
+    margin: 2,
     padding: 16,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 6,
+    marginTop: 16,
+    // elevation: 4,
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 4 },
+    // shadowOpacity: 0.6,
+    // shadowRadius: 6,
   },
   imageCarousel: {
     height: 200,

@@ -41,7 +41,7 @@ export default function RootLayout() {
             <Stack.Screen name="add-listing-details-2" options={{ headerShown: false }} />
             <Stack.Screen name="forgot-password" options={{ headerShown: false}}/>
             <Stack.Screen name="+not-found" options={{ headerShown: false }} />
-            <Stack.Screen name="listing/[id]" />
+            <Stack.Screen name="listing/[id]" options={{ headerShown: false }} />
           </Stack>
         </ThemeProvider>
         <StatusBar style="auto" />
