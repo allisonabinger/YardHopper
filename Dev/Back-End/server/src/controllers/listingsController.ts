@@ -2,6 +2,7 @@
 import { Request, Response } from "express";
 import {
       addImageToListing,
+      changeCaptionInDB,
       getListings,
       postListing,
       removeImageInDB,
@@ -254,7 +255,7 @@ export const addImage = async (req: Request, res: Response) => {
 export const removeImage = async (req: Request, res: Response) => {
     try {
         const { postId } = req.params;
-        const { uri, caption } = req.body;
+        const { uri } = req.query;
 
         if (!postId) {
               return res
@@ -262,18 +263,13 @@ export const removeImage = async (req: Request, res: Response) => {
                     .json({ message: "No postId provided." });
         }
 
-        if (!uri) {
-            return res
-                  .status(400)
-                  .json({ message: "No image file provided." });
-      }
+        if (!uri || typeof uri !== "string") {
+            return res.status(400).json({ message: "No valid image URI provided." });
+        }
 
-      const imageDetails = {uri, caption}
-      // removes image in fb
-
-      const filePath = getFilePathFromURI(imageDetails.uri);
+      const filePath = getFilePathFromURI(uri);
       await removeImageInFirebase(filePath);
-      await removeImageInDB(postId, imageDetails)
+      await removeImageInDB(postId, uri)
       res.status(200).json({ message: "Image removed successfully." });
 
       // removes image in firestore
@@ -283,6 +279,41 @@ export const removeImage = async (req: Request, res: Response) => {
               .status(500)
               .json({ message: "Failed to update listing." });
   }
+}
+
+export const changeCaption = async(req: Request, res: Response) => {
+    try {
+        const { postId } = req.params;
+        const { uri, caption } = req.body;
+
+        // console.log(`Caption: ${caption}`)
+        if (!postId) {
+              return res
+                    .status(400)
+                    .json({ message: "No postId provided." });
+        }
+
+        if (!uri || typeof uri !== "string") {
+            return res.status(400).json({ message: "No valid image URI provided." });
+        }
+
+        if (!caption || typeof caption !== "string") {
+            return res.status(400).json({ message: "No valid new caption provided." });
+        }
+
+      const updatedListing = await changeCaptionInDB(postId, uri, caption);
+      if (!updatedListing) {
+        return res.status(404).json({ message: "Listing not found or image URI does not exist." });
+    }
+
+    res.status(200).json({
+        message: "Caption updated successfully.",
+        listing: updatedListing,
+    });
+    } catch (err) {
+        console.error("Error updating caption:", err);
+        res.status(500).json({ message: "Failed to update caption." });
+    }
 }
 
 export const deleteListing = async (req: Request, res: Response) => {
