@@ -84,6 +84,60 @@ The API will respond with the public fields in an array of listings. Here is an 
 
 ```
 
+### GET /api/listings/:postId
+The `GET /api/listings` endpoint serves to provide data for a single listing. It accepts no parameters.
+
+**Request Endpoint Example**
+
+With coordinates:
+https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
+
+
+```
+{
+    "listing": {
+        "title": "Multi Family Sale",
+        "description": "Lots of clothes, office supplies, electronics, and more.",
+        "address": {
+            "zip": 74037,
+            "city": "Jenks",
+            "street": "300 Aquarium Drive",
+            "state": "OK"
+        },
+        "dates": [
+            "2024-12-14"
+        ],
+        "startTime": "10:00",
+        "endTime": "\"14:00\"",
+        "images": [
+            {
+                "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FDOcNhHR25vTD70cmlySs%2F396ea9d4-79a2-4b68-aa1f-e8582ad4ca90-Electronics.jpeg?alt=media",
+                "caption": "Electronics"
+            },
+            {
+                "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FDOcNhHR25vTD70cmlySs%2Fb354066b-c04d-4a9c-bce1-a22c9d8184c7-Generic2.jpeg?alt=media",
+                "caption": "More Items"
+            }
+        ],
+        "categories": [
+            "Electronics",
+            "Furniture",
+            "Books/Media"
+        ],
+        "status": "upcoming",
+        "g": {
+            "geohash": "9y7ubmnm3",
+            "geopoint": {
+                "_latitude": 36.019589116194474,
+                "_longitude": -95.95694318593097
+            }
+        },
+        "postId": "DOcNhHR25vTD70cmlySs"
+    }
+}
+
+```
+
 ### POST /api/listings
 The endpoint will handle parsing the user information and generating the metadata for the db to query later. It accepts the listing data in the body. 
 
@@ -144,25 +198,12 @@ PUT https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
 **Request Params**
 postId: "DOcNhHR25vTD70cmlySs"
 
-**Request Body**
+**Request Body - JSON**
 ```
   {
     "startTime": "07:00",
   }
 ```
-
-### PUT /api/listings/:postId/images
-This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string, and the `postId` in the parameters.
-
-**Request Endpoint Example**
-PUT https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs/images
-
-**Request Params**
-postId: "DOcNhHR25vTD70cmlySs"
-caption: "Picture of items"
-
-**Request File**
-(accepts all image types, preferrably jpeg)
 
 ### DEL /api/listings/:postId
 This route is user for deleting a listing. It will delete the data stored in the firestore database, as well as any images attached to the listing. It accepts the `postId` as the parameter.
@@ -172,6 +213,55 @@ DEL https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
 
 **Request Params**
 postId: "DOcNhHR25vTD70cmlySs"
+
+
+### POST /api/listings/:postId/images
+This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string in the body, and the `postId` in the parameters.
+
+```
+    { postId } = req.params;
+    { caption } = req.body;
+    { file } = req;
+```
+
+**Request Endpoint Example**
+POST https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs/images
+
+**Request Params**
+postId: "DOcNhHR25vTD70cmlySs"
+
+**Request Body - JSON**
+```
+  {
+    "caption": "More Items",
+  }
+```
+
+**Request File**
+(accepts all image types, preferrably jpeg)
+
+### PUT /api/listings/:postId/images
+This route is used for updating the caption of an image. It accepts the `postId` as the parameter of an image, and the `uri` and `caption` to update. 
+
+```
+    { postId } = req.params;
+    { uri, caption } = req.body;
+```
+
+**Request Endpoint Example**
+PUT https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs/images
+
+**Request Params**
+postId: "DOcNhHR25vTD70cmlySs"
+
+**Request Body - JSON**
+```
+  {
+    uri: "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Fw0whNL9DV7eshUTYs0cA%2F6e0fa6e4-4b3f-4dca-afd4-d8150a8136ff-SportsGear.jpeg?alt=media",
+    "caption": "More Items",
+  }
+```
+
 
 ### DEL /api/listings/:postId/images
 This route is user for deleting an image within a listing. Since it has to delete the image in firestore and firebase, it has it's own endpoint to handle the single deletion of an image.
