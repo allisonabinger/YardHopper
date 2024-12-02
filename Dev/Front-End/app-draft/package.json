@@ -22,6 +22,7 @@
     "@react-native-community/slider": "^4.5.5",
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
+    "@react-navigation/stack": "^7.0.18",
     "babel": "^6.23.0",
     "dotenv": "^16.4.5",
     "expo": "~52.0.7",

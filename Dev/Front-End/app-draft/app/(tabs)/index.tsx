@@ -8,6 +8,7 @@ import {
   Image,
   Animated,
   PanResponder,
+  RefreshControl,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +16,9 @@ import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import mockData from "@/mockData.json";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { router } from "expo-router";
 
 type ListingItem = {
   title: string;
@@ -37,7 +41,15 @@ type ListingItem = {
   };
 };
 
+type RootStackParamList = {
+  Home: undefined;
+  listing: { id: string };
+};
+
+type NavigationProp = StackNavigationProp<RootStackParamList, "Home">;
+
 export default function HomeScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [radius, setRadius] = useState(5);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -46,6 +58,8 @@ export default function HomeScreen() {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedListing, setSelectedListing] = useState<ListingItem | null>(null);
+  const [listings, setListings] = useState(mockData.listings);
+  const [refreshing, setRefreshing] = useState(false);
   const fadeAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
 
   useEffect(() => {
@@ -73,6 +87,12 @@ export default function HomeScreen() {
 
   const toggleFilter = () => {
     setFilterModalVisible(!filterModalVisible);
+  };
+
+  const formatDate = (dateString: string): string => {
+    const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "long", year: "numeric" };
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-US", options).format(date);
   };
 
   const toggleLike = (postId: string) => {
@@ -117,6 +137,14 @@ export default function HomeScreen() {
     },
   });
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setListings([...mockData.listings]);
+      setRefreshing(false);
+    }, 1000);
+  };
+
   const renderItem = ({ item }: { item: ListingItem }) => {
     const isExpanded = expandedPostId === item.postId;
     const isLiked = likedPosts[item.postId];
@@ -139,6 +167,7 @@ export default function HomeScreen() {
             color={isLiked ? "#159636" : "gray"}
           />
         </TouchableOpacity>
+
         <Image
           source={{ uri: item.images[0]?.uri || "https://via.placeholder.com/150" }}
           style={styles.cardImage}
@@ -149,12 +178,7 @@ export default function HomeScreen() {
         </Text>
 
         {isExpanded && (
-          <Animated.View
-            style={[
-              styles.expandedDetails,
-              { opacity: fadeAnimation },
-            ]}
-          >
+          <Animated.View style={[styles.expandedDetails, { opacity: fadeAnimation }]}>
             <Text style={styles.sectionTitle}>Description</Text>
             <Text style={styles.sectionContent}>{item.description}</Text>
 
@@ -167,12 +191,21 @@ export default function HomeScreen() {
               ))}
             </View>
 
-            <Text style={styles.date}>Date: {item.dates[0]}</Text>
+            {/* Apply the formatDate function */}
+            <Text style={styles.date}>Date: {formatDate(item.dates[0])}</Text>
+
+            <TouchableOpacity
+              style={styles.seeMoreButton}
+              onPress={() => router.push(`/listing/${item.postId}`)}
+            >
+              <Text style={styles.seeMoreText}>See More Details</Text>
+            </TouchableOpacity>
           </Animated.View>
         )}
       </TouchableOpacity>
     );
   };
+
 
   return (
     <View style={styles.container}>
@@ -196,14 +229,9 @@ export default function HomeScreen() {
           <Ionicons
             name={viewMode === "list" ? "toggle-outline" : "toggle"}
             size={28}
-            color={viewMode === "list" ? "#159636" : "#159636"}
+            color="#159636"
           />
-          <Text
-            style={[
-              styles.toggleText,
-              { color: viewMode === "list" ? "#159636" : "#159636" },
-            ]}
-          >
+          <Text style={styles.toggleText}>
             {viewMode === "list" ? "Map View" : "List View"}
           </Text>
         </TouchableOpacity>
@@ -211,22 +239,30 @@ export default function HomeScreen() {
 
       {viewMode === "list" ? (
         <FlatList
-          data={mockData.listings}
+          data={listings}
           renderItem={renderItem}
           keyExtractor={(item) => item.postId}
           contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#159636", "#28a745", "#85e085"]}
+              tintColor="#159636"
+            />
+          }
         />
       ) : (
         <MapView
           style={styles.map}
           initialRegion={{
-            latitude: mockData.listings[0]?.g.geopoint._latitude || 37.7749,
-            longitude: mockData.listings[0]?.g.geopoint._longitude || -122.4194,
+            latitude: listings[0]?.g.geopoint._latitude || 37.7749,
+            longitude: listings[0]?.g.geopoint._longitude || -122.4194,
             latitudeDelta: 0.1,
             longitudeDelta: 0.1,
           }}
         >
-          {mockData.listings.map((item) => (
+          {listings.map((item) => (
             <Marker
               key={item.postId}
               coordinate={{
@@ -249,14 +285,13 @@ export default function HomeScreen() {
         onLikeToggle={(postId) => toggleLike(postId)}
         onCardPress={(postId) => console.log("Card pressed:", postId)}
       />
-
       <FilterModal
         visible={filterModalVisible}
-        onClose={toggleFilter}
-        radius={radius}
-        setRadius={setRadius}
+        onClose={() => setFilterModalVisible(false)}
+        onRadiusChange={setRadius}
         selectedCategories={selectedCategories}
-        setSelectedCategories={setSelectedCategories}
+        onCategoryChange={setSelectedCategories}
+        radius={radius}
       />
     </View>
   );
@@ -305,6 +340,7 @@ const styles = StyleSheet.create({
   toggleText: {
     fontSize: 16,
     marginLeft: 8,
+    color: "#159636",
   },
   listContent: {
     paddingVertical: 16,
@@ -320,7 +356,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.4,
     shadowRadius: 6,
   },
   likeButton: {
@@ -334,7 +370,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 4,
   },
   cardImage: {
@@ -389,5 +425,17 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 14,
     color: "#666",
+  },
+  seeMoreButton: {
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: "#159636",
+    borderRadius: 20,
+    alignItems: "center",
+  },
+  seeMoreText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
   },
 });
