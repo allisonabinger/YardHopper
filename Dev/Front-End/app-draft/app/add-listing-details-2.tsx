@@ -23,13 +23,22 @@ export default function AddListingDetailsPage2() {
   const [currentPicker, setCurrentPicker] = useState(null); // 'start' or 'end'
 
   const handleDayPress = (day) => {
+    const selectedDate = new Date(day.dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set today's time to 00:00:00 to compare only the date
+  
+    if (selectedDate < today) {
+      Alert.alert("Invalid Date", "Start date cannot be in the past.");
+      return;
+    }
+  
     if (!startDate || (startDate && endDate)) {
       setStartDate(day.dateString);
       setEndDate(null);
     } else if (startDate && !endDate) {
       const start = new Date(startDate);
       const end = new Date(day.dateString);
-
+  
       if (end >= start) {
         setEndDate(day.dateString);
       } else {
@@ -73,9 +82,7 @@ export default function AddListingDetailsPage2() {
             <Calendar
               onDayPress={handleDayPress}
               markedDates={{
-                ...(startDate && endDate
-                  ? getDatesInRange(startDate, endDate)
-                  : {}),
+                ...(startDate && endDate ? getDatesInRange(startDate, endDate) : {}),
                 [startDate]: {
                   selected: true,
                   startingDay: true,
@@ -97,7 +104,7 @@ export default function AddListingDetailsPage2() {
               }}
             />
           </View>
-
+  
           <View style={styles.timePickerRow}>
             <View style={styles.timePickerContainer}>
               <Text style={styles.label}>Start Time</Text>
@@ -105,70 +112,70 @@ export default function AddListingDetailsPage2() {
                 style={styles.timeButton}
                 onPress={() => setCurrentPicker("start")}
               >
-                <Text>{startTime.toLocaleTimeString()}</Text>
+                <Text>{startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
               </TouchableOpacity>
             </View>
-
+  
             <View style={styles.timePickerContainer}>
               <Text style={styles.label}>End Time</Text>
               <TouchableOpacity
                 style={styles.timeButton}
                 onPress={() => setCurrentPicker("end")}
               >
-                <Text>{endTime.toLocaleTimeString()}</Text>
+                <Text>{endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
               </TouchableOpacity>
             </View>
-
-            {/* Modal for Time Picker */}
-            <Modal
-              visible={currentPicker !== null}
-              transparent={true}
-              animationType="slide"
-              onRequestClose={() => setCurrentPicker(null)}
-            >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalTitle}>
-                    {currentPicker === "start"
-                      ? "Select Start Time"
-                      : "Select End Time"}
-                  </Text>
-                  <DateTimePicker
-                    value={currentPicker === "start" ? startTime : endTime}
-                    mode="time"
-                    is24Hour={true}
-                    display="spinner"
-                    onChange={(event, selectedTime) => {
-                      if (selectedTime) {
-                        if (currentPicker === "start") {
-                          setStartTime(selectedTime);
-                        } else if (currentPicker === "end") {
-                          if (selectedTime > startTime) {
-                            setEndTime(selectedTime);
-                          } else {
-                            Alert.alert(
-                              "Invalid Time",
-                              "End time must be after start time."
-                            );
-                          }
+          </View>
+  
+          {/* Modal for Time Picker */}
+          <Modal
+            visible={currentPicker !== null}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setCurrentPicker(null)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>
+                  {currentPicker === "start"
+                    ? "Select Start Time"
+                    : "Select End Time"}
+                </Text>
+                <DateTimePicker
+                  value={currentPicker === "start" ? startTime : endTime}
+                  mode="time"
+                  is24Hour={true}
+                  display="spinner"
+                  onChange={(event, selectedTime) => {
+                    if (selectedTime) {
+                      if (currentPicker === "start") {
+                        setStartTime(selectedTime);
+                      } else if (currentPicker === "end") {
+                        if (selectedTime > startTime) {
+                          setEndTime(selectedTime);
+                        } else {
+                          Alert.alert(
+                            "Invalid Time",
+                            "End time must be after start time."
+                          );
                         }
                       }
-                      setCurrentPicker(null); // Close the modal
-                    }}
-                  />
-                  <TouchableOpacity
-                    style={styles.closeModalButton}
-                    onPress={() => setCurrentPicker(null)}
-                  >
-                    <Text style={styles.closeModalButtonText}>Close</Text>
-                  </TouchableOpacity>
-                </View>
+                    }
+                    setCurrentPicker(null); // Close the modal
+                  }}
+                />
+                <TouchableOpacity
+                  style={styles.closeModalButton}
+                  onPress={() => setCurrentPicker(null)}
+                >
+                  <Text style={styles.closeModalButtonText}>Close</Text>
+                </TouchableOpacity>
               </View>
-            </Modal>
-          </View>
-
+            </View>
+          </Modal>
+  
           <TouchableOpacity style={styles.publishButton} onPress={handlePublish}>
-            <Text style={styles.publishText}>Publish</Text>
+            <Text style={styles.publishText}>Continue</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
