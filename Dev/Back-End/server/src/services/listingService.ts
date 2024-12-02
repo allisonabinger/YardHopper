@@ -146,7 +146,7 @@ export const updateListingInDB = async (
                   throw new Error("No fields to update.");
             }
             const listingRef = db.collection("listings").doc(postId);
-            console.log("Updating firestore doc: ", listingRef.path);
+            // console.log("Updating firestore doc: ", listingRef.path);
 
             await listingRef.update(updatedFields);
 
