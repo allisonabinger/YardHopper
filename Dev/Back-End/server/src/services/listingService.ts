@@ -126,6 +126,8 @@ export const addImageToListing = async (
       caption: string
 ): Promise<any> => {
       try {
+        // console.log("Adding image to listing", { postId, imageURI, caption });
+
             const listingRef = db.collection("listings").doc(postId);
 
             const listingDoc = await listingRef.get();
@@ -134,14 +136,15 @@ export const addImageToListing = async (
                   console.log("listing not found: ", postId);
                   throw new Error("Listing not found.");
             }
+            // console.log("Existing listing data:", listingDoc);
             const listingData = listingDoc.data();
             const currentImages = listingData?.images || [];
 
             const updatedImages = [
                   ...currentImages,
-                  { uri: imageURI, caption: caption },
+                  { uri: imageURI, caption: caption || "" },
             ];
-
+            // console.log("Updated images array:", updatedImages);
             await listingRef.update({ images: updatedImages });
 
             const updatedDoc = await listingRef.get();
@@ -187,9 +190,10 @@ export const removeListingInDB = async (
 // removes image reference in Firestore (uri and caption)
 export const removeImageInDB = async (
       postId: string,
-      imageDetails: { uri: string; caption: string }
+      uri: string,
 ): Promise<void> => {
       try {
+        // console.log(`Uri: ${uri}`)
             const listingRef = db.collection("listings").doc(postId);
 
             const listingDoc = await listingRef.get();
@@ -199,30 +203,98 @@ export const removeImageInDB = async (
             }
 
             const listingData = listingDoc.data();
+            // console.log("Listing Data:", JSON.stringify(listingData, null, 2));
 
-            if (!listingData || !Array.isArray(listingData.images)) {
-                  throw new Error(`Listing with ID ${postId} has no images`);
+            if (!listingData) {
+                  throw new Error(`Cannot find listing: ${postId}`);
             }
+            if (!Array.isArray(listingData.images)) {
+                throw new Error(`Listing with ID ${postId} has no images`);
+          }
+          const currentImages = listingData?.images
+        //   console.log("Current images:", JSON.stringify(currentImages, null, 2));
 
-            const updatedImages = listingData.images.filter((image: { uri: string; caption: string }) => {
-                console.log("Comparing:", { image, imageDetails });
-                return image.uri !== imageDetails.uri || image.caption !== imageDetails.caption;
-            });
+          const updatedImages = currentImages.filter((image: { uri: string }) => {
+            const decodedImageURI = decodeURIComponent(image.uri.trim());
+            const decodedTargetURI = decodeURIComponent(uri.trim());
+            // console.log(`Comparing: "${decodedImageURI}" === "${decodedTargetURI}"`);
+            return decodedImageURI !== decodedTargetURI;
+        });
 
-            console.log("Updated images:", updatedImages);
+        //   console.log("Updated images:", JSON.stringify(updatedImages, null, 2));
+
+          const uriExists = updatedImages.some(
+            (image: { uri: string }) =>
+                decodeURIComponent(image.uri.trim()) === decodeURIComponent(uri.trim())
+        );
+
+        if (uriExists) {
+            console.error("URI was not removed from images.");
+            throw new Error(`Failed to remove URI: ${uri}`);
+        }
 
             await listingRef.update({ images: updatedImages });
-            console.log("Firestore update completed successfully.");
+            // console.log("Firestore update completed successfully: ", listingData);
       } catch (err) {
             console.error(
-                  `Error remove image ${imageDetails.uri} reference from database.`,
+                  `Error removing image ${uri} reference from database.`,
                   err
             );
             throw new Error(
-                  `Error remove image ${imageDetails.uri} reference from database.`
+                  `Error removing image ${uri} reference from database.`
             );
       }
 };
+
+export const changeCaptionInDB = async (
+    postId: string,
+    uri: string,
+    caption: string
+): Promise<any> => {
+    try {
+        const listingRef = db.collection("listings").doc(postId);
+        const listingDoc = await listingRef.get();
+
+        if (!listingDoc.exists) {
+            throw new Error(`Cannot find listing with ID: ${postId}`);
+        }
+
+        const listingData = listingDoc.data();
+        if (!listingData) {
+            throw new Error(`Cannot retrieve data for listing: ${postId}`);
+        }
+
+        if (!Array.isArray(listingData.images)) {
+            throw new Error(`Listing with ID ${postId} has no images`);
+        }
+
+        const currentImages = listingData.images;
+        const updatedImages = currentImages.map((image: { uri: string; caption: string }) => {
+            if (decodeURIComponent(image.uri.trim()) === decodeURIComponent(uri.trim())) {
+                // console.log(`Updating caption for URI: ${image.uri}`);
+                return { ...image, caption: caption };
+            }
+            return image;
+        });
+
+        const uriExists = updatedImages.some(
+            (image: { uri: string; caption: string }) =>
+                decodeURIComponent(image.uri.trim()) === decodeURIComponent(uri.trim())
+        );
+
+        if (!uriExists) {
+            throw new Error(`Image URI not found in listing: ${postId}`);
+        }
+
+        await listingRef.update({ images: updatedImages });
+
+        const updatedDoc = await listingRef.get();
+        return updatedDoc.exists ? updatedDoc.data() : null;
+    } catch (err) {
+        console.error(`Error updating caption for image ${uri} in listing ${postId}.`, err);
+        throw new Error(`Error updating caption for image ${uri} in listing ${postId}.`);
+    }
+}
 
 // Function to calculate the distance between to points using coordinates!
 // const haversineDistance = (lat1: number, long1: number, lat2: number, long2: number): number => {
