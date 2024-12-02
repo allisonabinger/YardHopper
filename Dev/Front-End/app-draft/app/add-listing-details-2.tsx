@@ -66,11 +66,31 @@ export default function AddListingDetailsPage2() {
   };
 
   const handlePublish = () => {
-    if (startDate && endDate) {
-      router.push("/add-listing-details-3");
-    } else {
-      Alert.alert("Error", "Please select valid dates and times.");
+    const today = new Date();
+  
+    if (!startDate || !endDate) {
+      Alert.alert("Error", "Please select valid dates.");
+      return;
     }
+  
+    if (!startTime || !endTime) {
+      Alert.alert("Error", "Please select both start and end times.");
+      return;
+    }
+  
+    // Ensure startTime and endTime are in the future
+    if (startDate === today.toISOString().split("T")[0] && startTime <= today) {
+      Alert.alert("Error", "Start time must be in the future.");
+      return;
+    }
+  
+    if (endTime <= new Date(startTime.getTime() + 60 * 60 * 1000)) {
+      Alert.alert("Error", "End time must be at least 1 hour after the start time.");
+      return;
+    }
+  
+    // If all validations pass, navigate to the next page
+    router.push("/add-listing-details-3");
   };
 
   return (
@@ -150,13 +170,19 @@ export default function AddListingDetailsPage2() {
                     if (selectedTime) {
                       if (currentPicker === "start") {
                         setStartTime(selectedTime);
+
+                        // Automatically set endTime to 1 hour ahead of startTime
+                        const oneHourAhead = new Date(selectedTime.getTime() + 60 * 60 * 1000);
+                        if (endTime <= oneHourAhead) {
+                          setEndTime(oneHourAhead);
+                        }
                       } else if (currentPicker === "end") {
-                        if (selectedTime > startTime) {
+                        if (selectedTime >= new Date(startTime.getTime() + 60 * 60 * 1000)) {
                           setEndTime(selectedTime);
                         } else {
                           Alert.alert(
                             "Invalid Time",
-                            "End time must be after start time."
+                            "End time must be at least 1 hour after the start time."
                           );
                         }
                       }
