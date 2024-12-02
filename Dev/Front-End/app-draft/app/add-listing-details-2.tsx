@@ -171,10 +171,9 @@ export default function AddListingDetailsPage2() {
                       if (currentPicker === "start") {
                         setStartTime(selectedTime);
 
-                        // Automatically set endTime to 1 hour ahead of startTime
                         const oneHourAhead = new Date(selectedTime.getTime() + 60 * 60 * 1000);
-                        if (endTime <= oneHourAhead) {
-                          setEndTime(oneHourAhead);
+                        if (endTime <= new Date(selectedTime.getTime() + 60 * 60 * 1000)) {
+                          setEndTime(new Date(selectedTime.getTime() + 60 * 60 * 1000));
                         }
                       } else if (currentPicker === "end") {
                         if (selectedTime >= new Date(startTime.getTime() + 60 * 60 * 1000)) {
