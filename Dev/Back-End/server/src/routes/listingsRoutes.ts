@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import multer from "multer";
 import {
     addImage,
+      changeCaption,
       createListing,
       deleteListing,
       fetchListings,
@@ -209,7 +210,10 @@ router.post("/", (req: Request, res: Response) => {
 router.put("/:postId", (req: Request, res: Response) => { updateListing(req, res);});
 
 // put request for uploading images
-router.put("/:postId/images", upload.single("image"), (req: Request, res: Response) => { addImage(req, res);});
+router.post("/:postId/images", upload.single("image"), (req: Request, res: Response) => { addImage(req, res);});
+
+// update caption for a specific image
+router.put("/:postId/images", (req: Request, res: Response) => { changeCaption(req, res);});
 
 // deletes an image from a listing
 router.delete("/:postId/images", (req: Request, res: Response) => { removeImage(req, res);});
