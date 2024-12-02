@@ -67,7 +67,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const response = await fetch("https://yardhopperapi.onrender.com/api/listings?zipcode=74103"); // Replace with your API endpoint
+        const response = await fetch("https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950&postId=DOcNhHR25vTD70cmlySs"); // Replace with your API endpoint
         const data = await response.json();
         setListings(data.listings); // Adjust the path based on the API response structure
       } catch (error) {
