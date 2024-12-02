@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   FlatList,
   View,
@@ -12,6 +12,8 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import FilterModal from "@/components/FilterModal";
+import PopupCardModal from "@/components/PopupCardModal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import mockData from "@/mockData.json";
 
 type ListingItem = {
@@ -41,18 +43,44 @@ export default function HomeScreen() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
-  const [viewMode, setViewMode] = useState<"list" | "map">("list"); 
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedListing, setSelectedListing] = useState<ListingItem | null>(null);
   const fadeAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
+
+  useEffect(() => {
+    const loadLikedPosts = async () => {
+      try {
+        const storedLikedPosts = await AsyncStorage.getItem("likedPosts");
+        if (storedLikedPosts) {
+          setLikedPosts(JSON.parse(storedLikedPosts));
+        }
+      } catch (error) {
+        console.error("Failed to load liked posts:", error);
+      }
+    };
+
+    loadLikedPosts();
+  }, []);
+
+  const saveLikedPosts = async (updatedLikedPosts: { [key: string]: boolean }) => {
+    try {
+      await AsyncStorage.setItem("likedPosts", JSON.stringify(updatedLikedPosts));
+    } catch (error) {
+      console.error("Failed to save liked posts:", error);
+    }
+  };
 
   const toggleFilter = () => {
     setFilterModalVisible(!filterModalVisible);
   };
 
   const toggleLike = (postId: string) => {
-    setLikedPosts((prev) => ({
-      ...prev,
-      [postId]: !prev[postId],
-    }));
+    setLikedPosts((prev) => {
+      const updated = { ...prev, [postId]: !prev[postId] };
+      saveLikedPosts(updated);
+      return updated;
+    });
   };
 
   const toggleExpand = (postId: string) => {
@@ -68,6 +96,16 @@ export default function HomeScreen() {
       duration: 300,
       useNativeDriver: true,
     }).start();
+  };
+
+  const openModal = (listing: ListingItem) => {
+    setSelectedListing(listing);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedListing(null);
   };
 
   const panResponder = PanResponder.create({
@@ -91,7 +129,6 @@ export default function HomeScreen() {
         style={styles.cardContainer}
         {...(isExpanded ? panResponder.panHandlers : {})}
       >
-        {/* Like Button */}
         <TouchableOpacity
           style={styles.likeButton}
           onPress={() => toggleLike(item.postId)}
@@ -102,20 +139,15 @@ export default function HomeScreen() {
             color={isLiked ? "#159636" : "gray"}
           />
         </TouchableOpacity>
-
-        {/* Card Image */}
         <Image
           source={{ uri: item.images[0]?.uri || "https://via.placeholder.com/150" }}
           style={styles.cardImage}
         />
-
-        {/* Card Title */}
         <Text style={styles.cardTitle}>{item.title}</Text>
         <Text style={styles.cardAddress}>
           {`${item.address.street}, ${item.address.city}`}
         </Text>
 
-        {/* Expanded Details */}
         {isExpanded && (
           <Animated.View
             style={[
@@ -148,9 +180,7 @@ export default function HomeScreen() {
         <Text style={styles.headerText}>Explore</Text>
       </View>
 
-      {/* Action Buttons Row */}
       <View style={styles.actionsRow}>
-        {/* Filter Button */}
         <TouchableOpacity onPress={toggleFilter} style={styles.filterButton}>
           <Ionicons
             name={filterModalVisible ? "filter-circle" : "filter-circle-outline"}
@@ -159,8 +189,6 @@ export default function HomeScreen() {
           />
           <Text style={styles.filterText}>Filter</Text>
         </TouchableOpacity>
-
-        {/* View Toggle Button */}
         <TouchableOpacity
           onPress={() => setViewMode(viewMode === "list" ? "map" : "list")}
           style={styles.toggleButton}
@@ -168,9 +196,14 @@ export default function HomeScreen() {
           <Ionicons
             name={viewMode === "list" ? "toggle-outline" : "toggle"}
             size={28}
-            color={viewMode === "list" ? "gray" : "#159636"}
+            color={viewMode === "list" ? "#159636" : "#159636"}
           />
-          <Text style={[styles.toggleText, { color: viewMode === "list" ? "gray" : "#159636" }]}>
+          <Text
+            style={[
+              styles.toggleText,
+              { color: viewMode === "list" ? "#159636" : "#159636" },
+            ]}
+          >
             {viewMode === "list" ? "Map View" : "List View"}
           </Text>
         </TouchableOpacity>
@@ -202,10 +235,20 @@ export default function HomeScreen() {
               }}
               title={item.title}
               description={`${item.address.street}, ${item.address.city}`}
+              onPress={() => openModal(item)}
             />
           ))}
         </MapView>
       )}
+
+      <PopupCardModal
+        isVisible={isModalVisible}
+        item={selectedListing}
+        onClose={closeModal}
+        animation={new Animated.Value(1)}
+        onLikeToggle={(postId) => toggleLike(postId)}
+        onCardPress={(postId) => console.log("Card pressed:", postId)}
+      />
 
       <FilterModal
         visible={filterModalVisible}

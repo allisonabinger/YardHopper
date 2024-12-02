@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -6,7 +6,11 @@ import {
   Image,
   Text,
   StyleSheet,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
+import * as SecureStore from "expo-secure-store";
+import * as LocalAuthentication from "expo-local-authentication";
 import { useAuth } from "@/components/AuthProvider";
 import { Link, useRouter } from "expo-router";
 
@@ -17,17 +21,56 @@ export default function LoginScreen() {
   // Form state for email and password
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState(true); // Loading state for biometric authentication
+
+  useEffect(() => {
+    const authenticateWithBiometrics = async () => {
+      try {
+        const isBiometricEnabled = await SecureStore.getItemAsync("useBiometrics");
+        const token = await SecureStore.getItemAsync("userToken");
+
+        if (isBiometricEnabled === "true" && token) {
+          const { success } = await LocalAuthentication.authenticateAsync({
+            promptMessage: "Authenticate to log in",
+          });
+
+          if (success) {
+            router.replace("/(tabs)"); // Redirect to the main app if authentication succeeds
+          }
+        }
+      } catch (error) {
+        console.error("Biometric authentication error:", error);
+        Alert.alert("Authentication Failed", "Please log in manually.");
+      } finally {
+        setLoading(false); // Stop loading whether authentication succeeds or fails
+      }
+    };
+
+    authenticateWithBiometrics();
+  }, [router]);
 
   async function login(email: string, password: string) {
-    // setLoading(true);
     try {
-      console.log(`logging in with ${email} and ${password}`)
-      await auth.login(email, password)
+      console.log(`Logging in with ${email} and ${password}`);
+      await auth.login(email, password);
+
+      // Save user token and enable biometrics for the next login
+      const token = "exampleToken"; // Replace with actual token
+      await SecureStore.setItemAsync("userToken", token);
+      await SecureStore.setItemAsync("useBiometrics", "true");
+
       router.replace("/(tabs)");
     } catch (e) {
       alert("Email or password is incorrect");
     }
-    // setLoading(false);
+  }
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#159636" />
+      </View>
+    );
   }
 
   return (

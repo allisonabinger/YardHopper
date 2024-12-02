@@ -50,7 +50,9 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "react-native-web-maps": "^0.3.0",
-    "react-native-webview": "13.12.2"
+    "react-native-webview": "13.12.2",
+    "expo-secure-store": "~14.0.0",
+    "expo-local-authentication": "~15.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
