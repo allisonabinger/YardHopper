@@ -11,9 +11,8 @@ import {
 import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Easing } from "react-native";
-import ProgressTracker from "../ProgressTracker";
 import PageLayout from "../PageLayout";
-import Page from "..";
+
 
 const categories = [
   { id: "1", name: "Decor & Art", subcategories: ["Paintings", "Sculptures", "Wall Art", "Pottery", "Mirrors", "Candles", "Clocks"] },
@@ -57,6 +56,7 @@ export default function AddListingPage() {
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState([]);
+  const sectionListRef = useRef(null);
   const dropdownAnimations = useRef({});
   const router = useRouter();
 
