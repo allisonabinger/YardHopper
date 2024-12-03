@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, TextInput, Pressable, Text, StyleSheet, Alert } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "@/contexts/AuthProvider";
+import { useAuth } from "@/components/AuthProvider";
 import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 
 export default function ChangePasswordPage() {

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Pressable, Text, StyleSheet, ViewStyle } from "react-native";
-import { useAuth } from "@/contexts/AuthProvider";
+import { useAuth } from "@/components/AuthProvider";
 
 interface LogoutComponentProps {
   style?: ViewStyle;

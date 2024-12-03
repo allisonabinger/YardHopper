@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import * as LocalAuthentication from "expo-local-authentication";
-import { useAuth } from "@/contexts/AuthProvider";
+import { useAuth } from "@/components/AuthProvider";
 import { Link, useRouter } from "expo-router";
 
 export default function LoginScreen() {
