@@ -292,9 +292,9 @@ export default function HomeScreen() {
       <FilterModal
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}
-        onRadiusChange={setRadius}
+        setRadius={setRadius}
         selectedCategories={selectedCategories}
-        onCategoryChange={setSelectedCategories}
+        setSelectedCategories={setSelectedCategories}
         radius={radius}
       />
     </View>
