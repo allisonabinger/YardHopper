@@ -5,15 +5,16 @@ import { Request, Response, NextFunction } from "express";
 import { hashUid } from "../controllers/usersController"; 
 
 export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.split(" ")[1];
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
-        return res.status(401).json({ error: "No token provided" });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized: Missing token" });
     }
-
+  
+    const idToken = authHeader.split("Bearer ")[1];
     try {
         // verify firebase auth token
-        const decodedToken = await auth.verifyIdToken(token);
+        const decodedToken = await auth.verifyIdToken(idToken);
         const hashedUid = hashUid(decodedToken.uid);
 
         req.user = {
