@@ -11,9 +11,22 @@ import {
 import Slider from "@react-native-community/slider";
 
 const categories = [
-  "Decor & Art", "Clothing", "Shoes & Accessories", "Pet", "Tools/Parts",
-  "Kitchenware", "Textiles", "Furniture", "Books & Media", "Seasonal/Holiday",
-  "Appliances", "Electronics", "Hobbies", "Sports/Outdoors", "Kids", "Other"
+  "Decor & Art",
+  "Clothing",
+  "Shoes & Accessories",
+  "Pet",
+  "Tools/Parts",
+  "Kitchenware",
+  "Textiles",
+  "Furniture",
+  "Books & Media",
+  "Seasonal/Holiday",
+  "Appliances",
+  "Electronics",
+  "Hobbies",
+  "Sports/Outdoors",
+  "Kids",
+  "Other",
 ];
 
 type FilterModalProps = {
@@ -31,10 +44,14 @@ const FilterModal: React.FC<FilterModalProps> = ({
   radius,
   setRadius,
   selectedCategories,
+  setSelectedCategories,
 }) => {
   const toggleCategory = (category: string) => {
-    console.log(`Category toggled: ${category}`);
-    console.log(`Current selected categories: ${selectedCategories}`);
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category) // Remove category if already selected
+        : [...prev, category] // Add category if not selected
+    );
   };
 
   return (
@@ -71,10 +88,22 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   {categories.map((category) => (
                     <TouchableOpacity
                       key={category}
-                      style={styles.categoryButton}
+                      style={[
+                        styles.categoryButton,
+                        selectedCategories.includes(category) &&
+                          styles.selectedCategory,
+                      ]}
                       onPress={() => toggleCategory(category)}
                     >
-                      <Text style={styles.categoryText}>{category}</Text>
+                      <Text
+                        style={[
+                          styles.categoryText,
+                          selectedCategories.includes(category) &&
+                            styles.selectedCategoryText,
+                        ]}
+                      >
+                        {category}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -91,7 +120,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
     </Modal>
   );
 };
-
 
 const styles = StyleSheet.create({
   modalOverlay: {
@@ -111,6 +139,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+    color: "#159636",
   },
   sliderLabel: {
     fontSize: 16,
@@ -125,6 +154,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
+    color: "#159636",
   },
   categoriesContainer: {
     maxHeight: 300,
@@ -140,17 +170,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 8,
     marginBottom: 8,
-    backgroundColor: "#F0F0F0",
+    backgroundColor: "#F0F0F0", // Default background
   },
   selectedCategory: {
-    backgroundColor: "#159636",
-
+    backgroundColor: "#159636", // Green background for selected categories
   },
   categoryText: {
     fontSize: 14,
+    color: "#000", // Default text color
   },
   selectedCategoryText: {
-    color: "white",
+    color: "#FFF", // White text for selected categories
   },
   applyButton: {
     backgroundColor: "#159636",
@@ -169,4 +199,3 @@ const styles = StyleSheet.create({
 });
 
 export default FilterModal;
-
