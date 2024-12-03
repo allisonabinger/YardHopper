@@ -17,6 +17,8 @@ interface ListingData {
   description: string;
   address: Address;
   dates: string[];
+  startDate?: string;
+  endDate?: string;
   startTime: string;
   endTime: string;
   categories: string[];
@@ -34,6 +36,19 @@ interface ListingContextType {
 
 // Create the context with a default value
 const ListingContext = createContext<ListingContextType | undefined>(undefined);
+
+const getDatesInRange = (start: string, end: string): string[] => {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const dates: string[] = [];
+
+  while (startDate <= endDate) {
+    dates.push(startDate.toISOString().split("T")[0]); // Format as "yyyy-mm-dd"
+    startDate.setDate(startDate.getDate() + 1); // Increment by 1 day
+  }
+
+  return dates;
+};
 
 // Hook for accessing the context
 export const useListingContext = (): ListingContextType => {
@@ -68,10 +83,17 @@ export const ListingProvider: React.FC<ListingProviderProps> = ({ children }) =>
   });
 
   const updateListingData = (newData: Partial<ListingData>) => {
-    setListingData((prevData) => ({
-      ...prevData,
-      ...newData,
-    }));
+    setListingData((prevData) => {
+      const updatedData = { ...prevData, ...newData };
+      console.log("Updating listingData:", updatedData);
+      // If startDate and endDate are present, calculate the dates array
+      if (newData.startDate && newData.endDate) {
+        updatedData.dates = getDatesInRange(newData.startDate, newData.endDate);
+        console.log("Updating listingData:", updatedData);
+      }
+
+      return updatedData;
+    });
   };
 
   const addImage = (imageData: ImageData) => {
