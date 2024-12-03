@@ -19,7 +19,7 @@ interface ListingData {
   dates: string[];
   startDate?: string;
   endDate?: string;
-  startTime: string;
+  startTime: Date;
   endTime: string;
   categories: string[];
   subcategories: Record<string, boolean>;
