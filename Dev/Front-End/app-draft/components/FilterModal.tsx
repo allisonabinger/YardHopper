@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   categoryButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 20,
+    borderRadius: 8,
     marginRight: 8,
     marginBottom: 8,
     backgroundColor: "#F0F0F0",
@@ -154,9 +154,11 @@ const styles = StyleSheet.create({
   applyButton: {
     backgroundColor: "#159636",
     paddingVertical: 15,
-    borderRadius: 10,
+    borderRadius: 30,
     alignItems: "center",
     marginTop: 20,
+    width: "50%",
+    alignSelf: "center",
   },
   applyButtonText: {
     color: "white",
