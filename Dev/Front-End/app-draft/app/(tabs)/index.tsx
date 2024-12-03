@@ -61,6 +61,38 @@ export default function HomeScreen() {
   const [listings, setListings] = useState(mockData.listings);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch listings data from API
+  const fetchListings = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        "https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950"
+      );
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setListings(data.listings || []);
+    } catch (error: any) {
+      setError(error.message || "Failed to load listings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchListings();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     const loadLikedPosts = async () => {
@@ -137,74 +169,66 @@ export default function HomeScreen() {
     },
   });
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setListings([...mockData.listings]);
-      setRefreshing(false);
-    }, 1000);
-  };
-
   const renderItem = ({ item }: { item: ListingItem }) => {
-    const isExpanded = expandedPostId === item.postId;
-    const isLiked = likedPosts[item.postId];
-    const fadeAnimation = fadeAnimations[item.postId] || new Animated.Value(0);
+  const isExpanded = expandedPostId === item.postId;
+  const isLiked = likedPosts[item.postId];
+  const fadeAnimation = fadeAnimations[item.postId] || new Animated.Value(0);
 
-    return (
+  return (
+    <TouchableOpacity
+      onPress={() => toggleExpand(item.postId)}
+      activeOpacity={1}
+      style={styles.cardContainer}
+      {...(isExpanded ? panResponder.panHandlers : {})}
+    >
       <TouchableOpacity
-        onPress={() => toggleExpand(item.postId)}
-        activeOpacity={1}
-        style={styles.cardContainer}
-        {...(isExpanded ? panResponder.panHandlers : {})}
+        style={styles.likeButton}
+        onPress={() => toggleLike(item.postId)}
       >
-        <TouchableOpacity
-          style={styles.likeButton}
-          onPress={() => toggleLike(item.postId)}
-        >
-          <Ionicons
-            name={isLiked ? "heart" : "heart-outline"}
-            size={24}
-            color={isLiked ? "#159636" : "gray"}
-          />
-        </TouchableOpacity>
-
-        <Image
-          source={{ uri: item.images[0]?.uri || "https://via.placeholder.com/150" }}
-          style={styles.cardImage}
+        <Ionicons
+          name={isLiked ? "heart" : "heart-outline"}
+          size={24}
+          color={isLiked ? "#159636" : "gray"}
         />
-        <Text style={styles.cardTitle}>{item.title}</Text>
-        <Text style={styles.cardAddress}>
-          {`${item.address.street}, ${item.address.city}`}
-        </Text>
-
-        {isExpanded && (
-          <Animated.View style={[styles.expandedDetails, { opacity: fadeAnimation }]}>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.sectionContent}>{item.description}</Text>
-
-            <Text style={styles.sectionTitle}>Categories</Text>
-            <View style={styles.categoriesContainer}>
-              {item.categories.map((cat) => (
-                <View key={cat} style={styles.categoryTag}>
-                  <Text style={styles.categoryText}>{cat}</Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Apply the formatDate function */}
-            <Text style={styles.date}>Date: {formatDate(item.dates[0])}</Text>
-
-            <TouchableOpacity
-              style={styles.seeMoreButton}
-              onPress={() => router.push(`/listing/${item.postId}`)}
-            >
-              <Text style={styles.seeMoreText}>See More Details</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
       </TouchableOpacity>
-    );
-  };
+
+      <Image
+        source={{ uri: item.images[0]?.uri || "https://via.placeholder.com/150" }}
+        style={styles.cardImage}
+      />
+      <Text style={styles.cardTitle}>{item.title}</Text>
+      <Text style={styles.cardAddress}>
+        {`${item.address.street}, ${item.address.city}`}
+      </Text>
+
+      {isExpanded && (
+        <Animated.View style={[styles.expandedDetails, { opacity: fadeAnimation }]}>
+          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.sectionContent}>{item.description}</Text>
+
+          <Text style={styles.sectionTitle}>Categories</Text>
+          <View style={styles.categoriesContainer}>
+            {item.categories.map((cat) => (
+              <View key={cat} style={styles.categoryTag}>
+                <Text style={styles.categoryText}>{cat}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Apply the formatDate function */}
+          <Text style={styles.date}>Date: {formatDate(item.dates[0])}</Text>
+
+          <TouchableOpacity
+            style={styles.seeMoreButton}
+            onPress={() => router.push(`/listing/${item.postId}`)}
+          >
+            <Text style={styles.seeMoreText}>See More Details</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+    </TouchableOpacity>
+  );
+};
 
 
   return (
