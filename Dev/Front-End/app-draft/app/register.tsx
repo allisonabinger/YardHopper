@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, TextInput, TouchableOpacity, Pressable, Image, Text, Alert } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth } from "@/contexts/AuthProvider";
 
 export default function RegisterPage() {
   const auth = useAuth();

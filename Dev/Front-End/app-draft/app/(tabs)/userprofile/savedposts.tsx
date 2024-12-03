@@ -10,7 +10,7 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useSavedPosts } from "../../context/SavedPostsContext";
+import { useSavedPosts } from "../../../contexts/SavedPostsContext";
 import FilterModal from "@/components/FilterModal";
 
 export default function SavedPosts() {

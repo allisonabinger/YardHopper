@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Pressable, Text, StyleSheet } from 'react-native';
-import { useAuth } from "@/components/AuthProvider";
+import { useAuth } from "@/contexts/AuthProvider";
 import { useRouter, Link } from "expo-router";
 
 const ForgotPassword: React.FC = () => {

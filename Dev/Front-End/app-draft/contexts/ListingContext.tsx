@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
-// Define the types for the listing data
 interface Address {
   zip: string;
   city: string;
@@ -17,11 +16,11 @@ interface ListingData {
   title: string;
   description: string;
   address: Address;
-  dates: string[]; // Array of dates (e.g., in string format)
+  dates: string[];
   startTime: string;
   endTime: string;
   categories: string[];
-  subcategories: Record<string, boolean>; // Object with subcategories as keys and boolean as values
+  subcategories: Record<string, boolean>;
   userId: string;
   images: ImageData[]; // Array of image objects
 }
@@ -45,12 +44,10 @@ export const useListingContext = (): ListingContextType => {
   return context;
 };
 
-// Define the provider's props type
 interface ListingProviderProps {
   children: ReactNode;
 }
 
-// The provider component
 export const ListingProvider: React.FC<ListingProviderProps> = ({ children }) => {
   const [listingData, setListingData] = useState<ListingData>({
     title: "",
