@@ -57,8 +57,8 @@ export default function HomeScreen() {
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [isModalVisible, setModalVisible] = useState(false);
-  const [selectedListing, setSelectedListing] = useState<ListingItem | null>(null);
   const [listings, setListings] = useState(mockData.listings);
+  const [selectedListing, setSelectedListing] = useState<ListingItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
   const [loading, setLoading] = useState(false);
