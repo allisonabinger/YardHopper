@@ -413,7 +413,7 @@ USER - Provided by user input via front-end interaction
 ## Security
 
 ### Authentication
-Firebase Authentication is used to authenticte users, as well as Google OAuth for users to be able to sign in with their google account.
+Firebase Authentication is used to authenticte users, as well as Google OAuth for users to be able to sign in with their google account. Each request to the API must be from an authenticated user. Authentication is handled in the app with firebase authentication, and user information is encrypted before requests are sent and handled within the server to ensure no interception of sensitive information occurs. 
 
 ### Encryption
 Certain protected information is encrypted before being sent through HTTP requests and other data transfers. The backend API can validate tokens sent from client to ensure private data is not public traffic.
