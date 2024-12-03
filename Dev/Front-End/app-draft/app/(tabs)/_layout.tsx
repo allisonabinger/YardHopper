@@ -39,9 +39,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="add-listing"
         options={{
+          title: 'Add Listing',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons size={28}
-              name={focused ? 'add-outline' : 'add'}
+              name={focused ? 'add-circle' : 'add-circle-outline'}
               color={"#159636"}
             />
           ),

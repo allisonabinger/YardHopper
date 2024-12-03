@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { View, TextInput, Pressable, Text, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  TextInput,
+  Pressable,
+  Text,
+  StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/components/AuthProvider";
@@ -41,57 +51,65 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Title */}
-      <Text style={styles.title}>Change Password</Text>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Title */}
+        <Text style={styles.title}>Change Password</Text>
 
-      {/* Form Container */}
-      <View style={styles.formContainer}>
-        {/* Current Password Input */}
-        <TextInput
-          placeholder="Current Password"
-          placeholderTextColor="#A9A9A9"
-          secureTextEntry
-          style={styles.input}
-          value={currentPassword}
-          onChangeText={setCurrentPassword}
-        />
+        {/* Form Container */}
+        <View style={styles.formContainer}>
+          {/* Current Password Input */}
+          <TextInput
+            placeholder="Current Password"
+            placeholderTextColor="#A9A9A9"
+            secureTextEntry
+            style={styles.input}
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+          />
 
-        {/* New Password Input */}
-        <TextInput
-          placeholder="New Password"
-          placeholderTextColor="#A9A9A9"
-          secureTextEntry
-          style={styles.input}
-          value={newPassword}
-          onChangeText={setNewPassword}
-        />
+          {/* New Password Input */}
+          <TextInput
+            placeholder="New Password"
+            placeholderTextColor="#A9A9A9"
+            secureTextEntry
+            style={styles.input}
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
 
-        {/* Confirm New Password Input */}
-        <TextInput
-          placeholder="Confirm New Password"
-          placeholderTextColor="#A9A9A9"
-          secureTextEntry
-          style={styles.input}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
+          {/* Confirm New Password Input */}
+          <TextInput
+            placeholder="Confirm New Password"
+            placeholderTextColor="#A9A9A9"
+            secureTextEntry
+            style={styles.input}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
 
-        {/* Change Password Button */}
-        <Pressable onPress={handleChangePassword} style={styles.button}>
-          <Text style={styles.buttonText}>Change Password</Text>
-        </Pressable>
+          {/* Change Password Button */}
+          <Pressable onPress={handleChangePassword} style={styles.button}>
+            <Text style={styles.buttonText}>Change Password</Text>
+          </Pressable>
 
-        {/* Back Button */}
-        <Pressable
-          onPress={() => router.push("/(tabs)/userprofile")}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#" />
-          <Text style={styles.backButtonText}>Back to Settings</Text>
-        </Pressable>
-      </View>
-    </View>
+          {/* Back Button */}
+          <Pressable
+            onPress={() => router.push("/(tabs)/userprofile")}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color="#159636" />
+            <Text style={styles.backButtonText}>Back to Settings</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -99,6 +117,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  scrollViewContent: {
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -143,6 +164,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
+    color: '#159636'
   },
   backButtonText: {
     fontSize: 16,
@@ -150,3 +172,4 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+

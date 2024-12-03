@@ -1,5 +1,17 @@
 import React, { useState } from "react";
-import { View, TextInput, TouchableOpacity, Pressable, Image, Text, Alert } from "react-native";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Pressable,
+  Image,
+  Text,
+  Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  StyleSheet,
+} from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/components/AuthProvider";
@@ -32,173 +44,143 @@ export default function RegisterPage() {
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#FFFFFF",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-      }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
     >
-
-      {/* Title */}
-      <Text
-        style={{
-          fontSize: 30,
-          fontWeight: "bold",
-          color: "#333",
-          marginBottom: 30,
-        }}
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        keyboardShouldPersistTaps="handled"
       >
-        Create your account
-      </Text>
+        {/* Title */}
+        <Text style={styles.title}>Create your account</Text>
 
-      {/* Form Container */}
-      <View style={{ width: "100%", paddingHorizontal: 20 }}>
-        {/* First Name Input */}
-        <TextInput
-          placeholder="First Name"
-          placeholderTextColor="#A9A9A9"
-          style={{
-            marginBottom: 20,
-            padding: 10,
-            borderRadius: 30,
-            backgroundColor: "#F0F0F0",
-            width: "100%",
-          }}
-          value={firstName}
-          onChangeText={setFirstName}
-        />
+        {/* Form Container */}
+        <View style={styles.formContainer}>
+          {/* First Name Input */}
+          <TextInput
+            placeholder="First Name"
+            placeholderTextColor="#A9A9A9"
+            style={styles.input}
+            value={firstName}
+            onChangeText={setFirstName}
+          />
 
-        {/* Last Name Input */}
-        <TextInput
-          placeholder="Last Name"
-          placeholderTextColor="#A9A9A9"
-          style={{
-            marginBottom: 20,
-            padding: 10,
-            borderRadius: 30,
-            backgroundColor: "#F0F0F0",
-            width: "100%",
-          }}
-          value={lastName}
-          onChangeText={setLastName}
-        />
+          {/* Last Name Input */}
+          <TextInput
+            placeholder="Last Name"
+            placeholderTextColor="#A9A9A9"
+            style={styles.input}
+            value={lastName}
+            onChangeText={setLastName}
+          />
 
-        {/* Email Input */}
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#A9A9A9"
-          style={{
-            marginBottom: 20,
-            padding: 10,
-            borderRadius: 30,
-            backgroundColor: "#F0F0F0",
-            width: "100%",
-          }}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+          {/* Email Input */}
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#A9A9A9"
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-        {/* Password Input */}
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#A9A9A9"
-          secureTextEntry
-          style={{
-            marginBottom: 20,
-            padding: 10,
-            borderRadius: 30,
-            backgroundColor: "#F0F0F0",
-            width: "100%",
-          }}
-          value={password}
-          onChangeText={setPassword}
-        />
+          {/* Password Input */}
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#A9A9A9"
+            secureTextEntry
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+          />
 
-        {/* Confirm Password Input */}
-        <TextInput
-          placeholder="Confirm Password"
-          placeholderTextColor="#A9A9A9"
-          secureTextEntry
-          style={{
-            marginBottom: 20,
-            padding: 10,
-            borderRadius: 30,
-            backgroundColor: "#F0F0F0",
-            width: "100%",
-          }}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
+          {/* Confirm Password Input */}
+          <TextInput
+            placeholder="Confirm Password"
+            placeholderTextColor="#A9A9A9"
+            secureTextEntry
+            style={styles.input}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
 
-        {/* Register Button */}
-        <Pressable
-          onPress={() => handleRegister(email, password, confirmPassword)}
-          style={{
-            backgroundColor: "#159636",
-            borderRadius: 30,
-            padding: 15,
-            alignItems: "center",
-            marginTop: 20,
-          }}
-        >
-          <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "bold" }}>
-            Create Account
-          </Text>
-        </Pressable>
-
-        {/* "Register with Google" Section */}
-        {/* <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            marginTop: 20,
-          }}
-        >
-          <Text style={{ fontSize: 16, color: "#333", marginRight: 8 }}>
-            Sign up with
-          </Text>
+          {/* Register Button */}
           <Pressable
-            onPress={() => {
-              console.log("Google signup pressed");
-            }}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              padding: 10,
-            }}
+            onPress={() => handleRegister(email, password, confirmPassword)}
+            style={styles.registerButton}
           >
-            <Ionicons name="logo-google" size={24} />
+            <Text style={styles.registerButtonText}>Create Account</Text>
           </Pressable>
-        </View> */}
 
-        {/* Redirect to Login */}
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#FFFFFF",
-          }}
-        >
-          <Link href="/login" replace style={{ marginTop: 30 }}>
-            <Text
-              style={{
-                textAlign: "center",
-                color: "#159636",
-                fontSize: 16,
-              }}
-            >
-              Already have an account? Log in
-            </Text>
-          </Link>
+          {/* Redirect to Login */}
+          <View style={styles.loginRedirectContainer}>
+            <Link href="/login" replace style={styles.loginLink}>
+              <Text style={styles.loginLinkText}>
+                Already have an account? Log in
+              </Text>
+            </Link>
+          </View>
         </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "bold",
+    marginBottom: 30,
+    color: "#159636"
+  },
+  formContainer: {
+    width: "100%",
+    paddingHorizontal: 20,
+  },
+  input: {
+    marginBottom: 20,
+    padding: 10,
+    borderRadius: 30,
+    backgroundColor: "#F0F0F0",
+    width: "100%",
+  },
+  registerButton: {
+    backgroundColor: "#159636",
+    borderRadius: 30,
+    padding: 15,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  registerButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  loginRedirectContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  loginLink: {
+    marginTop: 30,
+  },
+  loginLinkText: {
+    textAlign: "center",
+    color: "#159636",
+    fontSize: 16,
+  },
+});
+
