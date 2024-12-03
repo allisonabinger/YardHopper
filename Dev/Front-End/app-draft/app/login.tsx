@@ -173,6 +173,9 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: "center",
     marginTop: 20,
+    marginLeft: "auto",
+    marginRight: "auto",
+    width: "50%",
   },
   loginButtonText: {
     color: "#FFFFFF",
