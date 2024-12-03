@@ -181,7 +181,10 @@ export default function AddListingDetails() {
                 style={styles.input}
                 placeholder="Enter title"
                 value={title}
-                onChangeText={setTitle}
+                onChangeText={(text) => {
+                  setTitle(text);
+                  updateListingData({ title: text }); // Update context
+                }}
               />
               <TextInput
                 style={[styles.input, styles.textArea]}
@@ -189,7 +192,10 @@ export default function AddListingDetails() {
                 multiline
                 numberOfLines={4}
                 value={description}
-                onChangeText={setDescription}
+                onChangeText={(text) => {
+                  setDescription(text);
+                  updateListingData({ description: text }); // Update context
+                }}
               />
 
               <View style={styles.addressHeader}>
@@ -216,34 +222,39 @@ export default function AddListingDetails() {
                 style={styles.input}
                 placeholder="Street Address"
                 value={address.street}
-                onChangeText={(text) =>
-                  setAddress((prev) => ({ ...prev, street: text }))
-                }
+                onChangeText={(text) => {
+                  setAddress((prev) => ({ ...prev, street: text }));
+                  updateListingData({ address: { ...address, street: text } });
+                }}
+
               />
               <TextInput
                 style={styles.input}
                 placeholder="City"
                 value={address.city}
-                onChangeText={(text) =>
-                  setAddress((prev) => ({ ...prev, city: text }))
-                }
+                onChangeText={(text) => {
+                  setAddress((prev) => ({ ...prev, city: text }));
+                  updateListingData({ address: { ...address, city: text } });
+                }}
               />
               <TextInput
                 style={styles.input}
                 placeholder="State"
                 value={address.state}
-                onChangeText={(text) =>
-                  setAddress((prev) => ({ ...prev, state: text }))
-                }
+                onChangeText={(text) => {
+                  setAddress((prev) => ({ ...prev, state: text }));
+                  updateListingData({ address: { ...address, state: text } });
+                }}
               />
               <TextInput
                 style={styles.input}
                 placeholder="ZIP Code"
                 keyboardType="numeric"
                 value={address.zip}
-                onChangeText={(text) =>
-                  setAddress((prev) => ({ ...prev, zip: text }))
-                }
+                onChangeText={(text) => {
+                  setAddress((prev) => ({ ...prev, zip: text }));
+                  updateListingData({ address: { ...address, zip: text } });
+                }}
               />
 
               <TouchableOpacity
