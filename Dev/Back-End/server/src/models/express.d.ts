@@ -4,7 +4,8 @@ declare module "express" {
   export interface Request {
     user?: {
       uid: string;
-      hashedUid: string;
+      email: string;
+      hashUid: string;
     };
   }
 }
