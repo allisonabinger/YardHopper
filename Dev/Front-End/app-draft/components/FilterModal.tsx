@@ -144,6 +144,7 @@ const styles = StyleSheet.create({
   },
   selectedCategory: {
     backgroundColor: "#159636",
+
   },
   categoryText: {
     fontSize: 14,
@@ -166,3 +167,4 @@ const styles = StyleSheet.create({
 });
 
 export default FilterModal;
+
