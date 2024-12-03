@@ -1,7 +1,8 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext } from "react";
 
 // Define types for sale and saved posts
 interface Sale {
+  g: any;
   id: string;
   title: string;
   description: string;
@@ -18,15 +19,17 @@ interface SavedPostsContextType {
 const SavedPostsContext = createContext<SavedPostsContextType | undefined>(undefined);
 
 // Provider component to wrap the app and provide context
-export const SavedPostsProvider: React.FC = ({ children }) => {
+export const SavedPostsProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const [savedPosts, setSavedPosts] = useState<Sale[]>([]);
 
   const addSavedPost = (post: Sale) => {
+    console.log("Adding post:", post);
     setSavedPosts((prev) => [...prev, post]);
   };
 
   const removeSavedPost = (id: string) => {
-    setSavedPosts((prev) => prev.filter(post => post.id !== id));
+    console.log("Removing post with ID:", id);
+    setSavedPosts((prev) => prev.filter((post) => post.id !== id));
   };
 
   return (
@@ -36,11 +39,12 @@ export const SavedPostsProvider: React.FC = ({ children }) => {
   );
 };
 
-// Custom hook to use the SavedPostsContext
 export const useSavedPosts = (): SavedPostsContextType => {
   const context = useContext(SavedPostsContext);
   if (!context) {
-    throw new Error('useSavedPosts must be used within a SavedPostsProvider');
+    throw new Error("useSavedPosts must be used within a SavedPostsProvider");
   }
   return context;
 };
+
+export default SavedPostsProvider;

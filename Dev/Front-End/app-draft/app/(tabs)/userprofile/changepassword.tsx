@@ -87,7 +87,7 @@ export default function ChangePasswordPage() {
           onPress={() => router.push("/(tabs)/userprofile")}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color="#159636" />
+          <Ionicons name="arrow-back" size={24} color="#" />
           <Text style={styles.backButtonText}>Back to Settings</Text>
         </Pressable>
       </View>
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: "bold",
-    color: "#333",
+    color: "#159636",
     marginBottom: 30,
   },
   formContainer: {
@@ -116,7 +116,9 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 20,
     padding: 10,
-    borderRadius: 30,
+    borderRadius: 8,
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
     backgroundColor: "#F0F0F0",
     width: "100%",
   },
@@ -126,11 +128,15 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: "center",
     marginTop: 20,
+    width: "60%",
+    marginRight: "auto",
+    marginLeft: "auto",
   },
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
+    textAlign: "center",
   },
   backButton: {
     flexDirection: "row",
