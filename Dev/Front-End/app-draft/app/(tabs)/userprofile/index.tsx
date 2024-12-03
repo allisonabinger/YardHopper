@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import React, { useLayoutEffect } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useLayoutEffect } from 'react';
-import LogoutComponent from '@/components/LogoutComponent';
 import { Link } from 'expo-router';
+import LogoutComponent from '@/components/LogoutComponent';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
@@ -23,6 +23,22 @@ export default function SettingsScreen() {
     });
   }, [navigation]);
 
+  // Greeting Logic
+  const currentHour = new Date().getHours();
+  const greetings = [
+    { start: 6, end: 12, icon: "sunny", text: "Morning" },
+    { start: 12, end: 17, icon: "sunny", text: "Afternoon" },
+    { start: 17, end: 21, icon: "moon", text: "Evening" },
+    { start: 21, end: 24, icon: "moon", text: "Night" },
+  ];
+
+  // Specify valid Ionicons names
+  type IoniconsName = "sunny" | "moon";
+  const greeting = greetings.find(({ start, end }) => currentHour >= start && currentHour < end);
+  const { icon, text } = greeting || { icon: "sunny", text: "Hello" };
+
+  const userName = "John Doe"; // Replace with dynamic user name if available
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -32,10 +48,8 @@ export default function SettingsScreen() {
 
       <View style={styles.card}>
         <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-            <Ionicons name="person-outline" size={32} color="#666" />
-          </View>
-          <Text style={styles.profileName}>John Doe</Text>
+          <Ionicons name={icon as IoniconsName} size={32} color="#159636" style={styles.greetingIcon} />
+          <Text style={styles.profileName}>{`${text}, ${userName}!`}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Account Settings</Text>
@@ -64,8 +78,7 @@ export default function SettingsScreen() {
           </Pressable>
         </Link>
 
-        <LogoutComponent style={styles.menuItem}>
-        </LogoutComponent>
+        <LogoutComponent style={styles.menuItem} />
       </View>
     </View>
   );
@@ -96,20 +109,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 40,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 10,
   },
-  avatarContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#eee',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 15,
+  greetingIcon: {
+    width: 80,
+    height: 80,
+    marginRight: 20,
   },
   profileName: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: 'black',
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#159636',
   },
   card: {
     backgroundColor: 'white',
