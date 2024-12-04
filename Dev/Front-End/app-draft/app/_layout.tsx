@@ -5,10 +5,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { SavedPostsProvider } from './context/SavedPostsContext';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '@/components/AuthProvider';
+import { ListingProvider } from '@/app/context/ListingContext'
+import { SavedPostsProvider } from '@/app/context/SavedPostsContext';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Linking,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -55,9 +56,15 @@ export default function ListingDetail() {
   const formattedAddress = `${address.street}, ${address.city}, ${address.state} ${address.zip}`;
   const date = dates.length > 0 ? dates[0] : "No date available";
 
+  // Open map function with platform-specific logic
   const openMap = (address: string): void => {
     const query = encodeURIComponent(address);
-    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+
+    const url =
+      Platform.OS === "ios"
+        ? `http://maps.apple.com/?q=${query}` // Apple Maps for iOS
+        : `https://www.google.com/maps/search/?api=1&query=${query}`; // Google Maps for Android
+
     Linking.openURL(url).catch((err) =>
       console.error("Failed to open maps:", err)
     );

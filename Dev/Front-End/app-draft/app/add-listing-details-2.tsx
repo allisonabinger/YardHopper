@@ -12,35 +12,38 @@ import { useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Calendar } from "react-native-calendars";
 import PageLayout from "./PageLayout";
+import { useListingContext } from "./context/ListingContext";
+
 
 export default function AddListingDetailsPage2() {
+  const { listingData, updateListingData } = useListingContext();
   const router = useRouter();
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
-  const [currentPicker, setCurrentPicker] = useState(null); // 'start' or 'end'
-
+  const [currentPicker, setCurrentPicker] = useState<"start" | "end" | null>(
+    null
+  );
   const handleDayPress = (day) => {
     const selectedDate = new Date(day.dateString);
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set today's time to 00:00:00 to compare only the date
-  
+
     if (selectedDate < today) {
       Alert.alert("Invalid Date", "Start date cannot be in the past.");
       return;
     }
-  
-    if (!startDate || (startDate && endDate)) {
-      setStartDate(day.dateString);
-      setEndDate(null);
-    } else if (startDate && !endDate) {
-      const start = new Date(startDate);
+
+    if (!listingData.startDate || (listingData.startDate && listingData.endDate)) {
+      updateListingData({ startDate: day.dateString, endDate: undefined });
+    } else if (listingData.startDate && !listingData.endDate) {
+      const start = new Date(listingData.startDate);
       const end = new Date(day.dateString);
-  
+
       if (end >= start) {
-        setEndDate(day.dateString);
+        updateListingData({ endDate: day.dateString });
       } else {
         Alert.alert("Invalid Date", "End date must be after the start date.");
       }
@@ -67,28 +70,32 @@ export default function AddListingDetailsPage2() {
 
   const handlePublish = () => {
     const today = new Date();
-  
-    if (!startDate || !endDate) {
+
+    if (!listingData.startDate || !listingData.endDate) {
       Alert.alert("Error", "Please select valid dates.");
       return;
     }
-  
-    if (!startTime || !endTime) {
+
+
+    if (!listingData.startTime || !listingData.endTime) {
       Alert.alert("Error", "Please select both start and end times.");
       return;
     }
-  
+
     // Ensure startTime and endTime are in the future
-    if (startDate === today.toISOString().split("T")[0] && startTime <= today) {
+    if (listingData.startDate === today.toISOString().split("T")[0] && listingData.startTime <= today) {
       Alert.alert("Error", "Start time must be in the future.");
       return;
     }
-  
-    if (endTime <= new Date(startTime.getTime() + 60 * 60 * 1000)) {
+
+    if (
+      new Date(listingData.endTime) <=
+      new Date(new Date(listingData.startTime).getTime() + 60 * 60 * 1000)
+    )  {
       Alert.alert("Error", "End time must be at least 1 hour after the start time.");
       return;
     }
-  
+
     // If all validations pass, navigate to the next page
     router.push("/add-listing-details-3");
   };
@@ -103,13 +110,13 @@ export default function AddListingDetailsPage2() {
               onDayPress={handleDayPress}
               markedDates={{
                 ...(startDate && endDate ? getDatesInRange(startDate, endDate) : {}),
-                [startDate]: {
+                [listingData.startDate]: {
                   selected: true,
                   startingDay: true,
                   color: "#159636",
                   textColor: "white",
                 },
-                [endDate]: {
+                [listingData.endDate]: {
                   selected: true,
                   endingDay: true,
                   color: "#159636",
@@ -124,7 +131,7 @@ export default function AddListingDetailsPage2() {
               }}
             />
           </View>
-  
+
           <View style={styles.timePickerRow}>
             <View style={styles.timePickerContainer}>
               <Text style={styles.label}>Start Time</Text>
@@ -132,21 +139,31 @@ export default function AddListingDetailsPage2() {
                 style={styles.timeButton}
                 onPress={() => setCurrentPicker("start")}
               >
-                <Text>{startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
-              </TouchableOpacity>
-            </View>
-  
-            <View style={styles.timePickerContainer}>
-              <Text style={styles.label}>End Time</Text>
-              <TouchableOpacity
-                style={styles.timeButton}
-                onPress={() => setCurrentPicker("end")}
-              >
-                <Text>{endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>
-              </TouchableOpacity>
-            </View>
+            <Text>
+                {new Date(listingData.startTime).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+            </TouchableOpacity>
           </View>
-  
+
+          <View style={styles.timePickerContainer}>
+            <Text style={styles.label}>End Time</Text>
+            <TouchableOpacity
+              style={styles.timeButton}
+              onPress={() => setCurrentPicker("end")}
+            >
+            <Text>
+              {new Date(listingData.endTime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
           {/* Modal for Time Picker */}
           <Modal
             visible={currentPicker !== null}
@@ -198,7 +215,7 @@ export default function AddListingDetailsPage2() {
               </View>
             </View>
           </Modal>
-  
+
           <TouchableOpacity style={styles.publishButton} onPress={handlePublish}>
             <Text style={styles.publishText}>Continue</Text>
           </TouchableOpacity>
