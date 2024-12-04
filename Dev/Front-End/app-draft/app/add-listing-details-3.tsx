@@ -141,14 +141,17 @@ const ImageUploadScreen = () => {
       <View style={styles.container}>
         <Text style={styles.heading}>Upload an Image</Text>
         <Image
-          source={{ uri: image || "https://via.placeholder.com/150" }}
+          source={{
+            uri:
+              image ||
+              "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
+          }}
           style={styles.imagePreview}
           resizeMode="cover"
         />
         <TouchableOpacity style={styles.button} onPress={openImagePicker}>
           <Text style={styles.buttonText}>Select Image</Text>
         </TouchableOpacity>
-        {/* Conditionally render the Skip text */}
         {!image && (
           <TouchableOpacity onPress={handleSkip}>
             <Text style={styles.skipText}>Skip</Text>
@@ -177,10 +180,12 @@ const styles = StyleSheet.create({
     color: "#159636",
   },
   imagePreview: {
-    width: 200,
+    width: 300,
     height: 200,
     marginBottom: 40,
     borderRadius: 10,
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
   },
   button: {
     backgroundColor: "#159636",
