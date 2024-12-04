@@ -49,26 +49,30 @@ export default function AddListingDetails() {
         setIsGeoActive(false);
         return;
       }
-
+  
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
       const { latitude, longitude } = location.coords;
-
+  
       const [geocodedAddress] = await Location.reverseGeocodeAsync({
         latitude,
         longitude,
       });
-
+  
       if (geocodedAddress) {
-        updateListingData({
-          address: {
-            street: geocodedAddress.street || "",
-            city: geocodedAddress.city || "",
-            state: geocodedAddress.region || "",
-            zip: geocodedAddress.postalCode || "",
-          },
-        });
+        const newAddress = {
+          street: geocodedAddress.street || "",
+          city: geocodedAddress.city || "",
+          state: geocodedAddress.region || "",
+          zip: geocodedAddress.postalCode || "",
+        };
+  
+        // Update both local state and context
+        setAddress(newAddress);
+        updateListingData({ address: newAddress });
+  
+        setIsGeoActive(true); // Enable the button after successful update
       } else {
         Alert.alert("Error", "Unable to fetch address information.");
         setIsGeoActive(false);
