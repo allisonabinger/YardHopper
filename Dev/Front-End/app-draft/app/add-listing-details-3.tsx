@@ -64,8 +64,19 @@ const ImageUploadScreen = () => {
 
       // Prepare FormData
       const formData = new FormData();
-      formData.append("image", image);
+      if (!formData) {
+        throw new Error("Selected file does not exist");
+      }
+
+      const imageName = image.split("/").pop() || "default-name.jpg";
+
+      formData.append("image", {
+        uri: image,
+        type: mimeType,
+        name: imageName,
+      });
       formData.append("caption", "More Items");
+
       console.log("FormData debug:", JSON.stringify(formData));
 
       console.log("FormData prepared:", formData);
@@ -76,7 +87,10 @@ const ImageUploadScreen = () => {
         `https://yardhopperapi.onrender.com/api/listings/${postId}/images`,
         {
           method: "POST",
-          body: formData, // No headers needed for FormData
+          headers: {
+            "Accept": "application/json",
+          },
+          body: formData,
         }
       );
 
