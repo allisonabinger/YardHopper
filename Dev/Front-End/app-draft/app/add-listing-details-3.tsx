@@ -10,67 +10,105 @@ import {
 import { useImagePicker } from "@/hooks/useImagePicker";
 import PageLayout from "./PageLayout";
 import { useRouter } from "expo-router";
+import { useListingContext } from "./context/ListingContext";
+import { useAuth } from "@/components/AuthProvider";
 
 const ImageUploadScreen = () => {
   const { image, openImagePicker, reset } = useImagePicker();
+  const { addImage, listingData } = useListingContext();
   const router = useRouter();
+  const { user } = useAuth();
 
-  const handleUpload = async () => {
-    if (!image) {
-      Alert.alert("Error", "No image selected to upload.");
+  const createListing = async () => {
+    if (!user) {
+      alert("You must be logged in to create a listing");
       return;
     }
+
+    const listing = {
+      ...listingData,
+      userId: user.uid, // Add the userId to the listing data
+    };
+
+    try {
+      const response = await fetch(
+        "https://yardhopperapi.onrender.com/api/listings",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(listing),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to create listing");
+      }
+
+      return response.json(); // Returns { postId }
+    } catch (error) {
+      console.error("Error creating listing:", error);
+      throw error;
+    }
+  };
+
+  const uploadImage = async (postId: string) => {
+    if (!image) return;
 
     const formData = new FormData();
     formData.append("image", {
       uri: image,
-      name: "upload.jpg",
+      name: "listing-image.jpg",
       type: "image/jpeg",
     });
+    formData.append("caption", "Listing Image");
 
     try {
-      const response = await fetch("https://your-backend-api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body: formData,
-      });
+      const response = await fetch(
+        `https://yardhopperapi.onrender.com/api/listings/${postId}/images`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
-      if (response.ok) {
-        Alert.alert(
-          "Success",
-          "Your listing has been created!",
-          [
-            {
-              text: "OK",
-              onPress: () => router.push("./(tabs)/index"), // Navigate to the Explore tab
-            },
-          ],
-          { cancelable: false }
-        );
-        reset(); // Clear the image after successful upload
-      } else {
-        Alert.alert("Error", "Failed to upload the image.");
+      if (!response.ok) {
+        throw new Error("Failed to upload image");
       }
     } catch (error) {
-      console.error("Upload error:", error);
-      Alert.alert("Error", "Something went wrong while uploading.");
+      console.error("Error uploading image:", error);
+      throw error;
     }
   };
 
-  const handleSkip = () => {
-    Alert.alert(
-      "Skipped Image Upload",
-      "To add pictures to your listing, you can do so in settings.",
-      [
-        {
-          text: "OK",
-          onPress: () => router.push("/(tabs)"), // Navigate to the desired screen
-        },
-      ],
-      { cancelable: false }
-    );
+  const handleUpload = async () => {
+    try {
+      // Step 1: Create the listing
+      const { postId } = await createListing();
+
+      // Step 2: Upload the image if it exists
+      if (image) {
+        await uploadImage(postId);
+      }
+
+      alert("Listing uploaded successfully!");
+      reset(); // Clear the image picker state
+      router.push("./(tabs)/index"); // Navigate to the main screen
+    } catch (error) {
+      console.error("Error uploading listing:", error);
+      alert("An error occurred while uploading the listing.");
+    }
+  };
+
+  const handleSkip = async () => {
+    try {
+      // Only create the listing, no image upload
+      await createListing();
+      alert("Listing uploaded successfully without an image!");
+      router.push("./(tabs)/index"); // Navigate to the main screen
+    } catch (error) {
+      console.error("Error uploading listing:", error);
+      alert("An error occurred while uploading the listing.");
+    }
   };
 
   return (
@@ -78,14 +116,17 @@ const ImageUploadScreen = () => {
       <View style={styles.container}>
         <Text style={styles.heading}>Upload an Image</Text>
         <Image
-          source={{ uri: image || "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" }}
+          source={{
+            uri:
+              image ||
+              "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
+          }}
           style={styles.imagePreview}
           resizeMode="cover"
         />
         <TouchableOpacity style={styles.button} onPress={openImagePicker}>
           <Text style={styles.buttonText}>Select Image</Text>
         </TouchableOpacity>
-        {/* Conditionally render the Skip text */}
         {!image && (
           <TouchableOpacity onPress={handleSkip}>
             <Text style={styles.skipText}>Skip</Text>
