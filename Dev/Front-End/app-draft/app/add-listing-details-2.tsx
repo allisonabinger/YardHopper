@@ -13,7 +13,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Calendar } from "react-native-calendars";
 import PageLayout from "./PageLayout";
 import { useListingContext } from "./context/ListingContext";
-
+import { useEffect } from "react";
 
 export default function AddListingDetailsPage2() {
   const { listingData, updateListingData } = useListingContext();
@@ -21,16 +21,39 @@ export default function AddListingDetailsPage2() {
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [startTime, setStartTime] = useState(new Date());
-  const [endTime, setEndTime] = useState(new Date(new Date().getTime() + 60 * 60 * 1000));
+  const [startTime, setStartTime] = useState(
+    listingData.startTime ? new Date(`1970-01-01T${listingData.startTime}:00`) : new Date()
+  );
+  const [endTime, setEndTime] = useState(
+    listingData.endTime
+      ? new Date(`1970-01-01T${listingData.endTime}:00`)
+      : new Date(new Date().getTime() + 60 * 60 * 1000)
+  );
   const [currentPicker, setCurrentPicker] = useState<"start" | "end" | null>(
     null
   );
 
+    // Ensure defaults are set in listingData
+    useEffect(() => {
+      if (!listingData.startTime) {
+        updateListingData({ startTime: "07:00" });
+      }
+      if (!listingData.endTime) {
+        updateListingData({ endTime: "08:00" });
+      }
+    }, [listingData, updateListingData]);
+
+  const formatTime = (date) => {
+    if (!date || !(date instanceof Date)) return "00:00";
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
   const handleDayPress = (day) => {
     const selectedDate = new Date(day.dateString);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set today's time to 00:00:00 to compare only the date
+    today.setHours(0, 0, 0, 0);
 
     if (selectedDate < today) {
       Alert.alert("Invalid Date", "Start date cannot be in the past.");
@@ -38,7 +61,6 @@ export default function AddListingDetailsPage2() {
     }
 
     if (!listingData.startDate || (listingData.startDate && listingData.endDate)) {
-      // Reset both dates
       updateListingData({
         startDate: day.dateString,
         endDate: undefined,
@@ -49,7 +71,7 @@ export default function AddListingDetailsPage2() {
       const end = new Date(day.dateString);
 
       if (end >= start) {
-        const newDates = getDatesInRange(start, end); // Generate all dates in range
+        const newDates = getDatesInRange(start, end);
         updateListingData({
           endDate: day.dateString,
           dates: newDates,
@@ -72,12 +94,6 @@ export default function AddListingDetailsPage2() {
     return dates;
   };
 
-  const formatTime = (date) => {
-    const hours = date.getHours().toString().padStart(2, "0"); // Ensure 2-digit format
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
-
   const handlePublish = () => {
     const today = new Date();
 
@@ -92,6 +108,7 @@ export default function AddListingDetailsPage2() {
     }
 
     const parseTime = (time) => {
+      if (!time) return null;
       const [hours, minutes] = time.split(":").map(Number);
       const date = new Date();
       date.setHours(hours, minutes, 0, 0);
@@ -101,7 +118,11 @@ export default function AddListingDetailsPage2() {
     const startTime = parseTime(listingData.startTime);
     const endTime = parseTime(listingData.endTime);
 
-    // Ensure startTime and endTime are in the future
+    if (!startTime || !endTime) {
+      Alert.alert("Error", "Please select valid times.");
+      return;
+    }
+
     if (listingData.startDate === today.toISOString().split("T")[0] && startTime <= today) {
       Alert.alert("Error", "Start time must be in the future.");
       return;
@@ -112,7 +133,6 @@ export default function AddListingDetailsPage2() {
       return;
     }
 
-    // If all validations pass, navigate to the next page
     router.push("/add-listing-details-3");
   };
 
@@ -131,8 +151,8 @@ export default function AddListingDetailsPage2() {
                         selected: true,
                         color: "#159636",
                         textColor: "white",
-                        startingDay: index === 0, // Round start date
-                        endingDay: index === array.length - 1, // Round end date
+                        startingDay: index === 0,
+                        endingDay: index === array.length - 1,
                       };
                       return acc;
                     }, {})
@@ -154,32 +174,35 @@ export default function AddListingDetailsPage2() {
                 style={styles.timeButton}
                 onPress={() => setCurrentPicker("start")}
               >
-            <Text>
-                {new Date(listingData.startTime).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Text>
-            </TouchableOpacity>
+                <Text>
+                  {listingData.startTime
+                    ? new Date(`1970-01-01T${listingData.startTime}:00`).toLocaleTimeString(
+                        [],
+                        { hour: "2-digit", minute: "2-digit" }
+                      )
+                    : "Select Start Time"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.timePickerContainer}>
+              <Text style={styles.label}>End Time</Text>
+              <TouchableOpacity
+                style={styles.timeButton}
+                onPress={() => setCurrentPicker("end")}
+              >
+                <Text>
+                  {listingData.endTime
+                    ? new Date(`1970-01-01T${listingData.endTime}:00`).toLocaleTimeString(
+                        [],
+                        { hour: "2-digit", minute: "2-digit" }
+                      )
+                    : "Select End Time"}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <View style={styles.timePickerContainer}>
-            <Text style={styles.label}>End Time</Text>
-            <TouchableOpacity
-              style={styles.timeButton}
-              onPress={() => setCurrentPicker("end")}
-            >
-            <Text>
-              {new Date(listingData.endTime).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-          {/* Modal for Time Picker */}
           <Modal
             visible={currentPicker !== null}
             transparent={true}
@@ -189,9 +212,7 @@ export default function AddListingDetailsPage2() {
             <View style={styles.modalContainer}>
               <View style={styles.modalContent}>
                 <Text style={styles.modalTitle}>
-                  {currentPicker === "start"
-                    ? "Select Start Time"
-                    : "Select End Time"}
+                  {currentPicker === "start" ? "Select Start Time" : "Select End Time"}
                 </Text>
                 <DateTimePicker
                   value={currentPicker === "start" ? startTime : endTime}
@@ -201,19 +222,25 @@ export default function AddListingDetailsPage2() {
                   onChange={(event, selectedTime) => {
                     if (selectedTime) {
                       const formattedTime = formatTime(selectedTime);
+                      setEndTime(selectedTime);
+                      updateListingData({ endTime: formattedTime });
 
                       if (currentPicker === "start") {
                         setStartTime(selectedTime);
                         updateListingData({ startTime: formattedTime });
 
-                        // Automatically adjust `endTime` if necessary
-                        const oneHourAhead = new Date(selectedTime.getTime() + 60 * 60 * 1000);
+                        const oneHourAhead = new Date(
+                          selectedTime.getTime() + 60 * 60 * 1000
+                        );
                         if (!endTime || endTime <= selectedTime) {
                           setEndTime(oneHourAhead);
                           updateListingData({ endTime: formatTime(oneHourAhead) });
                         }
                       } else if (currentPicker === "end") {
-                        if (selectedTime >= new Date(startTime.getTime() + 60 * 60 * 1000)) {
+                        const minEndTime = new Date(
+                          startTime.getTime() + 60 * 60 * 1000
+                        );
+                        if (selectedTime >= minEndTime) {
                           setEndTime(selectedTime);
                           updateListingData({ endTime: formattedTime });
                         } else {
@@ -224,7 +251,7 @@ export default function AddListingDetailsPage2() {
                         }
                       }
                     }
-                    setCurrentPicker(null); // Close the modal
+                    setCurrentPicker(null);
                   }}
                 />
                 <TouchableOpacity
