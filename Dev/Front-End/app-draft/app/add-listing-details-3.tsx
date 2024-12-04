@@ -10,67 +10,92 @@ import {
 import { useImagePicker } from "@/hooks/useImagePicker";
 import PageLayout from "./PageLayout";
 import { useRouter } from "expo-router";
+import { useListingContext } from "./context/ListingContext";
+import { useAuth } from "@/components/AuthProvider";
 
 const ImageUploadScreen = () => {
   const { image, openImagePicker, reset } = useImagePicker();
+  const { addImage, listingData } = useListingContext();
   const router = useRouter();
 
-  const handleUpload = async () => {
-    if (!image) {
-      Alert.alert("Error", "No image selected to upload.");
+  const { user } = useAuth();
+
+  const createListing = async () => {
+    if (!user) {
+      alert("You must be logged in to create a listing");
       return;
     }
-  
+
+    const listing = {
+      ...listingData,
+      userId: user.uid,  // Add the userId to the listing data
+    };
+
+    const response = await fetch("https://yardhopperapi.onrender.com/api/listings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(listing),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create listing");
+    }
+
+    return response.json(); // Returns { postId }
+  };
+
+  const uploadImage = async (postId: string) => {
+    if (!image) return;
     const formData = new FormData();
     formData.append("image", {
       uri: image,
-      name: "upload.jpg",
+      name: "listing-image.jpg",
       type: "image/jpeg",
     });
-  
-    try {
-      const response = await fetch("https://your-backend-api/upload", {
+    formData.append("caption", "Listing Image");
+
+    const response = await fetch(
+      `https://yardhopperapi.onrender.com/api/listings/${postId}/images`,
+      {
         method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
         body: formData,
-      });
-  
-      if (response.ok) {
-        Alert.alert(
-          "Success",
-          "Your listing has been created!",
-          [
-            {
-              text: "OK",
-              onPress: () => router.push("./(tabs)/index"), // Navigate to the Explore tab
-            },
-          ],
-          { cancelable: false }
-        );
-        reset(); // Clear the image after successful upload
-      } else {
-        Alert.alert("Error", "Failed to upload the image.");
       }
-    } catch (error) {
-      console.error("Upload error:", error);
-      Alert.alert("Error", "Something went wrong while uploading.");
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to upload image");
     }
   };
 
-  const handleSkip = () => {
-    Alert.alert(
-      "Skipped Image Upload",
-      "To add pictures to your listing, you can do so in settings.",
-      [
-        {
-          text: "OK",
-          onPress: () => router.push("/(tabs)"), // Navigate to the desired screen
-        },
-      ],
-      { cancelable: false }
-    );
+  const handleUpload = async () => {
+    try {
+      // Step 1: Create the listing
+      const { postId } = await createListing();
+
+      // Step 2: Upload the image if it exists
+      if (image) {
+        await uploadImage(postId);
+      }
+
+      alert("Listing uploaded successfully!");
+      reset(); // Clear the image picker state
+      router.push("./(tabs)/index"); // Navigate to the main screen
+    } catch (error) {
+      console.error("Error uploading listing:", error);
+      alert("An error occurred while uploading the listing.");
+    }
+  };
+
+  const handleSkip = async () => {
+    try {
+      // Only create the listing, no image upload
+      await createListing();
+      alert("Listing uploaded successfully without an image!");
+      router.push("./(tabs)/index"); // Navigate to the main screen
+    } catch (error) {
+      console.error("Error uploading listing:", error);
+      alert("An error occurred while uploading the listing.");
+    }
   };
 
   return (
