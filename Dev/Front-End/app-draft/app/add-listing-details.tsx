@@ -15,8 +15,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar } from "react-native-calendars";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import PageLayout from "./PageLayout";
+import { useListingContext } from "./context/ListingContext";
 
 export default function AddListingDetails() {
+  const { listingData, updateListingData } = useListingContext();
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1); // Page navigation state
   const [isGeoActive, setIsGeoActive] = useState(false);
@@ -59,11 +61,13 @@ export default function AddListingDetails() {
       });
 
       if (geocodedAddress) {
-        setAddress({
-          street: geocodedAddress.street || "",
-          city: geocodedAddress.city || "",
-          state: geocodedAddress.region || "",
-          zip: geocodedAddress.postalCode || "",
+        updateListingData({
+          address: {
+            street: geocodedAddress.street || "",
+            city: geocodedAddress.city || "",
+            state: geocodedAddress.region || "",
+            zip: geocodedAddress.postalCode || "",
+          },
         });
       } else {
         Alert.alert("Error", "Unable to fetch address information.");
@@ -76,41 +80,56 @@ export default function AddListingDetails() {
     }
   };
 
-  const handleDayPress = (day) => {
-    if (!startDate || (startDate && endDate)) {
-      setStartDate(day.dateString);
-      setEndDate(null);
-    } else if (startDate && !endDate) {
-      const start = new Date(startDate);
-      const end = new Date(day.dateString);
+  const handleDayPress = (selectedDate: string) => {
+    const { listingData, updateListingData } = useListingContext();
 
-      if (end >= start) {
-        setEndDate(day.dateString);
+    if (!listingData.startDate) {
+      // If no startDate is set, set the selectedDate as startDate
+      updateListingData({ startDate: selectedDate, dates: [selectedDate] });
+    } else if (!listingData.endDate) {
+      // If startDate is set but no endDate, set the selectedDate as endDate
+      const startDate = new Date(listingData.startDate);
+      const endDate = new Date(selectedDate);
+
+      if (startDate > endDate) {
+        // If selected endDate is before startDate, swap them
+        updateListingData({
+          startDate: selectedDate,
+          endDate: listingData.startDate,
+          dates: getDatesInRange(selectedDate, listingData.startDate),
+        });
       } else {
-        Alert.alert("Invalid Date", "End date must be after the start date.");
+        // Valid range, set endDate and update dates array
+        updateListingData({
+          endDate: selectedDate,
+          dates: getDatesInRange(listingData.startDate, selectedDate),
+        });
       }
+    } else {
+      // If both startDate and endDate are set, reset to start new selection
+      updateListingData({
+        startDate: selectedDate,
+        endDate: undefined,
+        dates: [selectedDate],
+      });
     }
   };
 
-  const getDatesInRange = (start, end) => {
-    const dates = {};
-    let currentDate = new Date(start);
-    const lastDate = new Date(end);
+  const getDatesInRange = (start: string, end: string): string[] => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const dates: string[] = [];
 
-    while (currentDate <= lastDate) {
-      const dateString = currentDate.toISOString().split("T")[0];
-      dates[dateString] = {
-        selected: true,
-        color: "#159636",
-        textColor: "white",
-      };
-      currentDate.setDate(currentDate.getDate() + 1);
+    while (startDate <= endDate) {
+      dates.push(startDate.toISOString().split("T")[0]); // Format as "yyyy-mm-dd"
+      startDate.setDate(startDate.getDate() + 1); // Increment by 1 day
     }
 
     return dates;
   };
 
   const validatePage1 = () => {
+    const { title, description, address } = listingData;
     const missingFields = [];
 
     if (!title.trim()) missingFields.push("Title");
@@ -135,7 +154,7 @@ export default function AddListingDetails() {
 
   const handleNext = () => {
     if (validatePage1()) {
-      router.push("/add-listing-details-2"); // Navigate to the second page
+      router.push("/add-listing-details-2");
     }
   };
 
@@ -162,7 +181,10 @@ export default function AddListingDetails() {
                 style={styles.input}
                 placeholder="Enter title"
                 value={title}
-                onChangeText={setTitle}
+                onChangeText={(text) => {
+                  setTitle(text);
+                  updateListingData({ title: text }); // Update context
+                }}
               />
               <TextInput
                 style={[styles.input, styles.textArea]}
@@ -170,7 +192,10 @@ export default function AddListingDetails() {
                 multiline
                 numberOfLines={4}
                 value={description}
-                onChangeText={setDescription}
+                onChangeText={(text) => {
+                  setDescription(text);
+                  updateListingData({ description: text }); // Update context
+                }}
               />
 
               <View style={styles.addressHeader}>
@@ -197,34 +222,39 @@ export default function AddListingDetails() {
                 style={styles.input}
                 placeholder="Street Address"
                 value={address.street}
-                onChangeText={(text) =>
-                  setAddress((prev) => ({ ...prev, street: text }))
-                }
+                onChangeText={(text) => {
+                  setAddress((prev) => ({ ...prev, street: text }));
+                  updateListingData({ address: { ...address, street: text } });
+                }}
+
               />
               <TextInput
                 style={styles.input}
                 placeholder="City"
                 value={address.city}
-                onChangeText={(text) =>
-                  setAddress((prev) => ({ ...prev, city: text }))
-                }
+                onChangeText={(text) => {
+                  setAddress((prev) => ({ ...prev, city: text }));
+                  updateListingData({ address: { ...address, city: text } });
+                }}
               />
               <TextInput
                 style={styles.input}
                 placeholder="State"
                 value={address.state}
-                onChangeText={(text) =>
-                  setAddress((prev) => ({ ...prev, state: text }))
-                }
+                onChangeText={(text) => {
+                  setAddress((prev) => ({ ...prev, state: text }));
+                  updateListingData({ address: { ...address, state: text } });
+                }}
               />
               <TextInput
                 style={styles.input}
                 placeholder="ZIP Code"
                 keyboardType="numeric"
                 value={address.zip}
-                onChangeText={(text) =>
-                  setAddress((prev) => ({ ...prev, zip: text }))
-                }
+                onChangeText={(text) => {
+                  setAddress((prev) => ({ ...prev, zip: text }));
+                  updateListingData({ address: { ...address, zip: text } });
+                }}
               />
 
               <TouchableOpacity
@@ -239,7 +269,7 @@ export default function AddListingDetails() {
 
             {/* Page 2: Start/End Dates and Times */}
             <Text style={styles.title}>Select Dates and Times</Text>
-          
+
             {/* Calendar Card */}
             <View style={styles.card}>
               <Calendar
@@ -265,7 +295,7 @@ export default function AddListingDetails() {
                 style={styles.calendar}
               />
             </View>
-          
+
             {/* Time Selectors */}
             <View style={styles.timePickerWrapper}>
               <View style={styles.timePickerRow}>
@@ -280,8 +310,8 @@ export default function AddListingDetails() {
                     }}
                   />
                 </View>
-          
-                <View style={styles.timePickerContainer}>
+
+                <View style={styles.timerPickerContainer}>
                   <Text style={styles.label}>End Time</Text>
                   <DateTimePicker
                     value={endTime}
@@ -301,7 +331,7 @@ export default function AddListingDetails() {
                 </View>
               </View>
             </View>
-          
+
             {/* Navigation Buttons */}
             <View style={styles.navigationButtons}>
               <TouchableOpacity
@@ -390,7 +420,7 @@ const styles = StyleSheet.create({
   timePickerContainer: {
     flex: 1,
     marginHorizontal: 8,
-    marginTop: 16,  
+    marginTop: 16,
   },
   card: {
     backgroundColor: "#fff",
