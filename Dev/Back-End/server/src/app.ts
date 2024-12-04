@@ -24,6 +24,7 @@ app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 
 app.use("/api", routes);
 
+// error handler has to go after routes
 app.use(errorHandler);
 
 export default app;
