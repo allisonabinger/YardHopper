@@ -20,14 +20,14 @@ const ImageUploadScreen = () => {
       Alert.alert("Error", "No image selected to upload.");
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("image", {
       uri: image,
       name: "upload.jpg",
       type: "image/jpeg",
     });
-  
+
     try {
       const response = await fetch("https://your-backend-api/upload", {
         method: "POST",
@@ -36,7 +36,7 @@ const ImageUploadScreen = () => {
         },
         body: formData,
       });
-  
+
       if (response.ok) {
         Alert.alert(
           "Success",
@@ -78,7 +78,7 @@ const ImageUploadScreen = () => {
       <View style={styles.container}>
         <Text style={styles.heading}>Upload an Image</Text>
         <Image
-          source={{ uri: image || "https://via.placeholder.com/150" }}
+          source={{ uri: image || "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" }}
           style={styles.imagePreview}
           resizeMode="cover"
         />
@@ -114,10 +114,12 @@ const styles = StyleSheet.create({
     color: "#159636",
   },
   imagePreview: {
-    width: 200,
+    width: 300,
     height: 200,
     marginBottom: 40,
     borderRadius: 10,
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
   },
   button: {
     backgroundColor: "#159636",
