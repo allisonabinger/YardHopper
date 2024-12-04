@@ -6,6 +6,8 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Linking,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -53,6 +55,20 @@ export default function ListingDetail() {
   const { title, description, address, dates, startTime, endTime, images, categories } = listing;
   const formattedAddress = `${address.street}, ${address.city}, ${address.state} ${address.zip}`;
   const date = dates.length > 0 ? dates[0] : "No date available";
+
+  // Open map function with platform-specific logic
+  const openMap = (address: string): void => {
+    const query = encodeURIComponent(address);
+
+    const url =
+      Platform.OS === "ios"
+        ? `http://maps.apple.com/?q=${query}` // Apple Maps for iOS
+        : `https://www.google.com/maps/search/?api=1&query=${query}`; // Google Maps for Android
+
+    Linking.openURL(url).catch((err) =>
+      console.error("Failed to open maps:", err)
+    );
+  };
 
   const formatTime = (time: string): string => {
     const [hours, minutes] = time.split(":").map(Number);
@@ -102,7 +118,9 @@ export default function ListingDetail() {
         </TouchableOpacity>
 
         {/* Address and Date/Time */}
-        <Text style={styles.address}>{formattedAddress}</Text>
+        <TouchableOpacity onPress={() => openMap(formattedAddress)}>
+          <Text style={styles.address}>{formattedAddress}</Text>
+        </TouchableOpacity>
         <View style={styles.dateTimeContainer}>
           <Text style={styles.date}>Date(s): {formatDate(date)}</Text>
           <Text style={styles.time}>
@@ -191,9 +209,10 @@ const styles = StyleSheet.create({
   address: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: "#159636",
     marginVertical: 8,
     textAlign: "center",
+    textDecorationLine: "underline",
   },
   section: {
     marginBottom: 24,

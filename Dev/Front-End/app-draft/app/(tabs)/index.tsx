@@ -253,7 +253,11 @@ export default function HomeScreen() {
           <Ionicons
             name={viewMode === "list" ? "toggle-outline" : "toggle"}
             size={28}
-            color="#159636"
+            style={{
+              backgroundColor: viewMode === "list" ? "white" : "#FFFFFF",
+              borderRadius: 14, // To make the circle rounded
+            }}
+            color={viewMode === "list" ? "#159636" : "#159636"} // Set the icon's color
           />
           <Text style={styles.toggleText}>
             {viewMode === "list" ? "Map View" : "List View"}
@@ -312,9 +316,9 @@ export default function HomeScreen() {
       <FilterModal
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}
-        onRadiusChange={setRadius}
+        setRadius={setRadius}
         selectedCategories={selectedCategories}
-        onCategoryChange={setSelectedCategories}
+        setSelectedCategories={setSelectedCategories}
         radius={radius}
       />
     </View>

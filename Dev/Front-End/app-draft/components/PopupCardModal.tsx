@@ -39,7 +39,7 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
   const handleCardPress = () => {
     if (item.postId) {
       router.push(`/listing/${item.postId}`);
-      onClose(); // Close the modal after navigating
+      onClose(); 
     }
   };
 

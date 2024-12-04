@@ -15,11 +15,6 @@ const ImageUploadScreen = () => {
   const { image, openImagePicker, reset } = useImagePicker();
   const router = useRouter();
 
-  const handleSkip = () => {
-    // Handle the skip action
-    router.push("/(tabs)"); // Replace with the appropriate screen
-  };
-
   const handleUpload = async () => {
     if (!image) {
       Alert.alert("Error", "No image selected to upload.");
@@ -64,6 +59,20 @@ const ImageUploadScreen = () => {
     }
   };
 
+  const handleSkip = () => {
+    Alert.alert(
+      "Skipped Image Upload",
+      "To add pictures to your listing, you can do so in settings.",
+      [
+        {
+          text: "OK",
+          onPress: () => router.push("/(tabs)"), // Navigate to the desired screen
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
   return (
     <PageLayout step={4} steps={4}>
       <View style={styles.container}>
@@ -99,7 +108,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   heading: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
     color: "#159636",
