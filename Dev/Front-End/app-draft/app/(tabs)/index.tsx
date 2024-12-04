@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
+  Easing,
   FlatList,
   View,
   Text,
@@ -139,13 +140,18 @@ export default function HomeScreen() {
     const isCurrentlyExpanded = expandedPostId === postId;
     setExpandedPostId(isCurrentlyExpanded ? null : postId);
 
+    // Initialize or reset the animation value
     if (!fadeAnimations[postId]) {
       fadeAnimations[postId] = new Animated.Value(isCurrentlyExpanded ? 1 : 0);
+    } else {
+      fadeAnimations[postId].setValue(isCurrentlyExpanded ? 1 : 0); // Reset the value
     }
 
-    Animated.timing(fadeAnimations[postId], {
+    // Run the spring animation
+    Animated.spring(fadeAnimations[postId], {
       toValue: isCurrentlyExpanded ? 0 : 1,
-      duration: 300,
+      friction: 9, // Adjust friction for smoothness
+      tension: 40, // Adjust tension for the spring's strength
       useNativeDriver: true,
     }).start();
   };
@@ -374,7 +380,11 @@ const styles = StyleSheet.create({
     color: "#159636",
   },
   listContent: {
-    paddingVertical: 16,
+    // paddingTop: 2,
+    paddingBottom: 28,
+    paddingHorizontal: 8,
+    // paddingVertical: 16,
+    // rowGap: 0,
   },
   map: {
     flex: 1,
@@ -383,6 +393,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#D9D9D9",
     borderRadius: 8,
     margin: 20,
+    marginBottom: 5,
     padding: 16,
     elevation: 4,
     shadowColor: "#000",
