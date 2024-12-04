@@ -26,6 +26,7 @@ export default function AddListingDetailsPage2() {
   const [currentPicker, setCurrentPicker] = useState<"start" | "end" | null>(
     null
   );
+
   const handleDayPress = (day) => {
     const selectedDate = new Date(day.dateString);
     const today = new Date();
@@ -37,13 +38,22 @@ export default function AddListingDetailsPage2() {
     }
 
     if (!listingData.startDate || (listingData.startDate && listingData.endDate)) {
-      updateListingData({ startDate: day.dateString, endDate: undefined });
+      // Reset both dates
+      updateListingData({
+        startDate: day.dateString,
+        endDate: undefined,
+        dates: [day.dateString],
+      });
     } else if (listingData.startDate && !listingData.endDate) {
       const start = new Date(listingData.startDate);
       const end = new Date(day.dateString);
 
       if (end >= start) {
-        updateListingData({ endDate: day.dateString });
+        const newDates = getDatesInRange(start, end); // Generate all dates in range
+        updateListingData({
+          endDate: day.dateString,
+          dates: newDates,
+        });
       } else {
         Alert.alert("Invalid Date", "End date must be after the start date.");
       }
@@ -51,17 +61,11 @@ export default function AddListingDetailsPage2() {
   };
 
   const getDatesInRange = (start, end) => {
-    const dates = {};
+    const dates = [];
     let currentDate = new Date(start);
-    const lastDate = new Date(end);
 
-    while (currentDate <= lastDate) {
-      const dateString = currentDate.toISOString().split("T")[0];
-      dates[dateString] = {
-        selected: true,
-        color: "#159636",
-        textColor: "white",
-      };
+    while (currentDate <= end) {
+      dates.push(currentDate.toISOString().split("T")[0]);
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
@@ -109,19 +113,18 @@ export default function AddListingDetailsPage2() {
             <Calendar
               onDayPress={handleDayPress}
               markedDates={{
-                ...(startDate && endDate ? getDatesInRange(startDate, endDate) : {}),
-                [listingData.startDate]: {
-                  selected: true,
-                  startingDay: true,
-                  color: "#159636",
-                  textColor: "white",
-                },
-                [listingData.endDate]: {
-                  selected: true,
-                  endingDay: true,
-                  color: "#159636",
-                  textColor: "white",
-                },
+                ...(listingData.dates?.length > 0
+                  ? listingData.dates.reduce((acc, date, index, array) => {
+                      acc[date] = {
+                        selected: true,
+                        color: "#159636",
+                        textColor: "white",
+                        startingDay: index === 0, // Round start date
+                        endingDay: index === array.length - 1, // Round end date
+                      };
+                      return acc;
+                    }, {})
+                  : {}),
               }}
               markingType="period"
               theme={{
