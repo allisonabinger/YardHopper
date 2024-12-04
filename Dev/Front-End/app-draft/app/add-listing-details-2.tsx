@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Alert,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -138,137 +140,135 @@ export default function AddListingDetailsPage2() {
 
   return (
     <PageLayout step={3} steps={4}>
-      <ScrollView>
-        <View style={styles.container}>
-          <Text style={styles.title}>Select Dates & Times</Text>
-          <View style={styles.card}>
-            <Calendar
-              onDayPress={handleDayPress}
-              markedDates={{
-                ...(listingData.dates?.length > 0
-                  ? listingData.dates.reduce((acc, date, index, array) => {
-                      acc[date] = {
-                        selected: true,
-                        color: "#159636",
-                        textColor: "white",
-                        startingDay: index === 0,
-                        endingDay: index === array.length - 1,
-                      };
-                      return acc;
-                    }, {})
-                  : {}),
-              }}
-              markingType="period"
-              theme={{
-                arrowColor: "#159636",
-                textMonthFontWeight: "semibold",
-                todayTextColor: "#159636",
-              }}
-            />
-          </View>
-
-          <View style={styles.timePickerRow}>
-            <View style={styles.timePickerContainer}>
-              <Text style={styles.label}>Start Time</Text>
-              <TouchableOpacity
-                style={styles.timeButton}
-                onPress={() => setCurrentPicker("start")}
-              >
-                <Text>
-                  {listingData.startTime
-                    ? new Date(`1970-01-01T${listingData.startTime}:00`).toLocaleTimeString(
-                        [],
-                        { hour: "2-digit", minute: "2-digit" }
-                      )
-                    : "Select Start Time"}
-                </Text>
-              </TouchableOpacity>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <ScrollView>
+          <View style={styles.container}>
+            <Text style={styles.title}>Select Dates & Times</Text>
+            <View style={styles.card}>
+              <Calendar
+                onDayPress={handleDayPress}
+                markedDates={{
+                  ...(listingData.dates?.length > 0
+                    ? listingData.dates.reduce((acc, date, index, array) => {
+                        acc[date] = {
+                          selected: true,
+                          color: "#159636",
+                          textColor: "white",
+                          startingDay: index === 0,
+                          endingDay: index === array.length - 1,
+                        };
+                        return acc;
+                      }, {})
+                    : {}),
+                }}
+                markingType="period"
+                theme={{
+                  arrowColor: "#159636",
+                  textMonthFontWeight: "semibold",
+                  todayTextColor: "#159636",
+                }}
+              />
             </View>
-
-            <View style={styles.timePickerContainer}>
-              <Text style={styles.label}>End Time</Text>
-              <TouchableOpacity
-                style={styles.timeButton}
-                onPress={() => setCurrentPicker("end")}
-              >
-                <Text>
-                  {listingData.endTime
-                    ? new Date(`1970-01-01T${listingData.endTime}:00`).toLocaleTimeString(
-                        [],
-                        { hour: "2-digit", minute: "2-digit" }
-                      )
-                    : "Select End Time"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <Modal
-            visible={currentPicker !== null}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setCurrentPicker(null)}
-          >
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>
-                  {currentPicker === "start" ? "Select Start Time" : "Select End Time"}
-                </Text>
-                <DateTimePicker
-                  value={currentPicker === "start" ? startTime : endTime}
-                  mode="time"
-                  is24Hour={true}
-                  display="spinner"
-                  onChange={(event, selectedTime) => {
-                    if (selectedTime) {
-                      const formattedTime = formatTime(selectedTime);
-                      setEndTime(selectedTime);
-                      updateListingData({ endTime: formattedTime });
-
-                      if (currentPicker === "start") {
-                        setStartTime(selectedTime);
-                        updateListingData({ startTime: formattedTime });
-
-                        const oneHourAhead = new Date(
-                          selectedTime.getTime() + 60 * 60 * 1000
-                        );
-                        if (!endTime || endTime <= selectedTime) {
-                          setEndTime(oneHourAhead);
-                          updateListingData({ endTime: formatTime(oneHourAhead) });
-                        }
-                      } else if (currentPicker === "end") {
-                        const minEndTime = new Date(
-                          startTime.getTime() + 60 * 60 * 1000
-                        );
-                        if (selectedTime >= minEndTime) {
-                          setEndTime(selectedTime);
-                          updateListingData({ endTime: formattedTime });
-                        } else {
-                          Alert.alert(
-                            "Invalid Time",
-                            "End time must be at least 1 hour after the start time."
-                          );
-                        }
-                      }
-                    }
-                    setCurrentPicker(null);
-                  }}
-                />
+            <View style={styles.timePickerRow}>
+              <View style={styles.timePickerContainer}>
+                <Text style={styles.label}>Start Time</Text>
                 <TouchableOpacity
-                  style={styles.closeModalButton}
-                  onPress={() => setCurrentPicker(null)}
+                  style={styles.timeButton}
+                  onPress={() => setCurrentPicker("start")}
                 >
-                  <Text style={styles.closeModalButtonText}>Close</Text>
+                  <Text>
+                    {listingData.startTime
+                      ? new Date(`1970-01-01T${listingData.startTime}:00`).toLocaleTimeString(
+                          [],
+                          { hour: "2-digit", minute: "2-digit" }
+                        )
+                      : "Select Start Time"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.timePickerContainer}>
+                <Text style={styles.label}>End Time</Text>
+                <TouchableOpacity
+                  style={styles.timeButton}
+                  onPress={() => setCurrentPicker("end")}
+                >
+                  <Text>
+                    {listingData.endTime
+                      ? new Date(`1970-01-01T${listingData.endTime}:00`).toLocaleTimeString(
+                          [],
+                          { hour: "2-digit", minute: "2-digit" }
+                        )
+                      : "Select End Time"}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </Modal>
-
-          <TouchableOpacity style={styles.publishButton} onPress={handlePublish}>
-            <Text style={styles.publishText}>Continue</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+            <Modal
+              visible={currentPicker !== null}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setCurrentPicker(null)}
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>
+                    {currentPicker === "start" ? "Select Start Time" : "Select End Time"}
+                  </Text>
+                  <DateTimePicker
+                    value={currentPicker === "start" ? startTime : endTime}
+                    mode="time"
+                    is24Hour={true}
+                    display="spinner"
+                    onChange={(event, selectedTime) => {
+                      if (selectedTime) {
+                        const formattedTime = formatTime(selectedTime);
+                        setEndTime(selectedTime);
+                        updateListingData({ endTime: formattedTime });
+                        if (currentPicker === "start") {
+                          setStartTime(selectedTime);
+                          updateListingData({ startTime: formattedTime });
+                          const oneHourAhead = new Date(
+                            selectedTime.getTime() + 60 * 60 * 1000
+                          );
+                          if (!endTime || endTime <= selectedTime) {
+                            setEndTime(oneHourAhead);
+                            updateListingData({ endTime: formatTime(oneHourAhead) });
+                          }
+                        } else if (currentPicker === "end") {
+                          const minEndTime = new Date(
+                            startTime.getTime() + 60 * 60 * 1000
+                          );
+                          if (selectedTime >= minEndTime) {
+                            setEndTime(selectedTime);
+                            updateListingData({ endTime: formattedTime });
+                          } else {
+                            Alert.alert(
+                              "Invalid Time",
+                              "End time must be at least 1 hour after the start time."
+                            );
+                          }
+                        }
+                      }
+                      setCurrentPicker(null);
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={styles.closeModalButton}
+                    onPress={() => setCurrentPicker(null)}
+                  >
+                    <Text style={styles.closeModalButtonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+            <TouchableOpacity style={styles.publishButton} onPress={handlePublish}>
+              <Text style={styles.publishText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </PageLayout>
   );
 }

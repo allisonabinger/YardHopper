@@ -45,7 +45,7 @@ export default function SavedPosts() {
 
       {/* Listing Image */}
       <Image
-        source={{ uri: item.image || "https://via.placeholder.com/150" }}
+        source={{ uri: item.image || "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" }}
         style={styles.cardImage}
       />
 
