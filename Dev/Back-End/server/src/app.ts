@@ -5,6 +5,7 @@ import routes from "./routes";
 // import { errorHandler } from "./middlewares/errorHandler";
 import * as swaggerUI from "swagger-ui-express";
 import * as swaggerDocument from "./swagger/swagger.json";
+import { errorHandler } from "middlewares/errorHandler";
 
 
 
@@ -22,7 +23,8 @@ app.use(express.json());
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 
 app.use("/api", routes);
-// app.use(errorHandler);
+
+app.use(errorHandler);
 
 export default app;
 
