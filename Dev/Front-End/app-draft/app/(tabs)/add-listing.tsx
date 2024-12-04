@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Easing } from "react-native";
 import PageLayout from "../PageLayout";
+import { useListingContext } from "../context/ListingContext";
 
 
 const categories = [
@@ -53,12 +54,27 @@ const icons = {
 };
 
 export default function AddListingPage() {
+  const { updateListingData } = useListingContext();
   const [expandedCategory, setExpandedCategory] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState([]);
   const sectionListRef = useRef(null);
   const dropdownAnimations = useRef({});
   const router = useRouter();
+
+  const handleContinue = () => {
+    updateListingData({
+      categories: selectedCategories,
+      subcategories: selectedSubcategories.reduce(
+        (acc, sub) => ({
+          ...acc,
+          [sub]: true, // Example format for subcategories
+        }),
+        {}
+      ),
+    });
+    router.push("/add-listing-details");
+  };
 
   categories.forEach((cat) => {
     if (!dropdownAnimations.current[cat.id]) {
@@ -68,7 +84,7 @@ export default function AddListingPage() {
 
   const toggleCategory = (id, subcategories) => {
     const isExpanded = expandedCategory === id;
-  
+
     // Close the previously expanded category
     if (expandedCategory && expandedCategory !== id) {
       Animated.timing(dropdownAnimations.current[expandedCategory], {
@@ -78,7 +94,7 @@ export default function AddListingPage() {
         useNativeDriver: false,
       }).start();
     }
-  
+
     // Expand or collapse the current category
     setExpandedCategory(isExpanded ? null : id);
     Animated.timing(dropdownAnimations.current[id], {
@@ -87,7 +103,7 @@ export default function AddListingPage() {
       easing: Easing.inOut(Easing.ease), // Smooth easing
       useNativeDriver: false,
     }).start();
-  
+
     // Manage selected categories
     setSelectedCategories((prev) => {
       if (isExpanded && !subcategories.some((sub) => selectedSubcategories.includes(sub))) {
@@ -195,7 +211,7 @@ export default function AddListingPage() {
         ListFooterComponent={
       <TouchableOpacity
         style={styles.continueButton}
-        onPress={() => router.push('/add-listing-details')} // Navigate to the second page
+        onPress={handleContinue} // Navigate to the second page
       >
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>

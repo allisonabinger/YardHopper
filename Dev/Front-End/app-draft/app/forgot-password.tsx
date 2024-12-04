@@ -109,8 +109,7 @@ const ForgotPassword: React.FC = () => {
         style={styles.backButton}
         onPress={() => router.push("/login")}
       >
-        <Ionicons name="arrow-back" size={24} color="#159636" />
-        <Text style={styles.backButtonText}>Back</Text>
+        <Ionicons name="arrow-back" size={28} color="#000000" />
       </Pressable>
       <Text style={styles.title}>Forgot Password?</Text>
       <TextInput
@@ -145,11 +144,6 @@ const styles = StyleSheet.create({
     left: 20,
     flexDirection: "row",
     alignItems: "center",
-  },
-  backButtonText: {
-    marginLeft: 5,
-    fontSize: 16,
-    color: "#159636",
   },
   title: {
     fontSize: 30,
