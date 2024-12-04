@@ -72,6 +72,12 @@ export default function AddListingDetailsPage2() {
     return dates;
   };
 
+  const formatTime = (date) => {
+    const hours = date.getHours().toString().padStart(2, "0"); // Ensure 2-digit format
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
   const handlePublish = () => {
     const today = new Date();
 
@@ -80,22 +86,28 @@ export default function AddListingDetailsPage2() {
       return;
     }
 
-
     if (!listingData.startTime || !listingData.endTime) {
       Alert.alert("Error", "Please select both start and end times.");
       return;
     }
 
+    const parseTime = (time) => {
+      const [hours, minutes] = time.split(":").map(Number);
+      const date = new Date();
+      date.setHours(hours, minutes, 0, 0);
+      return date;
+    };
+
+    const startTime = parseTime(listingData.startTime);
+    const endTime = parseTime(listingData.endTime);
+
     // Ensure startTime and endTime are in the future
-    if (listingData.startDate === today.toISOString().split("T")[0] && listingData.startTime <= today) {
+    if (listingData.startDate === today.toISOString().split("T")[0] && startTime <= today) {
       Alert.alert("Error", "Start time must be in the future.");
       return;
     }
 
-    if (
-      new Date(listingData.endTime) <=
-      new Date(new Date(listingData.startTime).getTime() + 60 * 60 * 1000)
-    )  {
+    if (endTime <= new Date(startTime.getTime() + 60 * 60 * 1000)) {
       Alert.alert("Error", "End time must be at least 1 hour after the start time.");
       return;
     }
@@ -188,20 +200,22 @@ export default function AddListingDetailsPage2() {
                   display="spinner"
                   onChange={(event, selectedTime) => {
                     if (selectedTime) {
+                      const formattedTime = formatTime(selectedTime);
+
                       if (currentPicker === "start") {
                         setStartTime(selectedTime);
-                        updateListingData({ startTime: selectedTime });
+                        updateListingData({ startTime: formattedTime });
 
-                        // Adjust `endTime` if necessary
+                        // Automatically adjust `endTime` if necessary
                         const oneHourAhead = new Date(selectedTime.getTime() + 60 * 60 * 1000);
                         if (!endTime || endTime <= selectedTime) {
                           setEndTime(oneHourAhead);
-                          updateListingData({ endTime: oneHourAhead });
+                          updateListingData({ endTime: formatTime(oneHourAhead) });
                         }
                       } else if (currentPicker === "end") {
                         if (selectedTime >= new Date(startTime.getTime() + 60 * 60 * 1000)) {
                           setEndTime(selectedTime);
-                          updateListingData({ endTime: selectedTime });
+                          updateListingData({ endTime: formattedTime });
                         } else {
                           Alert.alert(
                             "Invalid Time",
