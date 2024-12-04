@@ -1,15 +1,22 @@
 // usersRouters - routes for user management
-import { fetchUserProfile } from "../controllers/usersController";
+import { createUser, fetchUser } from "../controllers/usersController";
 import express from "express";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { authenticateUser } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
 // create user
 // router.post("/", authenticateUser, createUser);
+router.get("/me", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    fetchUser(req, res, next);
+});
+// router.get("/me", authenticateUser, fetchUser)
 
-router.get("/me", authenticateUser, fetchUserProfile)
+router.post("/", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    createUser(req, res, next);
+});
+// router.post("/", authenticateUser, createUser)
 
 // // update user
 // router.put("/:userId", (req: Request, res: Response) => {
