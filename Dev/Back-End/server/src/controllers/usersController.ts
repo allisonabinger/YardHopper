@@ -1,7 +1,7 @@
 // Server actions for user management
 import { NextFunction, Request, Response } from "express";
 import { createHash } from "crypto";
-import { getUserProfile } from "services/userService";
+import { getUserProfile } from "../services/userService";
 
 export const hashUid = (uid: string): string => {
   return createHash("sha256").update(uid).digest("hex");
@@ -15,7 +15,8 @@ export const hashUid = (uid: string): string => {
 
 export const fetchUserProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const {hashUid} = req.user;
+        const user = res.locals.user;
+        const hashUid = user.hashUid
         console.log(`fetchUserProfile - hashuid: ${hashUid}`)
         const userProfile = await getUserProfile(hashUid);
 
