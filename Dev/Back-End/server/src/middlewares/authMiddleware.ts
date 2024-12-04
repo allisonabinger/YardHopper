@@ -20,9 +20,11 @@ export const authenticateUser = async (
   
     try {
       const decodedToken = await auth.verifyIdToken(token);
-      const unhashedUid = decodedToken.uid
-      const hashedUid = hashUid(unhashedUid)
-      req.user = { hashUid: hashedUid, unhashedUid: unhashedUid };
+      const uid = decodedToken.uid
+      const hashedUid = hashUid(uid)
+      const user = { hashUid: hashedUid, uid: uid }
+
+      res.locals.user = user;
       next();
     } catch (error) {
       console.error("Authentication error:", error);
