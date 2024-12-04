@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 export function useImagePicker(){
   const [image, setImage] = useState<string | undefined>(undefined);
+  const [mimeType, setMimeType] = useState<string | undefined>(undefined);
   const [status, requestPermission] = usePermissions();
 
   async function openImagePicker(){
@@ -16,11 +17,13 @@ export function useImagePicker(){
     }
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
+      allowsEditing: false,
+      quality: 1,
     })
 
     if(!result.canceled){
       setImage(result.assets[0].uri);
+      setMimeType(result.assets[0].type);
     }
   }
 
@@ -28,5 +31,5 @@ export function useImagePicker(){
     setImage(undefined);
   }
 
-  return { image, openImagePicker, reset};
+  return { image, mimeType, openImagePicker, reset};
 }
