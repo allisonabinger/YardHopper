@@ -34,6 +34,9 @@ const Card: React.FC<CardProps> = ({
 }) => {
   const [liked, setLiked] = useState(false);
 
+  // Fallback logic for image
+  const imageUri = image || "https://via.placeholder.com/150";
+
   // Helper function to format the date
   const formatDate = (dateString: string): string => {
     const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "long", year: "numeric" };
@@ -43,7 +46,7 @@ const Card: React.FC<CardProps> = ({
 
   const formatTime = (time?: string): string => {
     if (!time || !time.includes(":")) {
-      return "Invalid Time"; 
+      return "Invalid Time";
     }
 
     const [hours, minutes] = time.split(":").map(Number);
@@ -60,7 +63,7 @@ const Card: React.FC<CardProps> = ({
     <TouchableOpacity style={styles.card} onPress={onPress}>
       {/* Image Section */}
       <View style={styles.imageContainer}>
-        <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
+        <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
         <TouchableOpacity style={styles.likeButton} onPress={toggleLike}>
           <Ionicons
             name={liked ? "heart" : "heart-outline"}
@@ -87,6 +90,7 @@ const Card: React.FC<CardProps> = ({
     </TouchableOpacity>
   );
 };
+
 
 export default Card;
 

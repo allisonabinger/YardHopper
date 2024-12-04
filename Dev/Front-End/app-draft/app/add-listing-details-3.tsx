@@ -27,28 +27,22 @@ const ImageUploadScreen = () => {
 
     const listing = {
       ...listingData,
-      userId: user.uid, // Add the userId to the listing data
+
+      userId: user.uid,  // Add the userId to the listing data
     };
 
-    try {
-      const response = await fetch(
-        "https://yardhopperapi.onrender.com/api/listings",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(listing),
-        }
-      );
+    const response = await fetch("https://yardhopperapi.onrender.com/api/listings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(listing),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to create listing");
-      }
-
-      return response.json(); // Returns { postId }
-    } catch (error) {
-      console.error("Error creating listing:", error);
-      throw error;
+    if (!response.ok) {
+      throw new Error("Failed to create listing");
     }
+
+    return response.json(); // Returns { postId }
+
   };
 
   const uploadImage = async (postId: string) => {
@@ -62,21 +56,17 @@ const ImageUploadScreen = () => {
     });
     formData.append("caption", "Listing Image");
 
-    try {
-      const response = await fetch(
-        `https://yardhopperapi.onrender.com/api/listings/${postId}/images`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+    const response = await fetch(
+      `https://yardhopperapi.onrender.com/api/listings/${postId}/images`,
+      {
+        method: "POST",
+        body: formData,
 
-      if (!response.ok) {
-        throw new Error("Failed to upload image");
       }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      throw error;
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to upload image");
     }
   };
 
