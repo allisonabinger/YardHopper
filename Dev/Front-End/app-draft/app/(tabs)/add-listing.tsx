@@ -13,6 +13,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Easing } from "react-native";
 import PageLayout from "../PageLayout";
 import { useListingContext } from "../context/ListingContext";
+import { useAuth } from "@/components/AuthProvider";
 
 
 const categories = [
@@ -61,8 +62,15 @@ export default function AddListingPage() {
   const sectionListRef = useRef(null);
   const dropdownAnimations = useRef({});
   const router = useRouter();
+  const auth = useAuth();
 
   const handleContinue = () => {
+    if (!auth.user) {
+      // Handle the case when the user is not authenticated
+      console.log("User is not authenticated");
+      return;
+    }
+
     updateListingData({
       categories: selectedCategories,
       subcategories: selectedSubcategories.reduce(
@@ -72,7 +80,10 @@ export default function AddListingPage() {
         }),
         {}
       ),
+      userId: auth.user?.uid, // Add userId to the listing data
     });
+
+    // Navigate to the next step
     router.push("/add-listing-details");
   };
 
