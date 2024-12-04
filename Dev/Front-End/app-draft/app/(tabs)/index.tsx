@@ -193,7 +193,9 @@ export default function HomeScreen() {
       </TouchableOpacity>
 
       <Image
-        source={{ uri: item.images[0]?.uri || "https://via.placeholder.com/150" }}
+        source={{
+          uri: (item?.images?.[0]?.uri) || "https://via.placeholder.com/150",
+        }}
         style={styles.cardImage}
       />
       <Text style={styles.cardTitle}>{item.title}</Text>
