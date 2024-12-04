@@ -22,7 +22,7 @@ export default function AddListingDetailsPage2() {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [startTime, setStartTime] = useState(new Date());
-  const [endTime, setEndTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date(new Date().getTime() + 60 * 60 * 1000));
   const [currentPicker, setCurrentPicker] = useState<"start" | "end" | null>(
     null
   );
@@ -190,14 +190,18 @@ export default function AddListingDetailsPage2() {
                     if (selectedTime) {
                       if (currentPicker === "start") {
                         setStartTime(selectedTime);
+                        updateListingData({ startTime: selectedTime });
 
+                        // Adjust `endTime` if necessary
                         const oneHourAhead = new Date(selectedTime.getTime() + 60 * 60 * 1000);
-                        if (endTime <= new Date(selectedTime.getTime() + 60 * 60 * 1000)) {
-                          setEndTime(new Date(selectedTime.getTime() + 60 * 60 * 1000));
+                        if (!endTime || endTime <= selectedTime) {
+                          setEndTime(oneHourAhead);
+                          updateListingData({ endTime: oneHourAhead });
                         }
                       } else if (currentPicker === "end") {
                         if (selectedTime >= new Date(startTime.getTime() + 60 * 60 * 1000)) {
                           setEndTime(selectedTime);
+                          updateListingData({ endTime: selectedTime });
                         } else {
                           Alert.alert(
                             "Invalid Time",
