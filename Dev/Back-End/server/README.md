@@ -130,7 +130,7 @@ GET https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
 The endpoint will handle parsing the user information and generating the metadata for the db to query later. It accepts the listing data in the body. 
 
 **Request Endpoint Example**
-PUT https://yardhopperapi.onrender.com/api/listings/
+POST https://yardhopperapi.onrender.com/api/listings/
 
 
 **Request Body Examples**
