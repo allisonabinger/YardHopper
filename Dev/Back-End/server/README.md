@@ -42,7 +42,7 @@ With categories
 https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950&categories=Furniture,Clothing
 
 With specified zipcode
-http://localhost:4000/api/listings?zipcode=74105&radius=5
+https://yardhopperapi.onrender.com/api/listings?zipcode=74105&radius=5
 
 **Server Response**
 The API will respond with the public fields in an array of listings. Here is an example:
@@ -351,7 +351,27 @@ This route is user for deleting an image within a listing. It will delete the im
 DEL https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ/images
 
 **Request Params**
-uri: "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media"
+uri: https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-SaleDetails2.jpeg?alt=media
+
+**Server Response**
+The API responds with a success message of the newly updated listing, which should include the new caption for the image.
+```
+{
+    "message": "Image removed successfully",
+    "listing": {
+        "title": "Test Title",
+        "description": "Test Description",
+        ...
+        "images": [
+            {
+                "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media",
+                "caption": "Updated Caption"
+            },
+        ],
+        ...
+    }
+}
+```
 
 ---
 
@@ -366,6 +386,7 @@ GET https://yardhopperapi.onrender.com/api/users/me
 **Request Header**
 `Authorization: Bearer ${idToken}`
 
+**Server Response**
 The API will return data regarding the user's profile. Here is an example response:
 
 ```
@@ -407,6 +428,7 @@ POST https://yardhopperapi.onrender.com/api/users/create
 }
 ```
 
+**Server Response**
 The response returned from the API will message and the newly created profile.
 ```
 {
@@ -438,6 +460,7 @@ DEL https://yardhopperapi.onrender.com/api/users/me
 **Request Header**
 `Authorization: Bearer ${idToken}`
 
+**Server Response**
 The response returned from the API will be a successful deletion message:
 
 ```
@@ -464,8 +487,8 @@ PUT https://yardhopperapi.onrender.com/api/users/update
 }
 ```
 
+**Server Response**
 The response returned from the API will be a successful updated message, as well :
-
 ```
 {
     "message": "User profile updated successfully",
@@ -492,8 +515,8 @@ GET https://yardhopperapi.onrender.com/api/users/listings
 **Request Header**
 `Authorization: Bearer ${idToken}`
 
+**Server Response**
 If the user has no listings, the server will respond with a message:
-
 ```
 {
     "status": 500,
@@ -529,8 +552,8 @@ GET https://yardhopperapi.onrender.com/api/users/savedListings
 **Request Header**
 `Authorization: Bearer ${idToken}`
 
+**Server Response**
 If the user has no listings, the server will respond with a message:
-
 ```
 {
     "status": 500,
@@ -568,8 +591,9 @@ POST https://yardhopperapi.onrender.com/api/users/savedListings
     "postId": "6VpUpFaeAHvA9Ew9zAkj",
 }
 ```
-The server will respond with a message upon successful addition:
 
+**Server Response**
+The server will respond with a message upon successful addition:
 ```
 {
     "message": "Listing saved successfully"
@@ -593,8 +617,9 @@ DEL https://yardhopperapi.onrender.com/api/users/savedListings
     "postId": "6VpUpFaeAHvA9Ew9zAkj",
 }
 ```
-The server will respond with a message upon successful deletion:
 
+**Server Response**
+The server will respond with a message upon successful deletion:
 ```
 {
     "message": "Listing removed successfully"
