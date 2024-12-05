@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
+  Easing,
   FlatList,
   View,
   Text,
@@ -15,7 +16,6 @@ import { Ionicons } from "@expo/vector-icons";
 import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import mockData from "@/mockData.json";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { router } from "expo-router";
@@ -57,26 +57,32 @@ export default function HomeScreen() {
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [isModalVisible, setModalVisible] = useState(false);
-  const [listings, setListings] = useState(mockData.listings);
+  const [listings, setListings] = useState<ListingItem[]>([]);
   const [selectedListing, setSelectedListing] = useState<ListingItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1); 
 
   // Fetch listings data from API
-  const fetchListings = async () => {
+  const fetchListings = async (isRefresh = false) => {
+    if (loading) return; // Prevent multiple calls
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(
-        "https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950"
+        `https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950&page=${isRefresh ? 1 : page}`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
       const data = await response.json();
-      setListings(data.listings || []);
+      setListings((prevListings) =>
+        isRefresh ? data.listings : [...prevListings, ...data.listings]
+      );
+      if (isRefresh) setPage(2); // Reset to page 2 for next fetch
+      else setPage(page + 1);
     } catch (error: any) {
       setError(error.message || "Failed to load listings");
     } finally {
@@ -90,8 +96,14 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchListings();
+    await fetchListings(true);
     setRefreshing(false);
+  };
+
+  const onEndReached = async () => {
+    if (!loading) {
+      await fetchListings();
+    }
   };
 
   useEffect(() => {
@@ -139,13 +151,18 @@ export default function HomeScreen() {
     const isCurrentlyExpanded = expandedPostId === postId;
     setExpandedPostId(isCurrentlyExpanded ? null : postId);
 
+    // Initialize or reset the animation value
     if (!fadeAnimations[postId]) {
       fadeAnimations[postId] = new Animated.Value(isCurrentlyExpanded ? 1 : 0);
+    } else {
+      fadeAnimations[postId].setValue(isCurrentlyExpanded ? 1 : 0); // Reset the value
     }
 
-    Animated.timing(fadeAnimations[postId], {
+    // Run the spring animation
+    Animated.spring(fadeAnimations[postId], {
       toValue: isCurrentlyExpanded ? 0 : 1,
-      duration: 300,
+      friction: 9, // Adjust friction for smoothness
+      tension: 40, // Adjust tension for the spring's strength
       useNativeDriver: true,
     }).start();
   };
@@ -193,7 +210,9 @@ export default function HomeScreen() {
       </TouchableOpacity>
 
       <Image
-        source={{ uri: item.images[0]?.uri || "https://via.placeholder.com/150" }}
+        source={{
+          uri: (item?.images?.[0]?.uri) || "https://via.placeholder.com/150",
+        }}
         style={styles.cardImage}
       />
       <Text style={styles.cardTitle}>{item.title}</Text>
@@ -290,7 +309,7 @@ export default function HomeScreen() {
             longitudeDelta: 0.1,
           }}
         >
-          {listings.map((item) => (
+          {listings.map((item: { postId: any; g: any; title: any; address: any; description?: string; dates?: string[]; images?: { uri: string; caption: string; }[]; categories?: string[]; }) => (
             <Marker
               key={item.postId}
               coordinate={{
@@ -372,7 +391,11 @@ const styles = StyleSheet.create({
     color: "#159636",
   },
   listContent: {
-    paddingVertical: 16,
+    // paddingTop: 2,
+    paddingBottom: 28,
+    paddingHorizontal: 8,
+    // paddingVertical: 16,
+    // rowGap: 0,
   },
   map: {
     flex: 1,
@@ -381,6 +404,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#D9D9D9",
     borderRadius: 8,
     margin: 20,
+    marginBottom: 5,
     padding: 16,
     elevation: 4,
     shadowColor: "#000",
@@ -468,3 +492,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
+function setPage(arg0: number) {
+  throw new Error("Function not implemented.");
+}

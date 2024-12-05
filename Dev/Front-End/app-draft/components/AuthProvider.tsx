@@ -2,7 +2,6 @@ import { auth } from "@/firebaseConfig";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithPopup,
   User,
   UserCredential,
   getAuth,
@@ -15,7 +14,6 @@ const AuthContext = createContext<AuthContextType>({
   logout,
   login,
   resetPassword,
-  user: null,
 });
 
 type AuthContextType = {
@@ -48,7 +46,7 @@ export function AuthProvider({children}: {children: ReactNode}){
   const [user, setUser] = useState(auth.currentUser);
 
 
-  // AB - changed log statement. 
+  // AB - changed log statement.
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
         if (user) {

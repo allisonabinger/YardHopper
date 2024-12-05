@@ -13,6 +13,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Easing } from "react-native";
 import PageLayout from "../PageLayout";
 import { useListingContext } from "../context/ListingContext";
+import { useAuth } from "@/components/AuthProvider";
 
 
 const categories = [
@@ -61,18 +62,35 @@ export default function AddListingPage() {
   const sectionListRef = useRef(null);
   const dropdownAnimations = useRef({});
   const router = useRouter();
+  const auth = useAuth();
 
   const handleContinue = () => {
+    if (!auth.user) {
+      // Handle the case when the user is not authenticated
+      console.log("User is not authenticated");
+      return;
+    }
+
+    const updatedSubcategories: Record<string, string[]> = {};
+
+    selectedCategories.forEach((category) => {
+      // Find the selected subcategories for the category
+      const subcategoriesForCategory = categories
+        .find((cat) => cat.name === category)?.subcategories.filter((sub) =>
+          selectedSubcategories.includes(sub)
+        ) || [];
+
+      // Assign the filtered subcategories to the category
+      updatedSubcategories[category] = subcategoriesForCategory;
+    });
+
     updateListingData({
       categories: selectedCategories,
-      subcategories: selectedSubcategories.reduce(
-        (acc, sub) => ({
-          ...acc,
-          [sub]: true, // Example format for subcategories
-        }),
-        {}
-      ),
+      subcategories: updatedSubcategories, // Updated subcategories structure
+      userId: auth.user?.uid, // Add userId to the listing data
     });
+
+    // Navigate to the next step
     router.push("/add-listing-details");
   };
 
@@ -104,12 +122,20 @@ export default function AddListingPage() {
       useNativeDriver: false,
     }).start();
 
-    // Manage selected categories
+    // Update selected categories when expanding or collapsing
     setSelectedCategories((prev) => {
-      if (isExpanded && !subcategories.some((sub) => selectedSubcategories.includes(sub))) {
-        return prev.filter((cat) => cat !== id);
+      const categoryName = categories.find((cat) => cat.id === id)?.name; // get category name
+
+      if (!categoryName) {
+        return prev; // Return the previous state if no category is found (in case the ID doesn't exist)
       }
-      return prev.includes(id) ? prev : [...prev, id];
+      if (isExpanded) {
+        // Remove the category if it was previously selected and is being collapsed
+        return prev.filter((cat) => cat !== categoryName);
+      } else {
+        // Add the category if it's being expanded
+        return [...prev, categoryName];
+      }
     });
   };
 
