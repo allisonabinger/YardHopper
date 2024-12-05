@@ -106,3 +106,40 @@ export const makeUserProfile = async (hashUid: string, uid: string, userDetails:
         throw error;
       }
 }
+
+export const updateUserProfile = async (hashUid: string, uid: string, updatedDetails: Partial<User>) => {
+    try {
+        if (Object.keys(updatedDetails).length === 0) {
+            throw new Error("No fields to update.");
+        }
+        
+        const userRef = db.collection("users").doc(hashUid);
+
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            throw new Error("User profile does not exist");
+        }
+
+        await userRef.update(updatedDetails);
+
+        const updatedUserDoc = await userRef.get();
+        const updatedData = updatedUserDoc.data();
+
+        if (!updatedData) {
+          throw new Error('listing not found');
+        }
+        return {
+            first: updatedData.first,
+            last: updatedData.last,
+            email: updatedData.email,
+            street: updatedData.street ?? undefined,
+            city: updatedData.city ?? undefined,
+            state: updatedData.state ?? undefined,
+            zipcode: updatedData.zipcode,
+    };
+
+    } catch (error) {
+        console.error("Error creating user profile:", error);
+        throw error;
+      }
+}

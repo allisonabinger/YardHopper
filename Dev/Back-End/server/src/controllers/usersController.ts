@@ -1,7 +1,7 @@
 // Server actions for user management
 import { NextFunction, Request, Response } from "express";
 import { createHash } from "crypto";
-import { getUserProfile, makeUserProfile } from "../services/userService";
+import { getUserProfile, makeUserProfile, updateUserProfile } from "../services/userService";
 import { User } from "../models/userModel";
 
 export const hashUid = (uid: string): string => {
@@ -49,6 +49,35 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
         res.status(201).json({
             message: "User profile created successfully",
             data: newUserProfile,
+        });
+    } catch (err) {
+        console.log(`Error occured in createUserProfile: ${err}`)
+
+        next(err)
+    }
+}
+
+export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+    const updatedFields = { ...req.body };
+    try {
+        console.log("Request body received:", req.body);
+        if (!updatedFields || typeof updatedFields !== "object") {
+            return res.status(400).json({ error: "Invalid or missing user details in the request body" });
+        }
+        const restrictedFields = ["email", "createdAt"];
+        restrictedFields.forEach(field => delete updatedFields[field]);
+        
+        const user = res.locals.user;
+        if (!user || !user.hashUid || !user.uid) {
+            return res.status(403).json({
+              error: "Unauthorized request. User details not found.",
+            });
+        }
+        const updatedUserDetails = await updateUserProfile(user.hashUid, user.uid, updatedFields);
+
+        res.status(201).json({
+            message: "User profile updated successfully",
+            data: updatedUserDetails,
         });
     } catch (err) {
         console.log(`Error occured in createUserProfile: ${err}`)
