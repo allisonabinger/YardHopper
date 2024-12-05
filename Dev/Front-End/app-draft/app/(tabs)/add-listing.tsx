@@ -117,10 +117,14 @@ export default function AddListingPage() {
 
     // Manage selected categories
     setSelectedCategories((prev) => {
-      if (isExpanded && !subcategories.some((sub) => selectedSubcategories.includes(sub))) {
-        return prev.filter((cat) => cat !== id);
+      const categoryName = categories.find((cat) => cat.id === id)?.name; // Find the category name using the id
+      if (categoryName) {
+        if (isExpanded && !subcategories.some((sub) => selectedSubcategories.includes(sub))) {
+          return prev.filter((cat) => cat !== categoryName);  // Use category name
+        }
+        return prev.includes(categoryName) ? prev : [...prev, categoryName];  // Use category name
       }
-      return prev.includes(id) ? prev : [...prev, id];
+      return prev;
     });
   };
 
