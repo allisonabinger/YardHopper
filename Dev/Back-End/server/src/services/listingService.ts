@@ -56,6 +56,7 @@ export const getListings = async ({
                         endTime: data.endTime,
                         images: data.images,
                         categories: data.categories,
+                        subcategories: data.subcategories,
                         status: data.status,
                         g: data.g,
                         postId: data.postId
