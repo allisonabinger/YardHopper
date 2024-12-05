@@ -51,6 +51,7 @@ export default function MyListings() {
   const fetchUserListings = async () => {
 
     const auth = useAuth();
+    console.log('User data:', auth.user);
     const currentUser = auth.user;
     const idToken = await currentUser?.getIdToken();
     console.log(idToken);
@@ -93,6 +94,7 @@ export default function MyListings() {
   };
 
   useEffect(() => {
+    console.log('Fetching listings...');
     fetchUserListings();
   }, []);
 
