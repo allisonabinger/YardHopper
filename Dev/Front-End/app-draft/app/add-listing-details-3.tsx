@@ -7,70 +7,133 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
+import * as FileSystem from 'expo-file-system';
 import { useImagePicker } from "@/hooks/useImagePicker";
 import PageLayout from "./PageLayout";
 import { useRouter } from "expo-router";
+import { useListingContext } from "./context/ListingContext";
 
 const ImageUploadScreen = () => {
-  const { image, openImagePicker, reset } = useImagePicker();
+  const { image, openImagePicker, reset, mimeType } = useImagePicker();
+  const { addImage, listingData } = useListingContext();
   const router = useRouter();
 
-  const handleUpload = async () => {
-    if (!image) {
-      Alert.alert("Error", "No image selected to upload.");
-      return;
-    }
-  
-    const formData = new FormData();
-    formData.append("image", {
-      uri: image,
-      name: "upload.jpg",
-      type: "image/jpeg",
+  const createListing = async () => {
+    const listing = { ...listingData };
+
+    const response = await fetch("https://yardhopperapi.onrender.com/api/listings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(listing),
     });
-  
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
+      throw new Error("Failed to create listing");
+    }
+
+    const responseData = await response.json();
+    console.log("Full Response JSON:", responseData);
+
+    // Extract the postId from the response
+    const postIdKey = "Listing created with new postId";
+    const postId = responseData[postIdKey];
+
+    if (postId) {
+      console.log("Extracted postId:", postId);
+    } else {
+      console.error("postId not found in response");
+    }
+
+    return(postId);
+  };
+
+  const uploadImage = async (postId: string) => {
+    if (!image) return;
+
+
     try {
-      const response = await fetch("https://your-backend-api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body: formData,
-      });
-  
-      if (response.ok) {
-        Alert.alert(
-          "Success",
-          "Your listing has been created!",
-          [
-            {
-              text: "OK",
-              onPress: () => router.push("./(tabs)/index"), // Navigate to the Explore tab
-            },
-          ],
-          { cancelable: false }
-        );
-        reset(); // Clear the image after successful upload
-      } else {
-        Alert.alert("Error", "Failed to upload the image.");
+      console.log("Selected image URI:", image);
+
+      // Validate the image file
+      const fileInfo = await FileSystem.getInfoAsync(image);
+      if (!fileInfo.exists) {
+        throw new Error("Selected file does not exist");
       }
+
+      // Prepare FormData
+      const formData = new FormData();
+      if (!formData) {
+        throw new Error("Selected file does not exist");
+      }
+
+      const imageName = image.split("/").pop() || "default-name.jpg";
+
+      formData.append("image", {
+        uri: image,
+        type: mimeType,
+        name: imageName,
+      });
+      formData.append("caption", "More Items");
+
+      console.log("FormData debug:", JSON.stringify(formData));
+
+      console.log("FormData prepared:", formData);
+      console.log("Post Id: ", postId)
+
+      // Make the upload request
+      const uploadResponse = await fetch(
+        `https://yardhopperapi.onrender.com/api/listings/${postId}/images`,
+        {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+          },
+          body: formData,
+        }
+      );
+
+      if (!uploadResponse.ok) {
+        const errorResponse = await uploadResponse.text();
+        console.error("Server response:", errorResponse);
+        throw new Error("Failed to upload image");
+      }
+
+      console.log("Image uploaded successfully");
     } catch (error) {
-      console.error("Upload error:", error);
-      Alert.alert("Error", "Something went wrong while uploading.");
+      console.error("Error uploading image:", error);
+      alert("Failed to upload the image. Please try again.");
     }
   };
 
-  const handleSkip = () => {
-    Alert.alert(
-      "Skipped Image Upload",
-      "To add pictures to your listing, you can do so in settings.",
-      [
-        {
-          text: "OK",
-          onPress: () => router.push("/(tabs)"), // Navigate to the desired screen
-        },
-      ],
-      { cancelable: false }
-    );
+  const handleUpload = async () => {
+    try {
+      const postId = await createListing();
+
+      if (image) {
+        await uploadImage(postId);
+      }
+
+      alert("Listing uploaded successfully!");
+      reset(); // Clear the image picker state
+      router.push("/(tabs)"); // Navigate to the main screen
+    } catch (error) {
+      console.error("Error uploading listing:", error);
+      alert("An error occurred while uploading the listing.");
+    }
+  };
+
+  const handleSkip = async () => {
+    try {
+      // Only create the listing, no image upload
+      await createListing();
+      alert("Listing uploaded successfully without an image!");
+      router.push("/(tabs)"); // Navigate to the main screen
+    } catch (error) {
+      console.error("Error uploading listing:", error);
+      alert("An error occurred while uploading the listing.");
+    }
   };
 
   return (
@@ -78,14 +141,17 @@ const ImageUploadScreen = () => {
       <View style={styles.container}>
         <Text style={styles.heading}>Upload an Image</Text>
         <Image
-          source={{ uri: image || "https://via.placeholder.com/150" }}
+          source={{
+            uri:
+              image ||
+              "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
+          }}
           style={styles.imagePreview}
           resizeMode="cover"
         />
         <TouchableOpacity style={styles.button} onPress={openImagePicker}>
           <Text style={styles.buttonText}>Select Image</Text>
         </TouchableOpacity>
-        {/* Conditionally render the Skip text */}
         {!image && (
           <TouchableOpacity onPress={handleSkip}>
             <Text style={styles.skipText}>Skip</Text>
@@ -114,10 +180,12 @@ const styles = StyleSheet.create({
     color: "#159636",
   },
   imagePreview: {
-    width: 200,
+    width: 300,
     height: 200,
     marginBottom: 40,
     borderRadius: 10,
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
   },
   button: {
     backgroundColor: "#159636",
