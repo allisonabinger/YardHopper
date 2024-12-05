@@ -49,13 +49,13 @@ The API will respond with the public fields in an array of listings. Here is an 
 
 ```
 "listings": [
-        {
+{
             "title": "Gadget & Electronics Sale",
             "description": "Great deals on TVs, gaming consoles, and home entertainment systems.",
             "address": {
-                "zip": 74113,
-                "city": "Tulsa",
-                "street": "3123 Riverside Dr",
+                "zip": 74037,
+                "city": "Jenks",
+                "street": "300 Aquarium Drive",
                 "state": "OK"
             },
             "dates": [
@@ -63,19 +63,34 @@ The API will respond with the public fields in an array of listings. Here is an 
             ],
             "startTime": "09:00",
             "endTime": "15:00",
-            "images": null,
+            "images": [
+                {
+                    "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Ff2mq3QX1bSVGRX8zkYLH%2F0ddf0601-0fa2-4c21-ac03-3d2c30ddd3a1-Electronics.jpeg?alt=media",
+                    "caption": "Electronics"
+                },
+                {
+                    "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2Ff2mq3QX1bSVGRX8zkYLH%2F26cb7e30-b70d-4a4e-a815-e8fb06552933-Generic5.jpeg?alt=media",
+                    "caption": "More Items"
+                }
+            ],
             "categories": [
                 "Electronics"
             ],
+            "subcategories": {
+                "Electronics": [
+                    "TVs/Home Entertainment",
+                    "Gaming"
+                ]
+            },
             "status": "upcoming",
             "g": {
-                "geohash": "9y7trz42v",
+                "geohash": "9y7ubmnmd",
                 "geopoint": {
-                    "_latitude": 36.1177021,
-                    "_longitude": -95.98421015865983
+                    "_latitude": 36.01965545,
+                    "_longitude": -95.95690706606644
                 }
             },
-            postId: "oRMe8Lq7KcPtf9JyMyWG"
+            "postId": "f2mq3QX1bSVGRX8zkYLH"
         },
         ...
 ]
