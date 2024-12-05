@@ -115,16 +115,20 @@ export default function AddListingPage() {
       useNativeDriver: false,
     }).start();
 
-    // Manage selected categories
+    // Update selected categories when expanding or collapsing
     setSelectedCategories((prev) => {
-      const categoryName = categories.find((cat) => cat.id === id)?.name; // Find the category name using the id
-      if (categoryName) {
-        if (isExpanded && !subcategories.some((sub) => selectedSubcategories.includes(sub))) {
-          return prev.filter((cat) => cat !== categoryName);  // Use category name
-        }
-        return prev.includes(categoryName) ? prev : [...prev, categoryName];  // Use category name
+      const categoryName = categories.find((cat) => cat.id === id)?.name; // get category name
+
+      if (!categoryName) {
+        return prev; // Return the previous state if no category is found (in case the ID doesn't exist)
       }
-      return prev;
+      if (isExpanded) {
+        // Remove the category if it was previously selected and is being collapsed
+        return prev.filter((cat) => cat !== categoryName);
+      } else {
+        // Add the category if it's being expanded
+        return [...prev, categoryName];
+      }
     });
   };
 
