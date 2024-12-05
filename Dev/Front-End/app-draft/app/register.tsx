@@ -16,6 +16,7 @@ import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/components/AuthProvider";
 
+
 export default function RegisterPage() {
   const auth = useAuth();
   const router = useRouter();
@@ -36,8 +37,8 @@ export default function RegisterPage() {
 
     try {
       console.log(`Signing up with email: ${email}`);
-      await auth.register(email, password); // Call the register function from your AuthProvider
-      router.replace("/(tabs)"); // Redirect after successful registration
+      await auth.register(email, password);
+      router.replace("/register-location");
     } catch (e) {
       alert("Unable to create account");
     }
@@ -183,4 +184,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-

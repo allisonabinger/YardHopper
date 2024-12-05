@@ -16,7 +16,6 @@ import { Ionicons } from "@expo/vector-icons";
 import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import mockData from "@/mockData.json";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { router } from "expo-router";
@@ -58,7 +57,7 @@ export default function HomeScreen() {
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [isModalVisible, setModalVisible] = useState(false);
-  const [listings, setListings] = useState(mockData.listings);
+  const [listings, setListings] = useState<ListingItem[]>([]);
   const [selectedListing, setSelectedListing] = useState<ListingItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
@@ -298,7 +297,7 @@ export default function HomeScreen() {
             longitudeDelta: 0.1,
           }}
         >
-          {listings.map((item) => (
+          {listings.map((item: { postId: any; g: any; title: any; address: any; description?: string; dates?: string[]; images?: { uri: string; caption: string; }[]; categories?: string[]; }) => (
             <Marker
               key={item.postId}
               coordinate={{
