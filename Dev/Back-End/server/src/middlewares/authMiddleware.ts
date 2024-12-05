@@ -1,29 +1,56 @@
 // Authentication Middleware for users
+// Validates request, Extracts uid and email from decoded token, and generates hashUid to attach to req.user
 
 import {auth} from "../config/firebase"
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import { hashUid } from "../controllers/usersController"; 
 
-export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.split(" ")[1];
-
-    if (!token) {
-        return res.status(401).json({ error: "No token provided" });
+export const authenticateUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const authHeader = req.headers.authorization;
+  
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return next({ status: 401, message: "Unauthorized: Missing token" });
     }
-
+  
+    const token = authHeader.split(" ")[1];
+  
     try {
-        // verify firebase auth token
-        const decodedToken = await auth.verifyIdToken(token);
-        const hashedUid = hashUid(decodedToken.uid);
+      const decodedToken = await auth.verifyIdToken(token);
+      const uid = decodedToken.uid
+      const hashedUid = hashUid(uid)
+      const user = { hashUid: hashedUid, uid: uid }
 
-        req.user = {
-            uid: decodedToken.uid,
-            hashedUid: hashUid(decodedToken.uid),
-          };
-
-        next();
-    } catch (err) {
-        console.error("Auth failed: ", err);
-        return res.status(401).json({ error: "Invalid or expired token" });
+      res.locals.user = user;
+      next();
+    } catch (error) {
+      console.error("Authentication error:", error);
+      return next({ status: 403, message: "Invalid or expired token" });
     }
-}
+  };
+
+// export const authenticateUser: RequestHandler = async (req, res, next): Promise<void> => {
+//     const authHeader = req.headers.authorization;
+  
+//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//       return;
+//     }
+  
+//     const idToken = authHeader.split("Bearer ")[1];
+  
+//     try {
+//       const decodedToken = await auth.verifyIdToken(idToken);
+//       req.user = {
+//         uid: decodedToken.uid,
+//         email: decodedToken.email || "",
+//         hashUid: hashUid(decodedToken.uid),
+//       };
+//       next();
+//     } catch (error) {
+//       console.error("Error verifying token:", error);
+//       return res.status(403).json({ error: "Unauthorized: Invalid token" });
+//     }
+//   };

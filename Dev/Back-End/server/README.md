@@ -6,9 +6,8 @@ This server will be hosted on a service to manage incoming and outgoing traffic 
 
 These are the instructions for running the server locally before any hosting and security is completed. 
 
-**You must have an .env set up before this server will properly function. Please contact database admin for .env keys.**
+**You must have an .env for local server development. Please contact database admin for .env keys.**
 
-At this point, the API has two working endpoints: `GET /listings` and `POST /listings`. User auth and functionality has not been implemented.
 
 ### Starting the server. 
 
@@ -27,8 +26,9 @@ Using Postman, your browser, or `curl`, you can now utilize the endpoints.
 ## Endpoints
 The following endpoints are up to date with what is hosted on Render.
 
+### Listings Endpoints
 
-### GET /api/listings
+#### Get all active and upcoming listings: GET /api/listings 
 The `GET /api/listings` endpoint will need accept coordinates or zipcode in order to find listings in the area. As of now, database has listings in Tulsa, Jenks, and Sand Springs. **The request must have a latitude and longitude or a zipcode query in order to find listings.** This is because a user will need to allow location services and send their location with the listing, or they must provide their zipcode. They can always extend the radius regardless.
 
 The endpoint can also accept a radius to search by. The default search radius is 15 miles. It will also accept searching by categories, but not subcategories
@@ -42,7 +42,7 @@ With zipcode:
 https://yardhopperapi.onrender.com/api/listings?zipcode=74105
 
 With categories
-https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950categories=Furniture,Clothing
+https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950&categories=Furniture,Clothing
 
 With specified zipcode
 http://localhost:4000/api/listings?zipcode=74105&radius=5
@@ -84,7 +84,9 @@ The API will respond with the public fields in an array of listings. Here is an 
 
 ```
 
-### GET /api/listings/:postId
+---
+
+#### Get one listing by postId: GET /api/listings/:postId
 The `GET /api/listings` endpoint serves to provide data for a single listing. It accepts no parameters.
 
 **Request Endpoint Example**
@@ -126,14 +128,16 @@ GET https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
 }
 ```
 
-### POST /api/listings
+---
+
+#### Create a listing: POST /api/listings
 The endpoint will handle parsing the user information and generating the metadata for the db to query later. It accepts the listing data in the body. 
 
 **Request Endpoint Example**
 POST https://yardhopperapi.onrender.com/api/listings/
 
 
-**Request Body Examples**
+**Request Body Examples -- MUST BE JSON**
 ```
   {
     "title": string,
@@ -183,7 +187,9 @@ The API will respond with the postId of the newly created listing:
 }
 ```
 
-### PUT /api/listings/:postId
+---
+
+#### Update an existing listing: PUT /api/listings/:postId
 This route is used for updating the text fields of the listing, such as `title`, `description`, or `startTime`. The `postId` is necessary for the server to find the right post to update, and must accept updated fields in the body to update the post.
 
 **Request Endpoint Example**
@@ -199,7 +205,24 @@ postId: "KwLTqIjazVDMMPkS3ldZ"
   }
 ```
 
-### DEL /api/listings/:postId
+The API will respond with a message and the new updated listing:
+
+```
+{
+    "message": "Listing updated successfully",
+    "listing": {
+        "title": "Multi Family Sale",
+        "description": "Lots of clothes, office supplies, electronics, and more.",
+        ...
+        "startTime": "07:00",
+        ...
+    }
+}
+```
+
+---
+
+#### Delete a listing: DEL /api/listings/:postId
 This route is user for deleting a listing. It will delete the data stored in the firestore database, as well as any images attached to the listing. It accepts the `postId` as the parameter.
 
 **Request Endpoint Example**
@@ -208,8 +231,20 @@ DEL https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
 **Request Params**
 postId: "DOcNhHR25vTD70cmlySs"
 
+The api will respond with a message when the listing is deleted, and the `title` and `postId` of the now deleted listing.
 
-### POST /api/listings/:postId/images
+```
+{
+    "message": "Listing deleted successfully",
+    "listing": {
+        "title": "Multi-Family Sale",
+        "postId": "DOcNhHR25vTD70cmlySs"
+    }
+}
+```
+
+
+#### Add an image to an existing listing: POST /api/listings/:postId/images
 This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string in the body, and the `postId` in the parameters.
 
 ```
@@ -235,7 +270,7 @@ The `key` for the file must be `image`, and the type set to file. The `value` is
 
 
 
-### PUT /api/listings/:postId/images
+#### Update a caption to an existing listing: PUT /api/listings/:postId/images
 This route is used for updating the caption of an image. It accepts the `postId` as the parameter of an image, and the `uri` and `caption` to update. 
 
 ```
@@ -258,7 +293,7 @@ postId: "KwLTqIjazVDMMPkS3ldZ"
 ```
 
 
-### DEL /api/listings/:postId/images
+#### Delete an image of an existing listing: DEL /api/listings/:postId/images
 This route is user for deleting an image within a listing. It will delete the image stored in Firebase, and then removes any reference to the image and caption. It accepts the `uri` and `postId` as parameters.
 
 ```
@@ -273,8 +308,243 @@ DEL https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ/images
 postId: "KwLTqIjazVDMMPkS3ldZ"
 uri: "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media"
 
-
 ---
+
+### Users Endpoints
+
+#### Get a user's profile: GET /api/users/me
+This endpoint is for verfiying a user and displaying their profile. A user's uid is extracted from the `Authorization` header and the uid is used to gather their account in Firebase Auth. An encryption service is used to find their user profile stored in the Firestore Database.
+
+**Request Endpoint Example**
+GET https://yardhopperapi.onrender.com/api/users/me
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+The API will return data regarding the user's profile. Here is an example response:
+
+```
+{
+    "first": "John",
+    "last": "Doe",
+    "email": "test@test.com",
+    "street": "15 N Cheyenne Ave",
+    "city": "Tulsa",
+    "state": "OK",
+    "zipcode": 74103,
+    "createdAt": "2024-12-03T16:17:33Z"
+}
+```
+
+
+#### Create a new user profile: POST /api/users/create
+This endpoint is designed to create a new user profile in the Firestore Database with user information. It does not create a user account in Firebase Auth, so the account will be created in the client app. The requests accepts user details in the body, connects the `email` and `createdAt` fields stored in FirebaseAuth with the uid, and creates a user document with their profile details. 
+
+The required fields in the **body** are `first`, `last`, and `zipcode`.
+Option fields are the address of the user, including `street` (street address), `city`, and `state`.
+
+**Request Endpoint Example**
+POST https://yardhopperapi.onrender.com/api/users/create
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+**Request Body -- MUST BE JSON**
+```
+{
+    "first": "Jenny",
+    "last": "Doe",
+    "street": "15 N Cheyenne Ave",
+    "city": "Tulsa",
+    "state": "OK",
+    "zipcode": 74103,
+}
+```
+
+The response returned from the API will message and the newly created profile.
+```
+{
+    "message": "User profile created successfully",
+    "data": {
+        "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57",
+        "first": "Yard",
+        "last": "Hopper",
+        "email": "yardhopperadmn@gmail.com",
+        "street": "15 N Cheyenne Ave",
+        "city": "Tulsa",
+        "state": "OK",
+        "zipcode": 74103,
+        "savedListings": [],
+        "userListings": [],
+        "createdAt": "Sat, 30 Nov 2024 17:51:04 GMT"
+    }
+}
+```
+
+#### Delete a user's account and profile: DEL /api/users/me
+This endpoint will handle deleting the user's account in Firebase Auth as well as their profile in Firestore. It will also delete all listings that user has posted regardless of status.
+
+**Request Endpoint Example**
+DEL https://yardhopperapi.onrender.com/api/users/me
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+The response returned from the API will be a successful deletion message:
+
+```
+{
+    "message": "User successfully deleted"
+}
+```
+
+
+#### Update details of an existing user profile: PUT /api/users/update
+This endpoint handles user information updates to the `users` documents in the Firestore Database. The **body** will contain the updated user details, and the fields must match the database.
+
+**Request Endpoint Example**
+PUT https://yardhopperapi.onrender.com/api/users/update
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+**Request Body -- MUST BE JSON**
+```
+{
+    "first": "Georgia",
+}
+```
+
+The response returned from the API will be a successful updated message, as well :
+
+```
+{
+    "message": "User profile updated successfully",
+    "data": {
+        "first": "Georgia",
+        "last": "Doe",
+        "email": "user2@yahoo.com",
+        "street": "15 N Cheyenne Ave",
+        "city": "Tulsa",
+        "state": "OK",
+        "zipcode": 74103
+    }
+}
+```
+
+#### Get all listings a user has made: GET /api/users/listings
+This endpoint will get all of the listings a user has made, regardless of status.
+
+**Request Endpoint Example**
+GET https://yardhopperapi.onrender.com/api/users/listings
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+If the user has no listings, the server will respond with a message:
+
+```
+{
+    "status": 500,
+    "message": "User has no listings"
+}
+```
+
+If the user has made listings, the server will respond with the listings data in an array:
+
+```
+[
+    {
+        "title": "Lots of clothes!",
+        "description": "Affordable clothing, shoes, and accessories.",
+        ...
+    },
+    {
+        ...
+    }
+]
+```
+
+#### Get all listings a user has saved: GET /api/users/savedListings
+This endpoint handles accessing the user's `savedListings`, which is an array of postIds, and retrieves them in the listings collection. 
+
+If a postId is found in the savedListing that does not have the `upcoming` or `active` status, then it will be removed from the savedListing array and not returned in the response.
+
+**Request Endpoint Example**
+GET https://yardhopperapi.onrender.com/api/users/savedListings
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+If the user has no listings, the server will respond with a message:
+
+```
+{
+    "status": 500,
+    "message": "User has no listings"
+}
+```
+
+If the user has saved listings, they will be returned as an array:
+```
+{
+    "savedListings": [
+        {
+            "title": "Home Improvement & Tools Sale",
+            "description": "Tools, power equipment, and automotive parts at unbeatable prices.",
+            ...
+        }
+    ]
+}
+```
+
+### Add a listing to a user's saved listings: POST /api/users/savedListings
+This endpoint will add a new `postId` from the request body into the user's `savedListings` array in the users Firestore Database document. 
+
+**Request Endpoint Example**
+POST https://yardhopperapi.onrender.com/api/users/savedListings
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+**Request Body -- MUST BE JSON**
+```
+{
+    "postId": "6VpUpFaeAHvA9Ew9zAkj",
+}
+```
+The server will respond with a message upon successful addition:
+
+```
+{
+    "message": "Listing saved successfully"
+}
+```
+
+### Remove a listing from a user's saved listings: DELETE /api/users/savedListings
+This endpoint will remove a `postId` from the request body into the user's `savedListings` array in the users Firestore Database document. 
+
+**Request Endpoint Example**
+DEL https://yardhopperapi.onrender.com/api/users/savedListings
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+**Request Body -- MUST BE JSON**
+```
+{
+    "postId": "6VpUpFaeAHvA9Ew9zAkj",
+}
+```
+The server will respond with a message upon successful deletion:
+
+```
+{
+    "message": "Listing removed successfully"
+}
+```
+
+
 
 ## API Core Structure
 The API aligns with the **Separation of Concerns**, which makes it more modular, testable, and maintainable. With this principle, the functionality is broken up so that one file or function is not handling too much at a time.
@@ -400,6 +670,9 @@ USER - Provided by user input via front-end interaction
           
         },
     "categories": array string PUB[],
+    "subcategories": map string PUB{
+        "Broad Category" array[]: "subcategory", "subcategory" 
+    }
     "postId": string (uuid) GEN,
     "generatedAt": string (datetime) GEN,
     "status": string (active, upcoming, postponed, archived) PUB GEN,
@@ -413,7 +686,7 @@ USER - Provided by user input via front-end interaction
 ## Security
 
 ### Authentication
-Firebase Authentication is used to authenticte users, as well as Google OAuth for users to be able to sign in with their google account.
+Firebase Authentication is used to authenticte users, as well as Google OAuth for users to be able to sign in with their google account. Each request to the API must be from an authenticated user. Authentication is handled in the app with firebase authentication, and user information is encrypted before requests are sent and handled within the server to ensure no interception of sensitive information occurs. 
 
 ### Encryption
 Certain protected information is encrypted before being sent through HTTP requests and other data transfers. The backend API can validate tokens sent from client to ensure private data is not public traffic.
