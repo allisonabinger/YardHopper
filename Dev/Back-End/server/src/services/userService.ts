@@ -177,3 +177,85 @@ export const getUserListings = async (
           throw error;
     }
 };
+
+export const saveListingToUser = async (hashUid: string, postId: string) => {
+    try {
+        
+        const userRef = db.collection("users").doc(hashUid);
+
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            throw new Error("User profile does not exist");
+        }
+
+        const userData = userDoc.data();
+        if (!userData) {
+          throw new Error("User data is empty");
+        }
+
+        const savedListings: string[] = userData.savedListings || [];
+        if (savedListings.includes(postId)) {
+          return { message: "Listing is already saved" };
+        }
+        savedListings.push(postId);
+
+        await userRef.update({ savedListings });
+
+        const updatedUserDoc = await userRef.get();
+        const updatedData = updatedUserDoc.data();
+
+        if (!updatedData) {
+            throw new Error("Unable to confirm listing added to user's saved listings");
+        }
+
+        if(updatedData.savedListings.includes(postId)) {
+            return { message: "Listing saved successfully"}
+        } else {
+            throw new Error("Unable to confirm listing added to user's saved listings");
+        }
+
+    } catch (error) {
+        console.error("Error saving listing: ", error);
+        throw error;
+      }
+}
+
+export const unsaveListingToUser = async (hashUid: string, postId: string) => {
+    try {
+        
+        const userRef = db.collection("users").doc(hashUid);
+
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            throw new Error("User profile does not exist");
+        }
+
+        const userData = userDoc.data();
+        if (!userData) {
+          throw new Error("User data is empty");
+        }
+
+        const savedListings: string[] = userData.savedListings || [];
+        if (!savedListings.includes(postId)) {
+          return { message: "Listing is not saved" };
+        }
+        const updatedSavedListings = savedListings.filter(id => id !== postId);
+
+        await userRef.update({ savedListings: updatedSavedListings });
+
+        const updatedUserDoc = await userRef.get();
+        const updatedData = updatedUserDoc.data();
+
+        if (!updatedData) {
+            throw new Error("Unable to confirm listing added to user's saved listings");
+        }
+
+        if(updatedData.savedListings.includes(postId)) {
+            throw new Error("Unable to confirm listing added to user's saved listings");    
+        }
+        return { message: "Listing removed successfully"}
+    } catch (error) {
+        console.error("Error saving listing: ", error);
+        throw error;
+      }
+}

@@ -1,7 +1,7 @@
 // Server actions for user management
 import { NextFunction, Request, Response } from "express";
 import { createHash } from "crypto";
-import { getUserListings, getUserProfile, makeUserProfile, updateUserProfile } from "../services/userService";
+import { getUserListings, getUserProfile, makeUserProfile, saveListingToUser, unsaveListingToUser, updateUserProfile } from "../services/userService";
 import { User } from "../models/userModel";
 
 export const hashUid = (uid: string): string => {
@@ -100,6 +100,50 @@ export const fetchUserListings = async (req: Request, res: Response, next: NextF
         res.status(200).json(userListings);
     } catch (err) {
         console.log(`Error occured in fetchUserProfile: ${err}`)
+        next(err)
+    }
+}
+
+export const saveListing = async (req: Request, res: Response, next: NextFunction) => {
+    const {postId} = req.body
+    try {
+        if (!postId) {
+            return res.status(400).json({ error: "Missing postId in the request body" });
+        }
+        const user = res.locals.user;
+        if (!user || !user.hashUid) {
+            return res.status(403).json({
+              error: "Unauthorized request. User details not found.",
+            });
+        }
+        const result = await saveListingToUser(user.hashUid, postId);
+
+        res.status(201).json(result);
+    } catch (err) {
+        console.log(`Error occured in createUserProfile: ${err}`)
+
+        next(err)
+    }
+}
+
+export const unsaveListing = async (req: Request, res: Response, next: NextFunction) => {
+    const {postId} = req.body
+    try {
+        if (!postId) {
+            return res.status(400).json({ error: "Missing postId in the request body" });
+        }
+        const user = res.locals.user;
+        if (!user || !user.hashUid) {
+            return res.status(403).json({
+              error: "Unauthorized request. User details not found.",
+            });
+        }
+        const result = await unsaveListingToUser(user.hashUid, postId);
+
+        res.status(201).json(result);
+    } catch (err) {
+        console.log(`Error occured in createUserProfile: ${err}`)
+
         next(err)
     }
 }

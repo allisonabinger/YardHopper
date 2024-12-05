@@ -1,5 +1,5 @@
 // usersRouters - routes for user management
-import { createUser, fetchUser, fetchUserListings, updateUser } from "../controllers/usersController";
+import { createUser, fetchUser, fetchUserListings, saveListing, unsaveListing, updateUser } from "../controllers/usersController";
 import express from "express";
 import { Request, Response, NextFunction } from "express";
 import { authenticateUser } from "../middlewares/authMiddleware";
@@ -23,6 +23,14 @@ router.put("/update", authenticateUser, (req: Request, res: Response, next: Next
 
 router.get("/listings", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
     fetchUserListings(req, res, next);
+});
+
+router.post("/savedListings", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    saveListing(req, res, next);
+});
+
+router.delete("/savedListings", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    unsaveListing(req, res, next);
 });
 
 // // get all listings saved by a user
