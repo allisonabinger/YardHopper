@@ -98,13 +98,18 @@ export default function HomeScreen() {
       const data = await response.json();
 
       // Update listings state
-      setListings((prevListings) =>
-        isRefresh ? data.listings : [...prevListings, ...data.listings]
-      );
+
+      setListings((prevListings) => {
+        const newListings = isRefresh ? data.listings : [...prevListings, ...data.listings];
+        return newListings.filter(
+          (listing, index, self) =>
+            index === self.findIndex((l) => l.postId === listing.postId) // Deduplicate
+        );
+      });
 
       // Update page state
       if (isRefresh) setPage(2); // Reset to page 2 for next fetch
-      else setPage(page + 1);
+      else setPage((prevPage) => prevPage + 1);
     } catch (error: any) {
       setError(error.message || "Failed to load listings");
     } finally {
