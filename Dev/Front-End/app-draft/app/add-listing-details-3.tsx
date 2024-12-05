@@ -117,7 +117,7 @@ const ImageUploadScreen = () => {
 
       alert("Listing uploaded successfully!");
       reset(); // Clear the image picker state
-      router.push("./(tabs)/index"); // Navigate to the main screen
+      router.push("/(tabs)"); // Navigate to the main screen
     } catch (error) {
       console.error("Error uploading listing:", error);
       alert("An error occurred while uploading the listing.");
@@ -129,7 +129,7 @@ const ImageUploadScreen = () => {
       // Only create the listing, no image upload
       await createListing();
       alert("Listing uploaded successfully without an image!");
-      router.push("./(tabs)/index"); // Navigate to the main screen
+      router.push("/(tabs)"); // Navigate to the main screen
     } catch (error) {
       console.error("Error uploading listing:", error);
       alert("An error occurred while uploading the listing.");
