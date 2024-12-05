@@ -164,6 +164,17 @@ export const removeUser = async (hashUid: string, uid: string) => {
             }
           }
 
+        try {
+            const userListingsSnapshot = await db.collection("listings").where("userId", "==", hashUid).get();
+            if (!userListingsSnapshot.empty) {
+                const deletePromises = userListingsSnapshot.docs.map((doc) => doc.ref.delete());
+                await Promise.all(deletePromises)
+            }
+        } catch (error) {
+              console.error("Error finding user listing in Firestore: ", error);
+              throw error;
+        }
+
     } catch (error) {
         console.error("Error deleting user:", error);
         throw error;

@@ -133,7 +133,7 @@ The endpoint will handle parsing the user information and generating the metadat
 PUT https://yardhopperapi.onrender.com/api/listings/
 
 
-**Request Body Examples**
+**Request Body Examples -- MUST BE JSON**
 ```
   {
     "title": string,
@@ -275,6 +275,90 @@ uri: "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestora
 
 
 ---
+
+### GET /api/users/me
+This endpoint is for verfiying a user and displaying their profile. A user's uid is extracted from the `Authorization` header and the uid is used to gather their account in Firebase Auth. An encryption service is used to find their user profile stored in the Firestore Database.
+
+**Request Endpoint Example**
+GET https://yardhopperapi.onrender.com/api/users/me
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+The API will return data regarding the user's profile. Here is an example response:
+
+```
+{
+    "first": "John",
+    "last": "Doe",
+    "email": "test@test.com",
+    "street": "15 N Cheyenne Ave",
+    "city": "Tulsa",
+    "state": "OK",
+    "zipcode": 74103,
+    "createdAt": "2024-12-03T16:17:33Z"
+}
+```
+
+
+### POST /api/users/create
+This endpoint is designed to create a new user profile in the Firestore Database with user information. It does not create a user account in Firebase Auth, so the account will be created in the client app. The requests accepts user details in the body, connects the `email` and `createdAt` fields stored in FirebaseAuth with the uid, and creates a user document with their profile details. 
+
+The required fields in the **body** are `first`, `last`, and `zipcode`.
+Option fields are the address of the user, including `street` (street address), `city`, and `state`.
+
+**Request Endpoint Example**
+POST https://yardhopperapi.onrender.com/api/users/create
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+**Request Body -- MUST BE JSON**
+```
+{
+    "first": "Jenny",
+    "last": "Doe",
+    "street": "15 N Cheyenne Ave",
+    "city": "Tulsa",
+    "state": "OK",
+    "zipcode": 74103,
+}
+```
+
+The response returned from the API will message and the newly created profile.
+{
+    "message": "User profile created successfully",
+    "data": {
+        "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57",
+        "first": "Yard",
+        "last": "Hopper",
+        "email": "yardhopperadmn@gmail.com",
+        "street": "15 N Cheyenne Ave",
+        "city": "Tulsa",
+        "state": "OK",
+        "zipcode": 74103,
+        "savedListings": [],
+        "userListings": [],
+        "createdAt": "Sat, 30 Nov 2024 17:51:04 GMT"
+    }
+}
+
+
+### DEL /api/users/me
+This endpoint will handle deleting the user's account in Firebase Auth as well as their profile in Firestore. It will also delete all listings that user has posted regardless of status.
+
+### PUT /api/users/update
+
+### GET /api/users/listings
+
+### GET /api/users/savedListings
+
+### POST /api/users/savedListings
+
+### DELETE /api/users/savedListings
+
+
+
 
 ## API Core Structure
 The API aligns with the **Separation of Concerns**, which makes it more modular, testable, and maintainable. With this principle, the functionality is broken up so that one file or function is not handling too much at a time.
