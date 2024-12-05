@@ -26,10 +26,8 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        {/* Gear Icon */}
         <Ionicons name="settings-outline" size={24} color="white" />
-        {/* Header Text */}
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerTitle}>Profile</Text>
       </View>
 
       <View style={styles.card}>
@@ -47,17 +45,21 @@ export default function SettingsScreen() {
           <Text style={styles.menuText}>Share</Text>
         </Pressable>
 
-        <Pressable style={styles.menuItem}>
-          <Ionicons name="bookmark-outline" size={24} color="#333" />
-          <Text style={styles.menuText}>Saved posts</Text>
-          <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
-        </Pressable>
+        <Link href="/userprofile/savedposts" asChild>
+          <Pressable style={styles.menuItem}>
+            <Ionicons name="bookmark-outline" size={24} color="#333" />
+            <Text style={styles.menuText}>Saved posts</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
+          </Pressable>
+        </Link>
 
-        <Pressable style={styles.menuItem}>
-          <Ionicons name="eye-outline" size={24} color="#333" />
-          <Text style={styles.menuText}>View your listings</Text>
-          <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
-        </Pressable>
+        <Link href="/userprofile/mylistings" asChild>
+          <Pressable style={styles.menuItem}>
+            <Ionicons name="eye-outline" size={24} color="#333" />
+            <Text style={styles.menuText}>View your listings</Text>
+            <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
+          </Pressable>
+        </Link>
 
         <Link href="/userprofile/changepassword" asChild>
           <Pressable style={styles.menuItem}>
@@ -78,28 +80,34 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#159636',
   },
   header: {
-    height: '35%',
-    backgroundColor: '#159636',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 120,
-    position: 'absolute',
-    width: '100%',
-    paddingLeft: 35,
+    padding: 20,
+    paddingTop: 10,
   },
   headerTitle: {
-    fontSize: 36,
+    fontSize: 24,
     fontWeight: 'bold',
     color: 'white',
     marginLeft: 10,
   },
+  card: {
+    flex: 1,
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   avatarContainer: {
     width: 50,
@@ -113,16 +121,12 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 18,
     fontWeight: '500',
-    color: 'black',
+    color: '#333',
   },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 30,
-    marginTop: 150,
-    marginHorizontal: 35,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
-    elevation: 4,
+  sectionTitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 15,
   },
   menuItem: {
     flexDirection: 'row',
@@ -139,11 +143,5 @@ const styles = StyleSheet.create({
   },
   chevron: {
     marginLeft: 'auto',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 10,
   },
 });

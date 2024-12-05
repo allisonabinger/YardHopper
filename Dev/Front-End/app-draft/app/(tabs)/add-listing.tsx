@@ -65,7 +65,7 @@ export default function AddListingPage() {
 
   const toggleCategory = (id, subcategories) => {
     const isExpanded = expandedCategory === id;
-  
+
     // Close the previously expanded category
     if (expandedCategory && expandedCategory !== id) {
       Animated.timing(dropdownAnimations.current[expandedCategory], {
@@ -75,7 +75,7 @@ export default function AddListingPage() {
         useNativeDriver: false,
       }).start();
     }
-  
+
     // Expand or collapse the current category
     setExpandedCategory(isExpanded ? null : id);
     Animated.timing(dropdownAnimations.current[id], {
@@ -84,7 +84,7 @@ export default function AddListingPage() {
       easing: Easing.inOut(Easing.ease), // Smooth easing
       useNativeDriver: false,
     }).start();
-  
+
     // Manage selected categories
     setSelectedCategories((prev) => {
       if (isExpanded && !subcategories.some((sub) => selectedSubcategories.includes(sub))) {
@@ -197,7 +197,7 @@ export default function AddListingPage() {
         ListFooterComponent={
       <TouchableOpacity
         style={styles.continueButton}
-        onPress={() => router.push('/add-listing-details')} // Navigate to the second page
+        onPress={() => router.push('/add-listing-details')} 
       >
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>
