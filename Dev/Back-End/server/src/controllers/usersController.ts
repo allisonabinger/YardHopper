@@ -140,7 +140,7 @@ export const fetchSavedListings = async (req: Request, res: Response, next: Next
         });
       }
 
-      res.status(200).json({ listings: savedListings });
+      res.status(200).json({ savedListings });
     } catch (error) {
       console.error("Error in getSavedListingsController:", error);
       next(error);

@@ -238,27 +238,43 @@ export const getSavedListings = async (
         const listingsQuery = db
         .collection("listings")
         .where("postId", "in", savedListings)
-        .where("status", "in", ["active", "upcoming"])
 
         const querySnapshot = await listingsQuery.get();
 
-        const listings = querySnapshot.docs.map((doc) => {
+        const validListings = querySnapshot.docs.filter((doc) => {
+            const data = doc.data();
+            return ["active", "upcoming"].includes(data.status);
+        });
+
+        const listings = validListings.map((doc) => {
             const data = doc.data();
             return {
-                  title: data.title,
-                  description: data.description,
-                  address: data.address,
-                  dates: data.dates,
-                  startTime: data.startTime,
-                  endTime: data.endTime,
-                  images: data.images,
-                  categories: data.categories,
-                  status: data.status,
-                  g: data.g,
-                  postId: data.postId,
+                title: data.title,
+                description: data.description,
+                address: data.address,
+                dates: data.dates,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                images: data.images,
+                categories: data.categories,
+                status: data.status,
+                g: data.g,
+                postId: data.postId,
             };
-      });
-      return listings;
+        });
+
+        const validPostIds = validListings.map((doc) => doc.data().postId);
+        const updatedSavedListings = savedListings.filter((postId) =>
+            validPostIds.includes(postId)
+        );
+
+        if (updatedSavedListings.length !== savedListings.length) {
+            await userRef.update({
+                savedListings: updatedSavedListings,
+            });
+        }
+
+        return listings;
 
     } catch (error) {
           console.error("Error finding user listing in Firestore: ", error);

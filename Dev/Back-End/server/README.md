@@ -42,7 +42,7 @@ With zipcode:
 https://yardhopperapi.onrender.com/api/listings?zipcode=74105
 
 With categories
-https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950categories=Furniture,Clothing
+https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950&categories=Furniture,Clothing
 
 With specified zipcode
 http://localhost:4000/api/listings?zipcode=74105&radius=5
@@ -326,6 +326,7 @@ POST https://yardhopperapi.onrender.com/api/users/create
 ```
 
 The response returned from the API will message and the newly created profile.
+```
 {
     "message": "User profile created successfully",
     "data": {
@@ -342,21 +343,169 @@ The response returned from the API will message and the newly created profile.
         "createdAt": "Sat, 30 Nov 2024 17:51:04 GMT"
     }
 }
-
+```
 
 ### DEL /api/users/me
 This endpoint will handle deleting the user's account in Firebase Auth as well as their profile in Firestore. It will also delete all listings that user has posted regardless of status.
 
+**Request Endpoint Example**
+DEL https://yardhopperapi.onrender.com/api/users/me
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+The response returned from the API will be a successful deletion message:
+
+```
+{
+    "message": "User successfully deleted"
+}
+```
+
+
 ### PUT /api/users/update
+This endpoint handles user information updates to the `users` documents in the Firestore Database. The **body** will contain the updated user details, and the fields must match the database.
+
+**Request Endpoint Example**
+PUT https://yardhopperapi.onrender.com/api/users/update
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+**Request Body -- MUST BE JSON**
+```
+{
+    "first": "Georgia",
+}
+```
+
+The response returned from the API will be a successful updated message, as well :
+
+```
+{
+    "message": "User profile updated successfully",
+    "data": {
+        "first": "Georgia",
+        "last": "Doe",
+        "email": "user2@yahoo.com",
+        "street": "15 N Cheyenne Ave",
+        "city": "Tulsa",
+        "state": "OK",
+        "zipcode": 74103
+    }
+}
+```
 
 ### GET /api/users/listings
+This endpoint will get all of the listings a user has made, regardless of status.
+
+**Request Endpoint Example**
+GET https://yardhopperapi.onrender.com/api/users/listings
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+If the user has no listings, the server will respond with a message:
+
+```
+{
+    "status": 500,
+    "message": "User has no listings"
+}
+```
+
+If the user has made listings, the server will respond with the listings data in an array:
+
+```
+[
+    {
+        "title": "Lots of clothes!",
+        "description": "Affordable clothing, shoes, and accessories.",
+        ...
+    },
+    {
+        ...
+    }
+]
+```
 
 ### GET /api/users/savedListings
+This endpoint handles accessing the user's `savedListings`, which is an array of postIds, and retrieves them in the listings collection. 
+
+If a postId is found in the savedListing that does not have the `upcoming` or `active` status, then it will be removed from the savedListing array and not returned in the response.
+
+**Request Endpoint Example**
+GET https://yardhopperapi.onrender.com/api/users/savedListings
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+If the user has no listings, the server will respond with a message:
+
+```
+{
+    "status": 500,
+    "message": "User has no listings"
+}
+```
+
+If the user has saved listings, they will be returned as an array:
+```
+{
+    "savedListings": [
+        {
+            "title": "Home Improvement & Tools Sale",
+            "description": "Tools, power equipment, and automotive parts at unbeatable prices.",
+            ...
+        }
+    ]
+}
+```
 
 ### POST /api/users/savedListings
+This endpoint will add a new `postId` from the request body into the user's `savedListings` array in the users Firestore Database document. 
 
+**Request Endpoint Example**
+POST https://yardhopperapi.onrender.com/api/users/savedListings
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+**Request Body -- MUST BE JSON**
+```
+{
+    "postId": "6VpUpFaeAHvA9Ew9zAkj",
+}
+```
+The server will respond with a message upon successful addition:
+
+```
+{
+    "message": "Listing saved successfully"
+}
+```
 ### DELETE /api/users/savedListings
+This endpoint will remove a `postId` from the request body into the user's `savedListings` array in the users Firestore Database document. 
 
+**Request Endpoint Example**
+DEL https://yardhopperapi.onrender.com/api/users/savedListings
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+**Request Body -- MUST BE JSON**
+```
+{
+    "postId": "6VpUpFaeAHvA9Ew9zAkj",
+}
+```
+The server will respond with a message upon successful deletion:
+
+```
+{
+    "message": "Listing saved successfully"
+}
+```
 
 
 
@@ -484,6 +633,9 @@ USER - Provided by user input via front-end interaction
           
         },
     "categories": array string PUB[],
+    "subcategories": map string PUB{
+        "Broad Category" array[]: "subcategory", "subcategory" 
+    }
     "postId": string (uuid) GEN,
     "generatedAt": string (datetime) GEN,
     "status": string (active, upcoming, postponed, archived) PUB GEN,
