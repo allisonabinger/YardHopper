@@ -144,6 +144,33 @@ export const updateUserProfile = async (hashUid: string, uid: string, updatedDet
       }
 }
 
+export const removeUser = async (hashUid: string, uid: string) => {
+    try {
+        await auth.deleteUser(uid);
+        const userRef = db.collection("users").doc(hashUid);
+
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            throw new Error("User profile does not exist");
+        }
+
+        await userRef.delete();
+
+        try {
+            await auth.getUser(uid);
+            throw new Error("Failed to delete user from Firebase Authentication.");
+          } catch (error: any) {
+            if (error.code !== "auth/user-not-found") {
+              throw error; // Rethrow unexpected errors
+            }
+          }
+
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        throw error;
+      }
+}
+
 export const getUserListings = async (
     hashUid: string
 ) => {
@@ -155,6 +182,57 @@ export const getUserListings = async (
         }
 
         const listings = listingsSnapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+                  title: data.title,
+                  description: data.description,
+                  address: data.address,
+                  dates: data.dates,
+                  startTime: data.startTime,
+                  endTime: data.endTime,
+                  images: data.images,
+                  categories: data.categories,
+                  status: data.status,
+                  g: data.g,
+                  postId: data.postId,
+            };
+      });
+      return listings;
+
+    } catch (error) {
+          console.error("Error finding user listing in Firestore: ", error);
+          throw error;
+    }
+};
+
+export const getSavedListings = async (
+    hashUid: string
+) => {
+    try {
+        const userRef = db.collection("users").doc(hashUid);
+        const userDoc = await userRef.get();
+    
+        if (!userDoc.exists) {
+          throw new Error("User not found");
+        }
+    
+        const userData = userDoc.data();
+        if (!userData) {
+          throw new Error("User data is empty");
+        }
+    
+        const savedListings: string[] = userData.savedListings || [];
+        if (savedListings.length === 0) {
+          return [];
+        }
+        const listingsQuery = db
+        .collection("listings")
+        .where("postId", "in", savedListings)
+        .where("status", "in", ["active", "upcoming"])
+
+        const querySnapshot = await listingsQuery.get();
+
+        const listings = querySnapshot.docs.map((doc) => {
             const data = doc.data();
             return {
                   title: data.title,

@@ -1,7 +1,7 @@
 // Server actions for user management
 import { NextFunction, Request, Response } from "express";
 import { createHash } from "crypto";
-import { getUserListings, getUserProfile, makeUserProfile, saveListingToUser, unsaveListingToUser, updateUserProfile } from "../services/userService";
+import { getSavedListings, getUserListings, getUserProfile, makeUserProfile, removeUser, saveListingToUser, unsaveListingToUser, updateUserProfile } from "../services/userService";
 import { User } from "../models/userModel";
 
 export const hashUid = (uid: string): string => {
@@ -33,9 +33,9 @@ export const fetchUser = async (req: Request, res: Response, next: NextFunction)
 }
 
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
-    const {userDetails} = req.body
+    const userDetails = {...req.body}
     try {
-        if (!userDetails || typeof userDetails !== "object") {
+        if (!userDetails) {
             return res.status(400).json({ error: "Invalid or missing user details in the request body" });
         }
         const user = res.locals.user;
@@ -53,6 +53,23 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     } catch (err) {
         console.log(`Error occured in createUserProfile: ${err}`)
 
+        next(err)
+    }
+}
+
+export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user = res.locals.user;
+        if (!user || !user.hashUid || !user.uid) {
+            return res.status(403).json({
+              error: "Unauthorized request. User details not found.",
+            });
+        }
+        await removeUser(user.hashUid, user.uid);
+
+        res.status(200).json({ message: "User successfully deleted" });
+    } catch (err) {
+        console.log(`Error occured in deleteUser: ${err}`)
         next(err)
     }
 }
@@ -103,6 +120,32 @@ export const fetchUserListings = async (req: Request, res: Response, next: NextF
         next(err)
     }
 }
+
+export const fetchSavedListings = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = res.locals.user;
+  
+      if (!user || !user.hashUid) {
+        return res.status(403).json({
+          error: "Unauthorized request. User details not found.",
+        });
+    }
+  
+      const savedListings = await getSavedListings(user.hashUid);
+
+      if (!savedListings.length) {
+        return res.status(200).json({
+          message: "No saved listings yet!",
+          listings: [],
+        });
+      }
+
+      res.status(200).json({ listings: savedListings });
+    } catch (error) {
+      console.error("Error in getSavedListingsController:", error);
+      next(error);
+    }
+  };
 
 export const saveListing = async (req: Request, res: Response, next: NextFunction) => {
     const {postId} = req.body
