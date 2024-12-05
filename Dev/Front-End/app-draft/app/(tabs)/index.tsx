@@ -63,24 +63,46 @@ export default function HomeScreen() {
   const fadeAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1); 
+  const [page, setPage] = useState(1);
 
   // Fetch listings data from API
-  const fetchListings = async (isRefresh = false) => {
+  const fetchListings = async ({
+    isRefresh = false,
+    lat = 36.1555,
+    long = -95.9950,
+    radius = 15,
+    selectedCategories = [],
+  } = {}) => {
     if (loading) return; // Prevent multiple calls
     setLoading(true);
     setError(null);
+
     try {
-      const response = await fetch(
-        `https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950&page=${isRefresh ? 1 : page}`
-      );
+      // Build the URL dynamically based on the parameters
+      let url = `https://yardhopperapi.onrender.com/api/listings?lat=${lat}&long=${long}&radius=${radius}`;
+
+      // Add categories if any
+      if (selectedCategories.length > 0) {
+        url += `&categories=${selectedCategories.join(',')}`;
+      }
+
+      // Add pagination
+      url += `&page=${isRefresh ? 1 : page}`;
+
+      // Fetch the data
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
+
       const data = await response.json();
+
+      // Update listings state
       setListings((prevListings) =>
         isRefresh ? data.listings : [...prevListings, ...data.listings]
       );
+
+      // Update page state
       if (isRefresh) setPage(2); // Reset to page 2 for next fetch
       else setPage(page + 1);
     } catch (error: any) {
