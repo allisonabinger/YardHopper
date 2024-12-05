@@ -143,3 +143,37 @@ export const updateUserProfile = async (hashUid: string, uid: string, updatedDet
         throw error;
       }
 }
+
+export const getUserListings = async (
+    hashUid: string
+) => {
+    try {
+        const listingsSnapshot = await db.collection("listings").where("userId", "==", hashUid).get();
+
+        if (listingsSnapshot.empty) {
+            throw new Error("User has no listings");
+        }
+
+        const listings = listingsSnapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+                  title: data.title,
+                  description: data.description,
+                  address: data.address,
+                  dates: data.dates,
+                  startTime: data.startTime,
+                  endTime: data.endTime,
+                  images: data.images,
+                  categories: data.categories,
+                  status: data.status,
+                  g: data.g,
+                  postId: data.postId,
+            };
+      });
+      return listings;
+
+    } catch (error) {
+          console.error("Error finding user listing in Firestore: ", error);
+          throw error;
+    }
+};

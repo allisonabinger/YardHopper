@@ -1,7 +1,7 @@
 // Server actions for user management
 import { NextFunction, Request, Response } from "express";
 import { createHash } from "crypto";
-import { getUserProfile, makeUserProfile, updateUserProfile } from "../services/userService";
+import { getUserListings, getUserProfile, makeUserProfile, updateUserProfile } from "../services/userService";
 import { User } from "../models/userModel";
 
 export const hashUid = (uid: string): string => {
@@ -82,6 +82,24 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
     } catch (err) {
         console.log(`Error occured in createUserProfile: ${err}`)
 
+        next(err)
+    }
+}
+
+export const fetchUserListings = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user = res.locals.user;
+        const hashUid = user.hashUid
+        // console.log(`fetchUserProfile - hashuid: ${hashUid}`)
+        const userListings = await getUserListings(hashUid);
+
+        // console.log(`fetchUserProfile - userProfile: ${userProfile}`)
+        if (!userListings) {
+            return next({ status: 404, message: "User has not made any listings" });
+        }
+        res.status(200).json(userListings);
+    } catch (err) {
+        console.log(`Error occured in fetchUserProfile: ${err}`)
         next(err)
     }
 }
