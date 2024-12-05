@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,26 +8,71 @@ import {
   ScrollView,
   Linking,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import mockData from "@/mockData.json";
+
+type ListingItem = {
+  title: string;
+  description: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  dates: string[];
+  startTime: string;
+  endTime: string;
+  images: { uri: string }[];
+  categories: string[];
+};
 
 export default function ListingDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
 
+  const [listing, setListing] = useState<ListingItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
 
-  if (!id) {
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchListing = async () => {
+      try {
+        const response = await fetch(`https://yardhopperapi.onrender.com/api/listings/${id}`);
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setListing(data.listing);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch listing details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListing();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#159636" />
+      </View>
+    );
+  }
+
+  if (error) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Error: Missing post ID</Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color="#159636" />
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -35,16 +80,11 @@ export default function ListingDetail() {
     );
   }
 
-  const listing = mockData.listings.find((item) => item.postId === id);
-
   if (!listing) {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>Error: Listing not found</Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color="#159636" />
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -54,17 +94,14 @@ export default function ListingDetail() {
 
   const { title, description, address, dates, startTime, endTime, images, categories } = listing;
   const formattedAddress = `${address.street}, ${address.city}, ${address.state} ${address.zip}`;
-  const date = dates.length > 0 ? dates[0] : "No date available";
+  const date = Array.isArray(dates) && dates.length > 0 ? dates[0] : "No date available";
 
-  // Open map function with platform-specific logic
   const openMap = (address: string): void => {
     const query = encodeURIComponent(address);
-
     const url =
       Platform.OS === "ios"
-        ? `http://maps.apple.com/?q=${query}` // Apple Maps for iOS
-        : `https://www.google.com/maps/search/?api=1&query=${query}`; // Google Maps for Android
-
+        ? `http://maps.apple.com/?q=${query}`
+        : `https://www.google.com/maps/search/?api=1&query=${query}`;
     Linking.openURL(url).catch((err) =>
       console.error("Failed to open maps:", err)
     );
@@ -89,26 +126,20 @@ export default function ListingDetail() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Back Button Only */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color="#159636" />
         </TouchableOpacity>
       </View>
 
-      {/* Additional Details */}
       <View style={styles.cardContainer}>
-        {/* Image Carousel */}
         <ScrollView horizontal pagingEnabled style={styles.imageCarousel}>
-          {images.map((img, idx) => (
-            <Image key={idx} source={{ uri: img.uri }} style={styles.image} />
-          ))}
+          {Array.isArray(images) &&
+            images.map((img: { uri: string }, idx: number) => (
+              <Image key={idx} source={{ uri: img.uri }} style={styles.image} />
+            ))}
         </ScrollView>
 
-        {/* Like Button */}
         <TouchableOpacity style={styles.likeButton} onPress={toggleLike}>
           <Ionicons
             name={liked ? "heart" : "heart-outline"}
@@ -117,10 +148,10 @@ export default function ListingDetail() {
           />
         </TouchableOpacity>
 
-        {/* Address and Date/Time */}
         <TouchableOpacity onPress={() => openMap(formattedAddress)}>
           <Text style={styles.address}>{formattedAddress}</Text>
         </TouchableOpacity>
+
         <View style={styles.dateTimeContainer}>
           <Text style={styles.date}>Date(s): {formatDate(date)}</Text>
           <Text style={styles.time}>
@@ -128,22 +159,21 @@ export default function ListingDetail() {
           </Text>
         </View>
 
-        {/* Description Section */}
         <View style={styles.section}>
           <Text style={styles.listingTitle}>{title}</Text>
           <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.sectionContent}>{description}</Text>
         </View>
 
-        {/* Categories Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Categories</Text>
           <View style={styles.categoriesContainer}>
-            {categories.map((cat) => (
-              <TouchableOpacity key={cat} style={styles.categoryButton}>
-                <Text style={styles.categoryText}>{cat}</Text>
-              </TouchableOpacity>
-            ))}
+            {Array.isArray(categories) &&
+              categories.map((cat: string, idx: number) => (
+                <TouchableOpacity key={idx} style={styles.categoryButton}>
+                  <Text style={styles.categoryText}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
           </View>
         </View>
       </View>
@@ -155,6 +185,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     flexDirection: "row",
