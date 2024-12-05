@@ -22,6 +22,7 @@ export const getUserProfile = async (
             return null;
           }
           return {
+            userId: data.hash,
             first: data.first,
             last: data.last,
             email: data.email,
@@ -64,8 +65,8 @@ export const makeUserProfile = async (hashUid: string, uid: string, userDetails:
             throw new Error("User profile already exists");
         }
 
-        const newUserProfile: User = {
-            hashUid,
+        const newUserProfile = {
+            userId: hashUid,
             first,
             last,
             email: firebaseUser.email || "",
@@ -73,8 +74,6 @@ export const makeUserProfile = async (hashUid: string, uid: string, userDetails:
             street: userDetails.street ?? null,
             city: userDetails.city ?? null,
             state: userDetails.state ?? null,
-            savedListings: [],
-            userListings: [],
             createdAt: firebaseUser.metadata.creationTime || new Date().toISOString(),
         }
 
@@ -88,7 +87,7 @@ export const makeUserProfile = async (hashUid: string, uid: string, userDetails:
           }
 
           return {
-            hashUid: createdData.hashUid,
+            userId: createdData.userId,
             first: createdData.first,
             last: createdData.last,
             email: createdData.email,
