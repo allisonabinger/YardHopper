@@ -23,12 +23,9 @@ $ npm run dev
 
 Using Postman, your browser, or `curl`, you can now utilize the endpoints. 
 
-## Endpoints
-The following endpoints are up to date with what is hosted on Render.
+## Listings Endpoints
 
-### Listings Endpoints
-
-#### Get all active and upcoming listings: GET /api/listings 
+### Get all active and upcoming listings: GET /api/listings 
 The `GET /api/listings` endpoint will need accept coordinates or zipcode in order to find listings in the area. As of now, database has listings in Tulsa, Jenks, and Sand Springs. **The request must have a latitude and longitude or a zipcode query in order to find listings.** This is because a user will need to allow location services and send their location with the listing, or they must provide their zipcode. They can always extend the radius regardless.
 
 The endpoint can also accept a radius to search by. The default search radius is 15 miles. It will also accept searching by categories, but not subcategories
@@ -47,6 +44,7 @@ https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950&catego
 With specified zipcode
 http://localhost:4000/api/listings?zipcode=74105&radius=5
 
+**Server Response**
 The API will respond with the public fields in an array of listings. Here is an example:
 
 ```
@@ -86,13 +84,13 @@ The API will respond with the public fields in an array of listings. Here is an 
 
 ---
 
-#### Get one listing by postId: GET /api/listings/:postId
+### Get one listing by postId: GET /api/listings/:postId
 The `GET /api/listings` endpoint serves to provide data for a single listing. It accepts no parameters.
 
 **Request Endpoint Example**
 GET https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
 
-
+**Server Response**
 ```
 {
     "listing": {
@@ -130,7 +128,7 @@ GET https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
 
 ---
 
-#### Create a listing: POST /api/listings
+### Create a listing: POST /api/listings
 The endpoint will handle parsing the user information and generating the metadata for the db to query later. It accepts the listing data in the body. 
 
 **Request Endpoint Example**
@@ -180,6 +178,8 @@ Here is an example of user submitted listing data that is sufficient to post to 
     "userId": "h8KUzPZ8LLeWP8Fx3I6GvhFf8Xo2"
   }
 ```
+
+**Server Response**
 The API will respond with the postId of the newly created listing:
 ```
 {
@@ -189,7 +189,7 @@ The API will respond with the postId of the newly created listing:
 
 ---
 
-#### Update an existing listing: PUT /api/listings/:postId
+### Update an existing listing: PUT /api/listings/:postId
 This route is used for updating the text fields of the listing, such as `title`, `description`, or `startTime`. The `postId` is necessary for the server to find the right post to update, and must accept updated fields in the body to update the post.
 
 **Request Endpoint Example**
@@ -205,8 +205,8 @@ postId: "KwLTqIjazVDMMPkS3ldZ"
   }
 ```
 
+**Server Response**
 The API will respond with a message and the new updated listing:
-
 ```
 {
     "message": "Listing updated successfully",
@@ -222,7 +222,7 @@ The API will respond with a message and the new updated listing:
 
 ---
 
-#### Delete a listing: DEL /api/listings/:postId
+### Delete a listing: DEL /api/listings/:postId
 This route is user for deleting a listing. It will delete the data stored in the firestore database, as well as any images attached to the listing. It accepts the `postId` as the parameter.
 
 **Request Endpoint Example**
@@ -231,8 +231,8 @@ DEL https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
 **Request Params**
 postId: "DOcNhHR25vTD70cmlySs"
 
-The api will respond with a message when the listing is deleted, and the `title` and `postId` of the now deleted listing.
-
+**Server Response**
+The api will respond with a 
 ```
 {
     "message": "Listing deleted successfully",
@@ -243,9 +243,10 @@ The api will respond with a message when the listing is deleted, and the `title`
 }
 ```
 
+---
 
-#### Add an image to an existing listing: POST /api/listings/:postId/images
-This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string in the body, and the `postId` in the parameters.
+### Add an image to an existing listing: POST /api/listings/:postId/images
+This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string in the body, and the `postId` in the parameters. The `caption` is not required. 
 
 ```
     { postId } = req.params;
@@ -268,9 +269,33 @@ postId: "KwLTqIjazVDMMPkS3ldZ"
 (accepts all image types, preferrably jpeg)
 The `key` for the file must be `image`, and the type set to file. The `value` is the actual file submitted. There is no `description` needed.
 
+**Server Response**
+The API responds with a success message of the newly updated listing, which should include the new images stored under their public url. 
+```
+{
+    "message": "Listing updated successfully",
+    "listing": {
+        "title": "Test Title",
+        "description": "Test Description",
+        ...
+        "images": [
+            {
+                "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media",
+                "caption": "Test Caption"
+            },
+            {
+                "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2F3c79c5c1-2466-4ba5-bd95-cf61dd45ccad-ToysBooks.jpeg?alt=media",
+                "caption": ""
+            }
+        ],
+        ...
+    }
+}
+```
 
+---
 
-#### Update a caption to an existing listing: PUT /api/listings/:postId/images
+### Update a caption to an existing listing: PUT /api/listings/:postId/images
 This route is used for updating the caption of an image. It accepts the `postId` as the parameter of an image, and the `uri` and `caption` to update. 
 
 ```
@@ -287,13 +312,34 @@ postId: "KwLTqIjazVDMMPkS3ldZ"
 **Request Body - JSON**
 ```
   {
-    uri: "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media",
-    "caption": "Updated Caption",
+    "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media",
+    "caption": "Updated Caption"
   }
 ```
 
+**Server Response**
+The API responds with a success message of the newly updated listing, which should include the new caption for the image.
+```
+{
+    "message": "Caption updated successfully",
+    "listing": {
+        "title": "Test Title",
+        "description": "Test Description",
+        ...
+        "images": [
+            {
+                "uri": "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media",
+                "caption": "Updated Caption"
+            },
+        ],
+        ...
+    }
+}
+```
 
-#### Delete an image of an existing listing: DEL /api/listings/:postId/images
+---
+
+### Delete an image of an existing listing: DEL /api/listings/:postId/images
 This route is user for deleting an image within a listing. It will delete the image stored in Firebase, and then removes any reference to the image and caption. It accepts the `uri` and `postId` as parameters.
 
 ```
@@ -305,14 +351,13 @@ This route is user for deleting an image within a listing. It will delete the im
 DEL https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ/images
 
 **Request Params**
-postId: "KwLTqIjazVDMMPkS3ldZ"
 uri: "https://firebasestorage.googleapis.com/v0/b/yardhopper-7aeb4.firebasestorage.app/o/listings%2FKwLTqIjazVDMMPkS3ldZ%2Ff00a0284-64e2-4d92-b1e8-73c0c471e68b-Generic8.jpeg?alt=media"
 
 ---
 
-### Users Endpoints
+## Users Endpoints
 
-#### Get a user's profile: GET /api/users/me
+### Get a user's profile: GET /api/users/me
 This endpoint is for verfiying a user and displaying their profile. A user's uid is extracted from the `Authorization` header and the uid is used to gather their account in Firebase Auth. An encryption service is used to find their user profile stored in the Firestore Database.
 
 **Request Endpoint Example**
@@ -336,8 +381,9 @@ The API will return data regarding the user's profile. Here is an example respon
 }
 ```
 
+---
 
-#### Create a new user profile: POST /api/users/create
+### Create a new user profile: POST /api/users/create
 This endpoint is designed to create a new user profile in the Firestore Database with user information. It does not create a user account in Firebase Auth, so the account will be created in the client app. The requests accepts user details in the body, connects the `email` and `createdAt` fields stored in FirebaseAuth with the uid, and creates a user document with their profile details. 
 
 The required fields in the **body** are `first`, `last`, and `zipcode`.
@@ -381,7 +427,9 @@ The response returned from the API will message and the newly created profile.
 }
 ```
 
-#### Delete a user's account and profile: DEL /api/users/me
+---
+
+### Delete a user's account and profile: DEL /api/users/me
 This endpoint will handle deleting the user's account in Firebase Auth as well as their profile in Firestore. It will also delete all listings that user has posted regardless of status.
 
 **Request Endpoint Example**
@@ -398,8 +446,9 @@ The response returned from the API will be a successful deletion message:
 }
 ```
 
+---
 
-#### Update details of an existing user profile: PUT /api/users/update
+### Update details of an existing user profile: PUT /api/users/update
 This endpoint handles user information updates to the `users` documents in the Firestore Database. The **body** will contain the updated user details, and the fields must match the database.
 
 **Request Endpoint Example**
@@ -432,7 +481,9 @@ The response returned from the API will be a successful updated message, as well
 }
 ```
 
-#### Get all listings a user has made: GET /api/users/listings
+---
+
+### Get all listings a user has made: GET /api/users/listings
 This endpoint will get all of the listings a user has made, regardless of status.
 
 **Request Endpoint Example**
@@ -465,7 +516,9 @@ If the user has made listings, the server will respond with the listings data in
 ]
 ```
 
-#### Get all listings a user has saved: GET /api/users/savedListings
+---
+
+### Get all listings a user has saved: GET /api/users/savedListings
 This endpoint handles accessing the user's `savedListings`, which is an array of postIds, and retrieves them in the listings collection. 
 
 If a postId is found in the savedListing that does not have the `upcoming` or `active` status, then it will be removed from the savedListing array and not returned in the response.
@@ -498,6 +551,8 @@ If the user has saved listings, they will be returned as an array:
 }
 ```
 
+---
+
 ### Add a listing to a user's saved listings: POST /api/users/savedListings
 This endpoint will add a new `postId` from the request body into the user's `savedListings` array in the users Firestore Database document. 
 
@@ -520,6 +575,8 @@ The server will respond with a message upon successful addition:
     "message": "Listing saved successfully"
 }
 ```
+
+---
 
 ### Remove a listing from a user's saved listings: DELETE /api/users/savedListings
 This endpoint will remove a `postId` from the request body into the user's `savedListings` array in the users Firestore Database document. 
@@ -544,7 +601,7 @@ The server will respond with a message upon successful deletion:
 }
 ```
 
-
+---
 
 ## API Core Structure
 The API aligns with the **Separation of Concerns**, which makes it more modular, testable, and maintainable. With this principle, the functionality is broken up so that one file or function is not handling too much at a time.

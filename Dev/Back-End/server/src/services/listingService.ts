@@ -265,7 +265,7 @@ export const removeListingInDB = async (
 export const removeImageInDB = async (
       postId: string,
       uri: string,
-): Promise<void> => {
+) => {
       try {
         // console.log(`Uri: ${uri}`)
             const listingRef = db.collection("listings").doc(postId);
@@ -309,6 +309,27 @@ export const removeImageInDB = async (
 
             await listingRef.update({ images: updatedImages });
             // console.log("Firestore update completed successfully: ", listingData);
+
+
+            const updatedDoc = await listingRef.get();
+            const data = updatedDoc.data();
+
+            if (!data) {
+              throw new Error('listing not found');
+            }
+            return {
+              title: data.title,
+              description: data.description,
+              address: data.address,
+              dates: data.dates,
+              startTime: data.startTime,
+              endTime: data.endTime,
+              images: data.images,
+              categories: data.categories,
+              status: data.status,
+              g: data.g,
+              postId: data.postId
+        };
       } catch (err) {
             console.error(
                   `Error removing image ${uri} reference from database.`,

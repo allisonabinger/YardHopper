@@ -293,8 +293,8 @@ export const removeImage = async (req: Request, res: Response) => {
 
       const filePath = getFilePathFromURI(uri);
       await removeImageInFirebase(filePath);
-      await removeImageInDB(postId, uri)
-      res.status(200).json({ message: "Image removed successfully." });
+      const updatedListing = await removeImageInDB(postId, uri)
+      res.status(200).json({ message: "Image removed successfully.", updatedListing: updatedListing });
 
       // removes image in firestore
   } catch (err) {
