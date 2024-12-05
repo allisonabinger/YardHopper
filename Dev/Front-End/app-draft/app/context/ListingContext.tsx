@@ -22,7 +22,7 @@ interface ListingData {
   startTime: Date;
   endTime: Date;
   categories: string[];
-  subcategories: Record<string, boolean>;
+  subcategories: Record<string, string[]>;
   userId: string;
   images: ImageData[]; // Array of image objects
 }
