@@ -87,9 +87,10 @@ export default function HomeScreen() {
       // Build the URL dynamically based on the parameters
       let url = `https://yardhopperapi.onrender.com/api/listings?lat=${lat}&long=${long}&radius=${radius}`;
 
-      // Add categories if any
+      // Add encoded categories to request
       if (selectedCategories.length > 0) {
-        url += `&categories=${selectedCategories.join(',')}`;
+        const encodedCategories = selectedCategories.map((category) => encodeURIComponent(category)).join(',');
+        url += `&categories=${encodedCategories}`;
       }
 
       // Add pagination
