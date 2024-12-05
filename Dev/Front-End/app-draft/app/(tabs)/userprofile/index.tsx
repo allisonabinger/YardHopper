@@ -67,7 +67,7 @@ export default function SettingsScreen() {
           </Pressable>
         </Link>
 
-        <Link href="/userprofile/mylistings" asChild>
+        <Link href="/(tabs)/userprofile/mylistings" asChild>
           <Pressable style={styles.menuItem}>
             <Ionicons name="eye-outline" size={24} color="#333" />
             <Text style={styles.menuText}>View your listings</Text>

@@ -85,9 +85,9 @@ export default function AddListingPage() {
     });
 
     updateListingData({
-      categories: selectedCategories,
-      subcategories: updatedSubcategories, // Updated subcategories structure
-      userId: auth.user?.uid, // Add userId to the listing data
+      categories: [...new Set(selectedCategories)],  // Ensure only unique categories are added
+      subcategories: updatedSubcategories,
+      userId: auth.user?.uid,
     });
 
     // Navigate to the next step
@@ -107,8 +107,8 @@ export default function AddListingPage() {
     if (expandedCategory && expandedCategory !== id) {
       Animated.timing(dropdownAnimations.current[expandedCategory], {
         toValue: 0,
-        duration: 400, // Slightly longer for smoothness
-        easing: Easing.inOut(Easing.ease), // Smooth easing
+        duration: 400,
+        easing: Easing.inOut(Easing.ease),
         useNativeDriver: false,
       }).start();
     }
@@ -117,24 +117,27 @@ export default function AddListingPage() {
     setExpandedCategory(isExpanded ? null : id);
     Animated.timing(dropdownAnimations.current[id], {
       toValue: isExpanded ? 0 : 1,
-      duration: 100, // Match the duration
-      easing: Easing.inOut(Easing.ease), // Smooth easing
+      duration: 100,
+      easing: Easing.inOut(Easing.ease),
       useNativeDriver: false,
     }).start();
 
     // Update selected categories when expanding or collapsing
     setSelectedCategories((prev) => {
-      const categoryName = categories.find((cat) => cat.id === id)?.name; // get category name
+      const categoryName = categories.find((cat) => cat.id === id)?.name;
 
       if (!categoryName) {
-        return prev; // Return the previous state if no category is found (in case the ID doesn't exist)
+        return prev;
       }
       if (isExpanded) {
         // Remove the category if it was previously selected and is being collapsed
         return prev.filter((cat) => cat !== categoryName);
       } else {
-        // Add the category if it's being expanded
-        return [...prev, categoryName];
+        // Add the category if it's being expanded (only if it's not already selected)
+        if (!prev.includes(categoryName)) {
+          return [...prev, categoryName];
+        }
+        return prev;  // Return the previous state if the category is already selected
       }
     });
   };
