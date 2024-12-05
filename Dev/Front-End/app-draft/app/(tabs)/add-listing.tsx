@@ -71,15 +71,22 @@ export default function AddListingPage() {
       return;
     }
 
+    const updatedSubcategories: Record<string, string[]> = {};
+
+    selectedCategories.forEach((category) => {
+      // Find the selected subcategories for the category
+      const subcategoriesForCategory = categories
+        .find((cat) => cat.name === category)?.subcategories.filter((sub) =>
+          selectedSubcategories.includes(sub)
+        ) || [];
+
+      // Assign the filtered subcategories to the category
+      updatedSubcategories[category] = subcategoriesForCategory;
+    });
+
     updateListingData({
       categories: selectedCategories,
-      subcategories: selectedSubcategories.reduce(
-        (acc, sub) => ({
-          ...acc,
-          [sub]: true, // Example format for subcategories
-        }),
-        {}
-      ),
+      subcategories: updatedSubcategories, // Updated subcategories structure
       userId: auth.user?.uid, // Add userId to the listing data
     });
 
