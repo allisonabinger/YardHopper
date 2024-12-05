@@ -45,22 +45,27 @@ export default function MyListings() {
   const [page, setPage] = useState(1);
   const [listings, setListings] = useState<ListingItem[]>([]);
 
+  const { getIdToken, user } = useAuth();
   const router = useRouter();
 
 
   const fetchUserListings = async () => {
 
-    const auth = useAuth();
-    console.log('User data:', auth.user);
-    const currentUser = auth.user;
-    const idToken = await currentUser?.getIdToken();
-    console.log(idToken);
-    if (loading) return; // Prevent multiple calls
-    setLoading(true);
-
-    setError(null);
+    // console.log('User data:', auth.user);
+    // const currentUser = auth.user;
 
     try {
+
+         const idToken = await getIdToken();
+        if (!idToken) {
+          console.error("Unable to retrieve ID token. User might not be authenticated.");
+          return;
+        }
+        console.log("idToken: ", idToken);
+        if (loading) return; // Prevent multiple calls
+        setLoading(true);
+    
+        setError(null);
       // Build the URL dynamically based on the parameters
       let url = `https://yardhopperapi.onrender.com/api/users/listings`;
 
@@ -81,6 +86,12 @@ export default function MyListings() {
 
       const data = await response.json();
 
+      if (data.listings && Array.isArray(data.listings)) {
+        setListings(data.listings);
+      } else {
+        console.error("Unexpected data format: ", data);
+      }
+
       // Log the fetched data for debugging
       console.log("Fetched data:", data);
 
@@ -94,9 +105,11 @@ export default function MyListings() {
   };
 
   useEffect(() => {
-    console.log('Fetching listings...');
-    fetchUserListings();
-  }, []);
+    if (user) {
+      console.log("User authenticated, fetching listings...");
+      fetchUserListings();
+    }
+  }, [user]);
 
   const renderItem = ({ item }: { item: ListingItem }) => (
     <Card
@@ -185,4 +198,3 @@ const styles = StyleSheet.create({
     color: "#666666",
   },
 });
-

@@ -14,6 +14,7 @@ const AuthContext = createContext<AuthContextType>({
   logout,
   login,
   resetPassword,
+  getIdToken,
 });
 
 type AuthContextType = {
@@ -21,6 +22,7 @@ type AuthContextType = {
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<UserCredential>;
   resetPassword: (email: string) => Promise<void>;
+  getIdToken: () => Promise<string | null>
   user?: User | null;
 }
 
@@ -42,6 +44,15 @@ function resetPassword(email: string) {
   return sendPasswordResetEmail(auth, email);
 }
 
+async function getIdToken(): Promise<string | null> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      console.warn("No authenticated user found");
+      return null;
+    }
+    return currentUser.getIdToken();
+  }
+
 export function AuthProvider({children}: {children: ReactNode}){
   const [user, setUser] = useState(auth.currentUser);
 
@@ -59,7 +70,7 @@ export function AuthProvider({children}: {children: ReactNode}){
     return unsubscribe;
   }, []);
   return (
-    <AuthContext.Provider value={{user, register, logout, login, resetPassword }}>
+    <AuthContext.Provider value={{user, register, logout, login, resetPassword, getIdToken }}>
       {children}
     </AuthContext.Provider>
   );
