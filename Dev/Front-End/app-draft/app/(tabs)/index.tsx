@@ -72,6 +72,12 @@ export default function HomeScreen() {
     long = -95.9950,
     radius = 15,
     selectedCategories = [],
+  }: {
+    isRefresh?: boolean;
+    lat?: number;
+    long?: number;
+    radius?: number;
+    selectedCategories?: string[];
   } = {}) => {
     if (loading) return; // Prevent multiple calls
     setLoading(true);
@@ -87,7 +93,7 @@ export default function HomeScreen() {
       }
 
       // Add pagination
-      url += `&page=${isRefresh ? 1 : page}`;
+      // url += `&page=${isRefresh ? 1 : page}`;
 
       // Fetch the data
       const response = await fetch(url);
@@ -361,7 +367,10 @@ export default function HomeScreen() {
       />
       <FilterModal
         visible={filterModalVisible}
-        onClose={() => setFilterModalVisible(false)}
+        onClose={() => {
+          setFilterModalVisible(false);
+          fetchListings({ isRefresh: true, selectedCategories, radius});
+        }}
         setRadius={setRadius}
         selectedCategories={selectedCategories}
         setSelectedCategories={setSelectedCategories}
