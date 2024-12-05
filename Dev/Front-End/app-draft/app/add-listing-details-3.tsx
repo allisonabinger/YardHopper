@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useListingContext } from "./context/ListingContext";
 const ImageUploadScreen = () => {
   const { image, openImagePicker, reset, mimeType } = useImagePicker();
   const { addImage, listingData } = useListingContext();
+  const [ loading, setLoading ] = useState(false);
   const router = useRouter();
 
   const createListing = async () => {
@@ -108,31 +109,36 @@ const ImageUploadScreen = () => {
   };
 
   const handleUpload = async () => {
+    if (loading) return; // Prevent duplicate submissions
+    setLoading(true);
+
     try {
       const postId = await createListing();
-
-      if (image) {
-        await uploadImage(postId);
-      }
-
+      if (image) await uploadImage(postId);
       alert("Listing uploaded successfully!");
-      reset(); // Clear the image picker state
-      router.push("/(tabs)"); // Navigate to the main screen
+      reset();
+      router.push("/(tabs)");
     } catch (error) {
       console.error("Error uploading listing:", error);
       alert("An error occurred while uploading the listing.");
+    } finally {
+      setLoading(false); // Re-enable the button
     }
   };
 
   const handleSkip = async () => {
+    if (loading) return; // Prevent duplicate submissions
+    setLoading(true);
+
     try {
-      // Only create the listing, no image upload
       await createListing();
       alert("Listing uploaded successfully without an image!");
-      router.push("/(tabs)"); // Navigate to the main screen
+      router.push("/(tabs)");
     } catch (error) {
       console.error("Error uploading listing:", error);
       alert("An error occurred while uploading the listing.");
+    } finally {
+      setLoading(false);
     }
   };
 

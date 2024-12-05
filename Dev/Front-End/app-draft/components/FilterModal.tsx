@@ -71,7 +71,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
               <Text style={styles.sliderLabel}>Radius: {radius} miles</Text>
               <Slider
                 style={styles.slider}
-                minimumValue={15}
+                minimumValue={5}
                 maximumValue={50}
                 step={5}
                 value={radius}
