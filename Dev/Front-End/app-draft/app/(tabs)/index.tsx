@@ -51,7 +51,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList, "Home">;
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [radius, setRadius] = useState(5);
+  const [radius, setRadius] = useState(25);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
@@ -70,7 +70,7 @@ export default function HomeScreen() {
     isRefresh = false,
     lat = 36.1555,
     long = -95.9950,
-    radius = 15,
+    radius = 25,
     selectedCategories = [],
   }: {
     isRefresh?: boolean;
