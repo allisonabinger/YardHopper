@@ -63,20 +63,26 @@ export default function HomeScreen() {
   const fadeAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1); 
 
   // Fetch listings data from API
-  const fetchListings = async () => {
+  const fetchListings = async (isRefresh = false) => {
+    if (loading) return; // Prevent multiple calls
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(
-        "https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950"
+        `https://yardhopperapi.onrender.com/api/listings?lat=36.1555&long=-95.9950&page=${isRefresh ? 1 : page}`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
       const data = await response.json();
-      setListings(data.listings || []);
+      setListings((prevListings) =>
+        isRefresh ? data.listings : [...prevListings, ...data.listings]
+      );
+      if (isRefresh) setPage(2); // Reset to page 2 for next fetch
+      else setPage(page + 1);
     } catch (error: any) {
       setError(error.message || "Failed to load listings");
     } finally {
@@ -90,8 +96,14 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchListings();
+    await fetchListings(true);
     setRefreshing(false);
+  };
+
+  const onEndReached = async () => {
+    if (!loading) {
+      await fetchListings();
+    }
   };
 
   useEffect(() => {
@@ -480,3 +492,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
+function setPage(arg0: number) {
+  throw new Error("Function not implemented.");
+}
