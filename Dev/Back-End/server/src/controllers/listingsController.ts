@@ -103,6 +103,12 @@ export const fetchSingleListing = async (req: Request, res: Response) => {
     const { postId } = req.params;
     //   console.log("fetchListings called");
 
+    const user = res.locals.user;
+    const hashUid = user.hashUid;
+
+    if (!user || !hashUid) {
+        return res.status(400).json({ error: "User not authorized." });
+    }
     try {
         if (!postId) {
             return res.status(400).json({ message: "No postId provided." });
@@ -126,6 +132,12 @@ export const fetchSingleListing = async (req: Request, res: Response) => {
 
 export const createListing = async (req: Request, res: Response) => {
     try {
+        const user = res.locals.user;
+        const hashUid = user.hashUid;
+
+        if (!user || !hashUid) {
+            return res.status(400).json({ error: "User not authorized." });
+        }
         const {
             title,
             description,
@@ -135,24 +147,27 @@ export const createListing = async (req: Request, res: Response) => {
             endTime,
             categories,
             subcategories,
-            userId,
         } = req.body;
-
-        if (
-            !title ||
-            !description ||
-            !address ||
-            !dates ||
-            !startTime ||
-            !endTime ||
-            !categories ||
-            !userId
-        ) {
+        
+        const requiredFields = {
+            title,
+            description,
+            address,
+            dates,
+            startTime,
+            endTime,
+            categories,
+        };
+        
+        const missingFields = Object.entries(requiredFields)
+            .filter(([key, value]) => !value) // Check for missing fields
+            .map(([key]) => key); // Collect field names
+        
+        if (missingFields.length > 0) {
             return res.status(400).json({
-                error: "Missing required fields. Required: title, description, address, dates, startTime, endTime, categories, and userId",
+                error: `Missing required fields: ${missingFields.join(", ")}.`,
             });
         }
-        const hashedUserId = hashUid(userId);
 
         // generate timestamp for generatedAt (format = YYYY-MM-DDTHH:mm:ss.sssZ )
         const now = new Date();
@@ -200,7 +215,7 @@ export const createListing = async (req: Request, res: Response) => {
             generatedAt: generatedAt,
             status: status,
             g: geolocation,
-            userId: hashedUserId,
+            userId: hashUid,
         };
 
         const newListing = await postListing(listingData);
@@ -216,8 +231,13 @@ export const createListing = async (req: Request, res: Response) => {
 };
 
 export const updateListing = async (req: Request, res: Response) => {
-    // needs auth
     try {
+        const user = res.locals.user;
+        const hashUid = user.hashUid;
+
+        if (!user || !hashUid) {
+            return res.status(400).json({ error: "User not authorized." });
+        }
         // console.log(req.file)
         const { postId } = req.params;
         const updatedFields = { ...req.body };
@@ -238,14 +258,24 @@ export const updateListing = async (req: Request, res: Response) => {
                 .json({ error: "No fields provided to update" });
         }
 
-        const updatedListing = await updateListingInDB(postId, updatedFields);
+        const updatedListing = await updateListingInDB(postId, hashUid, updatedFields);
 
         return res.status(200).json({
             message: "Listing updated successfully",
             listing: updatedListing,
         });
     } catch (err) {
-        console.error("Error updating listing: ", err);
+        if (err instanceof Error) {
+            if (err.message === "User not permitted to change this listing") {
+                return res.status(403).json({ error: err.message });
+            }
+            if (err.message === "Listing not found." || err.message === "Listing data could not be retrieved.") {
+                return res.status(404).json({ error: err.message });
+            }
+            return res.status(500).json({ error: err.message });
+        }
+        
+        // console.error("Error updating listing: ", err);
         return res.status(500).json({ message: "Failed to update listing." });
     }
 };

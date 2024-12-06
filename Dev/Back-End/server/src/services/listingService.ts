@@ -140,6 +140,7 @@ export const postListing = async (
 
 export const updateListingInDB = async (
       postId: string,
+      hashUid: string,
       updatedFields: Record<string, any>
 ) => {
       try {
@@ -149,31 +150,45 @@ export const updateListingInDB = async (
             const listingRef = db.collection("listings").doc(postId);
             // console.log("Updating firestore doc: ", listingRef.path);
 
+            const existingDoc = await listingRef.get();
+            if (!existingDoc.exists) {
+                throw new Error("Listing not found.");
+            }
+
+            const listingData = existingDoc.data();
+            if (!listingData) {
+                throw new Error("Listing data could not be retrieved.");
+            }
+
+            if (listingData.userId !== hashUid) {
+                throw new Error("User not permitted to change this listing");
+            }
+    
+
             await listingRef.update(updatedFields);
 
             const updatedDoc = await listingRef.get();
-            const data = updatedDoc.data();
+            const updatedData = updatedDoc.data();
 
-            if (!data) {
-              throw new Error('listing not found');
-              return null;
+            if (!updatedData) {
+              throw new Error('Listing not found.');
             }
             return {
-              title: data.title,
-              description: data.description,
-              address: data.address,
-              dates: data.dates,
-              startTime: data.startTime,
-              endTime: data.endTime,
-              images: data.images,
-              categories: data.categories,
-              status: data.status,
-              g: data.g,
-              postId: data.postId
+              title: updatedData.title,
+              description: updatedData.description,
+              address: updatedData.address,
+              dates: updatedData.dates,
+              startTime: updatedData.startTime,
+              endTime: updatedData.endTime,
+              images: updatedData.images,
+              categories: updatedData.categories,
+              status: updatedData.status,
+              g: updatedData.g,
+              postId: updatedData.postId
         };
       } catch (err) {
-            console.error("Error updating listing in Firestore: ", err);
-            throw error;
+            // console.error("Error updating listing in Firestore: ", err);
+            throw err;
       }
 };
 

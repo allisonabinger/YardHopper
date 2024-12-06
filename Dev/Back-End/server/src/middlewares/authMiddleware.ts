@@ -27,7 +27,7 @@ export const authenticateUser = async (
       res.locals.user = user;
       next();
     } catch (error) {
-      console.error("Authentication error:", error);
+    //   console.error("Authentication error:", error);
       return next({ status: 403, message: "Invalid or expired token" });
     }
   };
