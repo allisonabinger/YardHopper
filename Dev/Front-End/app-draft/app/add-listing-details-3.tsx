@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,29 +7,20 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
+import * as FileSystem from 'expo-file-system';
 import { useImagePicker } from "@/hooks/useImagePicker";
 import PageLayout from "./PageLayout";
 import { useRouter } from "expo-router";
 import { useListingContext } from "./context/ListingContext";
-import { useAuth } from "@/components/AuthProvider";
 
 const ImageUploadScreen = () => {
-  const { image, openImagePicker, reset } = useImagePicker();
+  const { image, openImagePicker, reset, mimeType } = useImagePicker();
   const { addImage, listingData } = useListingContext();
+  const [ loading, setLoading ] = useState(false);
   const router = useRouter();
-  const { user } = useAuth();
 
   const createListing = async () => {
-    if (!user) {
-      alert("You must be logged in to create a listing");
-      return;
-    }
-
-    const listing = {
-      ...listingData,
-
-      userId: user.uid,  // Add the userId to the listing data
-    };
+    const listing = { ...listingData };
 
     const response = await fetch("https://yardhopperapi.onrender.com/api/listings", {
       method: "POST",
@@ -38,66 +29,116 @@ const ImageUploadScreen = () => {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
       throw new Error("Failed to create listing");
     }
 
-    return response.json(); // Returns { postId }
+    const responseData = await response.json();
+    console.log("Full Response JSON:", responseData);
 
+    // Extract the postId from the response
+    const postIdKey = "Listing created with new postId";
+    const postId = responseData[postIdKey];
+
+    if (postId) {
+      console.log("Extracted postId:", postId);
+    } else {
+      console.error("postId not found in response");
+    }
+
+    return(postId);
   };
 
   const uploadImage = async (postId: string) => {
     if (!image) return;
 
-    const formData = new FormData();
-    formData.append("image", {
-      uri: image,
-      name: "listing-image.jpg",
-      type: "image/jpeg",
-    });
-    formData.append("caption", "Listing Image");
 
-    const response = await fetch(
-      `https://yardhopperapi.onrender.com/api/listings/${postId}/images`,
-      {
-        method: "POST",
-        body: formData,
+    try {
+      console.log("Selected image URI:", image);
 
+      // Validate the image file
+      const fileInfo = await FileSystem.getInfoAsync(image);
+      if (!fileInfo.exists) {
+        throw new Error("Selected file does not exist");
       }
-    );
 
-    if (!response.ok) {
-      throw new Error("Failed to upload image");
+      // Prepare FormData
+      const formData = new FormData();
+      if (!formData) {
+        throw new Error("Selected file does not exist");
+      }
+
+      const imageName = image.split("/").pop() || "default-name.jpg";
+
+      formData.append("image", {
+        uri: image,
+        type: mimeType,
+        name: imageName,
+      });
+      formData.append("caption", "More Items");
+
+      console.log("FormData debug:", JSON.stringify(formData));
+
+      console.log("FormData prepared:", formData);
+      console.log("Post Id: ", postId)
+
+      // Make the upload request
+      const uploadResponse = await fetch(
+        `https://yardhopperapi.onrender.com/api/listings/${postId}/images`,
+        {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+          },
+          body: formData,
+        }
+      );
+
+      if (!uploadResponse.ok) {
+        const errorResponse = await uploadResponse.text();
+        console.error("Server response:", errorResponse);
+        throw new Error("Failed to upload image");
+      }
+
+      console.log("Image uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Failed to upload the image. Please try again.");
     }
   };
 
   const handleUpload = async () => {
+    if (loading) return; // Prevent duplicate submissions
+    setLoading(true);
+
     try {
-      // Step 1: Create the listing
-      const { postId } = await createListing();
-
-      // Step 2: Upload the image if it exists
-      if (image) {
-        await uploadImage(postId);
-      }
-
+      const postId = await createListing();
+      if (image) await uploadImage(postId);
       alert("Listing uploaded successfully!");
-      reset(); // Clear the image picker state
-      router.push("./(tabs)/index"); // Navigate to the main screen
+      reset();
+      router.push("/(tabs)");
     } catch (error) {
       console.error("Error uploading listing:", error);
       alert("An error occurred while uploading the listing.");
+    } finally {
+      setLoading(false); // Re-enable the button
     }
   };
 
   const handleSkip = async () => {
+    if (loading) return; // Prevent duplicate submissions
+    setLoading(true);
+
     try {
-      // Only create the listing, no image upload
       await createListing();
       alert("Listing uploaded successfully without an image!");
-      router.push("./(tabs)/index"); // Navigate to the main screen
+      router.push("/(tabs)");
     } catch (error) {
       console.error("Error uploading listing:", error);
       alert("An error occurred while uploading the listing.");
+    } finally {
+      setLoading(false);
     }
   };
 

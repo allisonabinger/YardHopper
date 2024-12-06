@@ -71,15 +71,22 @@ export default function AddListingPage() {
       return;
     }
 
+    const updatedSubcategories: Record<string, string[]> = {};
+
+    selectedCategories.forEach((category) => {
+      // Find the selected subcategories for the category
+      const subcategoriesForCategory = categories
+        .find((cat) => cat.name === category)?.subcategories.filter((sub) =>
+          selectedSubcategories.includes(sub)
+        ) || [];
+
+      // Assign the filtered subcategories to the category
+      updatedSubcategories[category] = subcategoriesForCategory;
+    });
+
     updateListingData({
       categories: selectedCategories,
-      subcategories: selectedSubcategories.reduce(
-        (acc, sub) => ({
-          ...acc,
-          [sub]: true, // Example format for subcategories
-        }),
-        {}
-      ),
+      subcategories: updatedSubcategories, // Updated subcategories structure
       userId: auth.user?.uid, // Add userId to the listing data
     });
 
@@ -115,12 +122,20 @@ export default function AddListingPage() {
       useNativeDriver: false,
     }).start();
 
-    // Manage selected categories
+    // Update selected categories when expanding or collapsing
     setSelectedCategories((prev) => {
-      if (isExpanded && !subcategories.some((sub) => selectedSubcategories.includes(sub))) {
-        return prev.filter((cat) => cat !== id);
+      const categoryName = categories.find((cat) => cat.id === id)?.name; // get category name
+
+      if (!categoryName) {
+        return prev; // Return the previous state if no category is found (in case the ID doesn't exist)
       }
-      return prev.includes(id) ? prev : [...prev, id];
+      if (isExpanded) {
+        // Remove the category if it was previously selected and is being collapsed
+        return prev.filter((cat) => cat !== categoryName);
+      } else {
+        // Add the category if it's being expanded
+        return [...prev, categoryName];
+      }
     });
   };
 

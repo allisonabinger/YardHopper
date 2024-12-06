@@ -7,7 +7,7 @@ import {
   Animated,
   Dimensions,
 } from "react-native";
-import Card from "./Card";
+import Card from "@/components/Card";
 import { useRouter } from "expo-router";
 
 interface PopupCardModalProps {
@@ -15,7 +15,8 @@ interface PopupCardModalProps {
   item: any | null;
   onClose: () => void;
   animation: Animated.Value;
-}
+  onLikeToggle?: (postId: string) => void;
+  onCardPress?: (postId: string) => void;}
 
 const { height } = Dimensions.get("window");
 
@@ -38,6 +39,7 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
 
   const handleCardPress = () => {
     if (item.postId) {
+      onClose();
       router.push(`/listing/${item.postId}`);
       onClose();
     }
@@ -61,12 +63,12 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
             postId={item.postId}
             title={item.title}
             description={item.description}
-            image={(item?.images?.[0]?.uri) || "https://via.placeholder.com/150"} // Apply fallback logic here
+            image={(item?.images?.[0]?.uri) || "https://via.placeholder.com/150"}
             date={item.dates[0]}
             address={`${item.address.street}, ${item.address.city}`}
-            onPress={handleCardPress} // Redirect to listing/[id]
-            startTime={""}
-            endTime={""}
+            onPress={handleCardPress}
+            isExpanded={false}
+            disableToggle
           />
         </View>
           </Animated.View>
