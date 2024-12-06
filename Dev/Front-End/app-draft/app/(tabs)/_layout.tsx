@@ -72,7 +72,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="userprofile/changepassword" options={{ href: null }} />
+      <Tabs.Screen name="userprofile/updatesettings" options={{ href: null }} />
       <Tabs.Screen name="userprofile/mylistings" options={{ href: null }} />
       <Tabs.Screen name="userprofile/savedposts" options={{ href: null }} />
       {/* <Tabs.Screen name="userprofile/ProgressTracker" options={{ href: null }} /> */}

@@ -75,7 +75,7 @@ export default function SettingsScreen() {
           </Pressable>
         </Link>
 
-        <Link href="/userprofile/changepassword" asChild>
+        <Link href="/userprofile/updatesettings" asChild>
           <Pressable style={styles.menuItem}>
             <Ionicons name="lock-closed-outline" size={24} color="#333" />
             <Text style={styles.menuText}>Change password</Text>
