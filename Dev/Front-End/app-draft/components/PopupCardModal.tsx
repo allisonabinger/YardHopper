@@ -39,6 +39,7 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
 
   const handleCardPress = () => {
     if (item.postId) {
+      onClose();
       router.push(`/listing/${item.postId}`);
       onClose();
     }
@@ -65,9 +66,9 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
             image={(item?.images?.[0]?.uri) || "https://via.placeholder.com/150"}
             date={item.dates[0]}
             address={`${item.address.street}, ${item.address.city}`}
-            onPress={handleCardPress} // Redirect to listing/[id]
-            startTime={""}
-            endTime={""}
+            onPress={handleCardPress}
+            isExpanded={false}
+            disableToggle
           />
         </View>
           </Animated.View>

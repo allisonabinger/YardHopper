@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   View,
@@ -6,57 +6,77 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useSavedPosts } from "../../context/SavedPostsContext";
-import FilterModal from "@/components/FilterModal";
+
+interface Movie {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+}
 
 export default function SavedPosts() {
   const router = useRouter();
-  const { savedPosts, removeSavedPost } = useSavedPosts();
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [radius, setRadius] = useState(5);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [savedPosts, setSavedPosts] = useState<Movie[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleFilter = () => {
-    setFilterModalVisible(!filterModalVisible);
+  const fetchSavedPosts = async (isRefresh = false) => {
+    if (loading) return; // Prevent multiple calls
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `https://yardhopperapi.onrender.com/api/users/savedListings?page=${isRefresh ? 1 : page}`
+      );
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setSavedPosts((prevPosts) =>
+        isRefresh ? data.favorites : [...prevPosts, ...data.favorites]
+      );
+      if (isRefresh) setPage(2); // Reset to page 2 for next fetch
+      else setPage(page + 1);
+    } catch (error: any) {
+      setError(error.message || "Failed to load saved posts");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredData = selectedCategories.length
-    ? savedPosts.filter((item) =>
-        selectedCategories.some((category) =>
-          item.description.toLowerCase().includes(category.toLowerCase())
-        )
-      )
-    : savedPosts;
+  useEffect(() => {
+    fetchSavedPosts(true); // Fetch initial data with refresh logic
+  }, []);
 
-  const renderItem = ({ item }: { item: typeof savedPosts[0] }) => (
+  const renderItem = ({ item }: { item: Movie }) => (
     <View style={styles.cardContainer}>
-      {/* Like Button */}
       <TouchableOpacity
         style={styles.likeButton}
-        onPress={() => removeSavedPost(item.id)} // Removes the item from saved posts
+        onPress={() => console.log(`Remove post with ID: ${item.id}`)}
       >
-        <Ionicons name="heart" size={24} color="#159636" />
+        <Ionicons name="heart" size={24} color="red" />
       </TouchableOpacity>
-
-      {/* Listing Image */}
       <Image
-        source={{ uri: item.image || "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png" }}
+        source={{
+          uri:
+            item.image ||
+            "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
+        }}
         style={styles.cardImage}
       />
-
-      {/* Listing Details */}
       <Text style={styles.cardTitle}>{item.title}</Text>
       <Text style={styles.cardDescription}>{item.description}</Text>
-
-      {/* Navigate to Detailed Page */}
       <TouchableOpacity
         style={styles.viewDetailsButton}
-        onPress={() => router.push({ pathname: "./(sale)/[id]", params: { id: item.id } })}
+        onPress={() =>
+          router.push({ pathname: "./(sale)/[id]", params: { id: item.id } })
+        }
       >
         <Text style={styles.viewDetailsText}>View Details</Text>
       </TouchableOpacity>
@@ -65,84 +85,16 @@ export default function SavedPosts() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Saved Posts</Text>
       </View>
-
-      {/* Action Buttons Row */}
-      <View style={styles.actionsRow}>
-        {/* Filter Button */}
-        <TouchableOpacity onPress={toggleFilter} style={styles.filterButton}>
-          <Ionicons
-            name={filterModalVisible ? "filter-circle" : "filter-circle-outline"}
-            size={28}
-            color="#159636"
-          />
-          <Text style={styles.filterText}>Filter</Text>
-        </TouchableOpacity>
-
-        {/* View Toggle Button */}
-        <TouchableOpacity
-          onPress={() => setViewMode(viewMode === "list" ? "map" : "list")}
-          style={styles.toggleButton}
-        >
-          <Ionicons
-            name={viewMode === "list" ? "toggle-outline" : "toggle"}
-            size={28}
-            color={viewMode === "list" ? "gray" : "#159636"}
-          />
-          <Text
-            style={[
-              styles.toggleText,
-              { color: viewMode === "list" ? "gray" : "#159636" },
-            ]}
-          >
-            {viewMode === "list" ? "Map View" : "List View"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Content */}
-      {viewMode === "list" ? (
-        <FlatList
-          data={filteredData}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-        />
-      ) : (
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: filteredData[0]?.g.geopoint._latitude || 37.7749,
-            longitude: filteredData[0]?.g.geopoint._longitude || -122.4194,
-            latitudeDelta: 0.1,
-            longitudeDelta: 0.1,
-          }}
-        >
-          {filteredData.map((item) => (
-            <Marker
-              key={item.id}
-              coordinate={{
-                latitude: item.g.geopoint._latitude,
-                longitude: item.g.geopoint._longitude,
-              }}
-              title={item.title}
-              description={item.description}
-            />
-          ))}
-        </MapView>
-      )}
-
-      {/* Filter Modal */}
-      <FilterModal
-        visible={filterModalVisible}
-        onClose={toggleFilter}
-        radius={radius}
-        setRadius={setRadius}
-        selectedCategories={selectedCategories}
-        setSelectedCategories={setSelectedCategories}
+      {loading && <ActivityIndicator size="large" color="#159636" />}
+      {error && <Text style={styles.errorText}>{error}</Text>}
+      <FlatList
+        data={savedPosts}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.listContent}
       />
     </View>
   );
@@ -156,7 +108,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "center",
     paddingHorizontal: 16,
     paddingTop: 50,
     paddingVertical: 12,
@@ -169,34 +121,13 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#159636",
   },
-  actionsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  filterText: {
-    fontSize: 16,
-    color: "#159636",
-    marginLeft: 4,
-  },
-  toggleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  toggleText: {
-    fontSize: 16,
-    marginLeft: 8,
+  errorText: {
+    textAlign: "center",
+    color: "red",
+    marginVertical: 10,
   },
   listContent: {
     paddingVertical: 16,
-  },
-  map: {
-    flex: 1,
   },
   cardContainer: {
     backgroundColor: "#D9D9D9",
@@ -204,10 +135,6 @@ const styles = StyleSheet.create({
     margin: 20,
     padding: 16,
     elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 6,
   },
   likeButton: {
     position: "absolute",
@@ -217,11 +144,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 5,
     borderRadius: 50,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
   cardImage: {
     height: 150,
@@ -233,47 +155,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#159636",
   },
-  cardAddress: {
+  cardDescription: {
     fontSize: 14,
-    color: "#666",
-    marginTop: 4,
-    marginBottom: 8,
+    color: "#333",
+    marginVertical: 8,
   },
-  expandedDetails: {
-    marginTop: 16,
+  viewDetailsButton: {
+    backgroundColor: "#159636",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
   },
-  sectionTitle: {
+  viewDetailsText: {
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#159636",
-    marginBottom: 4,
-  },
-  sectionContent: {
-    fontSize: 14,
-    color: "#333",
-    marginBottom: 8,
-  },
-  categoriesContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 8,
-  },
-  categoryTag: {
-    backgroundColor: "#E0E0E0",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginRight: 8,
-    marginBottom: 8,
-    borderColor: "#A9A9A9",
-    borderWidth: 1,
-  },
-  categoryText: {
-    fontSize: 14,
-    color: "#333",
-  },
-  date: {
-    fontSize: 14,
-    color: "#666",
+    fontWeight: "500",
   },
 });
