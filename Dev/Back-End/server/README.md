@@ -24,11 +24,15 @@ $ npm run dev
 Using Postman, your browser, or `curl`, you can now utilize the endpoints. 
 
 ## Listings Endpoints
+All endpoints require the user to be signed in. The API needs to receive the `Authorization: Bearer ${idToken}` for each request.
 
 ### Get all active and upcoming listings: GET /api/listings 
 The `GET /api/listings` endpoint will need accept coordinates or zipcode in order to find listings in the area. As of now, database has listings in Tulsa, Jenks, and Sand Springs. **The request must have a latitude and longitude or a zipcode query in order to find listings.** This is because a user will need to allow location services and send their location with the listing, or they must provide their zipcode. They can always extend the radius regardless.
 
 The endpoint can also accept a radius to search by. The default search radius is 15 miles. It will also accept searching by categories, but not subcategories
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
 
 **Request Endpoint Example**
 
@@ -102,6 +106,9 @@ The API will respond with the public fields in an array of listings. Here is an 
 ### Get one listing by postId: GET /api/listings/:postId
 The `GET /api/listings` endpoint serves to provide data for a single listing. It accepts no parameters.
 
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
 **Request Endpoint Example**
 GET https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
 
@@ -144,13 +151,18 @@ GET https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
 ---
 
 ### Create a listing: POST /api/listings
-The endpoint will handle parsing the user information and generating the metadata for the db to query later. It accepts the listing data in the body. 
+The endpoint will handle parsing the user information and generating the metadata for the db to query later. It accepts the listing data in the body. The userId will be added to the post by the server. 
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
 
 **Request Endpoint Example**
 POST https://yardhopperapi.onrender.com/api/listings/
 
 
 **Request Body Examples -- MUST BE JSON**
+
+FORMAT:
 ```
   {
     "title": string,
@@ -168,29 +180,29 @@ POST https://yardhopperapi.onrender.com/api/listings/
     "subcategories": object {
       Broad Category (string): array [string]
     },
-    "userId": string
   }
 ```
 
 Here is an example of user submitted listing data that is sufficient to post to the API:
 ```
   {
-    "title": "Home Improvement & Tools Sale",
-    "description": "Tools, power equipment, and automotive parts at unbeatable prices.",
+    "title": "Estate Sale",
+    "description": "Tools, power equipment, camping, clothes, large estate sale",
       "address": {
         "zip": 74113,
         "city": "Tulsa",
         "street": "3123 Riverside Dr",
         "state": "OK"
       },
-    "dates": ["2024-12-16"],
-    "startTime": "09:00",
-    "endTime": "15:00",
-    "categories": ["Tools/Parts"],
+    "dates": ["2024-12-16", "2024-12-17"],
+    "startTime": "07:00",
+    "endTime": "16:00",
+    "categories": ["Tools/Parts", "Sports/Outdoors", "Clothing"],
     "subcategories": {
-      "Tools/Parts": ["Power Tools", "Automotive"]
-    },
-    "userId": "h8KUzPZ8LLeWP8Fx3I6GvhFf8Xo2"
+      "Tools/Parts": ["Power Tools", "Automotive"],
+      "Sports/Outdoors": ["Camping Gear", "Fishing"],
+      "Clothing": ["Mens", "Winter"]
+    }
   }
 ```
 
@@ -205,7 +217,10 @@ The API will respond with the postId of the newly created listing:
 ---
 
 ### Update an existing listing: PUT /api/listings/:postId
-This route is used for updating the text fields of the listing, such as `title`, `description`, or `startTime`. The `postId` is necessary for the server to find the right post to update, and must accept updated fields in the body to update the post.
+This route is used for updating the text fields of the listing, such as `title`, `description`, or `startTime`. The `postId` is necessary for the server to find the right post to update, and must accept updated fields in the body to update the post. A listing cannot be updated by anyone other than it's poster. It will used the information gathered from the `Authorization` header to validate the request.
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
 
 **Request Endpoint Example**
 PUT https://yardhopperapi.onrender.com/api/listings/KwLTqIjazVDMMPkS3ldZ
@@ -238,7 +253,10 @@ The API will respond with a message and the new updated listing:
 ---
 
 ### Delete a listing: DEL /api/listings/:postId
-This route is user for deleting a listing. It will delete the data stored in the firestore database, as well as any images attached to the listing. It accepts the `postId` as the parameter.
+This route is user for deleting a listing. It will delete the data stored in the firestore database, as well as any images attached to the listing. It accepts the `postId` as the parameter. A listing cannot be deleted by anyone other than it's poster. It will used the information gathered from the `Authorization` header to validate the request.
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
 
 **Request Endpoint Example**
 DEL https://yardhopperapi.onrender.com/api/listings/DOcNhHR25vTD70cmlySs
@@ -261,7 +279,10 @@ The api will respond with a
 ---
 
 ### Add an image to an existing listing: POST /api/listings/:postId/images
-This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string in the body, and the `postId` in the parameters. The `caption` is not required. 
+This route is used for adding images to a listing. It will accept a `file` in the request, as well as an image `caption` as a string in the body, and the `postId` in the parameters. The `caption` is not required. A listing cannot be updated by anyone other than it's poster. It will used the information gathered from the `Authorization` header to validate the request.
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
 
 ```
     { postId } = req.params;
@@ -311,7 +332,10 @@ The API responds with a success message of the newly updated listing, which shou
 ---
 
 ### Update a caption to an existing listing: PUT /api/listings/:postId/images
-This route is used for updating the caption of an image. It accepts the `postId` as the parameter of an image, and the `uri` and `caption` to update. 
+This route is used for updating the caption of an image. It accepts the `postId` as the parameter of an image, and the `uri` and `caption` to update.  A listing cannot be updated by anyone other than it's poster. It will used the information gathered from the `Authorization` header to validate the request.
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
 
 ```
     { postId } = req.params;
@@ -355,7 +379,10 @@ The API responds with a success message of the newly updated listing, which shou
 ---
 
 ### Delete an image of an existing listing: DEL /api/listings/:postId/images
-This route is user for deleting an image within a listing. It will delete the image stored in Firebase, and then removes any reference to the image and caption. It accepts the `uri` and `postId` as parameters.
+This route is user for deleting an image within a listing. It will delete the image stored in Firebase, and then removes any reference to the image and caption. It accepts the `uri` and `postId` as parameters. A listing cannot be updated by anyone other than it's poster. It will used the information gathered from the `Authorization` header to validate the request.
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
 
 ```
     { postId } = req.params;

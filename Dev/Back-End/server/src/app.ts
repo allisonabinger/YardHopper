@@ -1,5 +1,5 @@
 // Express app configuration
-import express from "express";
+import express, { ErrorRequestHandler } from "express";
 import cors from "cors";
 import routes from "./routes";
 // import { errorHandler } from "./middlewares/errorHandler";
@@ -25,7 +25,7 @@ app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 app.use("/api", routes);
 
 // error handler has to go after routes
-app.use(errorHandler);
+app.use(errorHandler as ErrorRequestHandler);
 
 export default app;
 

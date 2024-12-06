@@ -3,6 +3,7 @@ import path from "path"
 import { db, storage } from '../config/firebase';
 import { v4 as uuidv4 } from "uuid"
 import { ENV } from '../config/environment';
+import { InternalServerError, NotFoundError } from '../middlewares/errors';
 
 // ads image to firebase and returns uri
 export const uploadImageToFirebase = async (file: Express.Multer.File, postId: string): Promise<string> => {
@@ -15,6 +16,10 @@ export const uploadImageToFirebase = async (file: Express.Multer.File, postId: s
         const bucket = storage.bucket();
         const fileUpload = bucket.file(imagePath);
 
+        if (!fileUpload) {
+            throw new NotFoundError("Unable to find image in Firebase storage.")
+        }
+
         await fileUpload.save(file.buffer, {
             contentType: file.mimetype,
             public: false,
@@ -23,8 +28,8 @@ export const uploadImageToFirebase = async (file: Express.Multer.File, postId: s
         const fileUri = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media`
         return fileUri;
     } catch (err) {
-        console.error("Error uploading image to Firebase", err);
-        throw new Error("Error uploading image to Firebase");
+        // console.error("Error uploading image to Firebase", err);
+        throw new InternalServerError("Error uploading image to Firebase");
     }
 }
 
@@ -35,10 +40,10 @@ export const removeImageInFirebase = async (filePath: string): Promise<void> => 
 
         await file.delete();
 
-        console.log(`Successfully deleted file: ${file}`)
+        // console.log(`Successfully deleted file: ${file}`)
     } catch (err) {
-        console.error(`Error deleting file: ${filePath}`, err);
-        throw new Error(`Error deleting file: ${filePath}`);
+        // console.error(`Error deleting file: ${filePath}`, err);
+        throw new InternalServerError(`Error deleting file: ${filePath}`);
     }
 }
 
@@ -54,10 +59,10 @@ export const removeFolderInFirebase = async (folderPath: string): Promise<void> 
         const deletePromises = files.map(file => file.delete());
         await Promise.all(deletePromises);
 
-        console.log(`Successfully delete all images in the folder: ${folderPath}`)
+        // console.log(`Successfully delete all images in the folder: ${folderPath}`)
     } catch (err) {
-        console.error(`Error deleting files in folder: ${folderPath}`, err);
-        throw new Error(`Error deleting files in folder: ${folderPath}`);
+        // console.error(`Error deleting files in folder: ${folderPath}`, err);
+        throw new InternalServerError(`Error deleting files in folder: ${folderPath}`);
     }
 }
 

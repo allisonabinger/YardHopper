@@ -1,17 +1,18 @@
 // routes for listing management
 import express from "express";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import {
     addImage,
-      changeCaption,
-      createListing,
-      deleteListing,
-      fetchListings,
-      fetchSingleListing,
-      removeImage,
-      updateListing,
+    changeCaption,
+    createListing,
+    deleteListing,
+    fetchListings,
+    fetchSingleListing,
+    removeImage,
+    updateListing,
 } from "../controllers/listingsController";
+import { authenticateUser } from "../middlewares/authMiddleware";
 // import { authenticate } from "../middlewares/authMiddleware"
 
 const router = express.Router();
@@ -198,36 +199,49 @@ const upload = multer({ storage: storage });
  *         description: Image deleted successfully
  */
 
-
 // gets all listings within a radius
-router.get("/", (req: Request, res: Response) => {
-      fetchListings(req, res);
+router.get("/", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    fetchListings(req, res, next);
 });
 
 // gets a single listing
-router.get("/:postId", (req: Request, res: Response) => {
-    fetchSingleListing(req, res);
+router.get("/:postId", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    fetchSingleListing(req, res, next);
 });
 
 // creates a new listing
-router.post("/", (req: Request, res: Response) => {
-      createListing(req, res);
+router.post("/", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    createListing(req, res, next);
 });
 
 // put request for text fields (title, description, etc)
-router.put("/:postId", (req: Request, res: Response) => { updateListing(req, res);});
+router.put("/:postId", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    updateListing(req, res, next);
+});
 
 // deletes the listing and any images attached to it
-router.delete("/:postId", (req: Request, res: Response) => { deleteListing(req, res);});
+router.delete("/:postId", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    deleteListing(req, res, next);
+});
 
 // put request for uploading images
-router.post("/:postId/images", upload.single("image"), (req: Request, res: Response) => { addImage(req, res);});
+router.post(
+    "/:postId/images",
+    authenticateUser,
+    upload.single("image"),
+    (req: Request, res: Response, next: NextFunction) => {
+        addImage(req, res, next);
+    }
+);
 
 // update caption for a specific image
-router.put("/:postId/images", (req: Request, res: Response) => { changeCaption(req, res);});
+router.put("/:postId/images", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    changeCaption(req, res, next);
+});
 
 // deletes an image from a listing
-router.delete("/:postId/images", (req: Request, res: Response) => { removeImage(req, res);});
-
+router.delete("/:postId/images", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
+    removeImage(req, res, next);
+});
 
 export default router;
