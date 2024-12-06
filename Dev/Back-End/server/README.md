@@ -151,6 +151,8 @@ POST https://yardhopperapi.onrender.com/api/listings/
 
 
 **Request Body Examples -- MUST BE JSON**
+
+FORMAT:
 ```
   {
     "title": string,
@@ -175,22 +177,23 @@ POST https://yardhopperapi.onrender.com/api/listings/
 Here is an example of user submitted listing data that is sufficient to post to the API:
 ```
   {
-    "title": "Home Improvement & Tools Sale",
-    "description": "Tools, power equipment, and automotive parts at unbeatable prices.",
+    "title": "Estate Sale",
+    "description": "Tools, power equipment, camping, clothes, large estate sale",
       "address": {
         "zip": 74113,
         "city": "Tulsa",
         "street": "3123 Riverside Dr",
         "state": "OK"
       },
-    "dates": ["2024-12-16"],
-    "startTime": "09:00",
-    "endTime": "15:00",
-    "categories": ["Tools/Parts"],
+    "dates": ["2024-12-16", "2024-12-17"],
+    "startTime": "07:00",
+    "endTime": "16:00",
+    "categories": ["Tools/Parts", "Sports/Outdoors", "Clothing"],
     "subcategories": {
-      "Tools/Parts": ["Power Tools", "Automotive"]
-    },
-    "userId": "h8KUzPZ8LLeWP8Fx3I6GvhFf8Xo2"
+      "Tools/Parts": ["Power Tools", "Automotive"],
+      "Sports/Outdoors": ["Camping Gear", "Fishing"],
+      "Clothing": ["Mens", "Winter"]
+    }
   }
 ```
 

@@ -287,6 +287,9 @@ export const addImage = async (req: Request, res: Response) => {
         const { caption } = req.body;
         const { file } = req;
 
+        const user = res.locals.user;
+        const hashUid = user.hashUid
+
         if (!file) {
             return res.status(400).json({ message: "No image file provided." });
         }
@@ -295,6 +298,7 @@ export const addImage = async (req: Request, res: Response) => {
 
         const updatedListing = await addImageToListing(
             postId,
+            hashUid,
             imageURI,
             caption
         );
@@ -304,7 +308,17 @@ export const addImage = async (req: Request, res: Response) => {
             listing: updatedListing,
         });
     } catch (err) {
-        console.error("Error updating listing: ", err);
+        if (err instanceof Error) {
+            if (err.message === "User not permitted to change this listing") {
+                return res.status(403).json({ error: err.message });
+            }
+            if (err.message === "Listing not found." || err.message === "Listing data could not be retrieved.") {
+                return res.status(404).json({ error: err.message });
+            }
+            return res.status(500).json({ error: err.message });
+        }
+        
+        // console.error("Error updating listing: ", err);
         return res.status(500).json({ message: "Failed to update listing." });
     }
 };
@@ -313,6 +327,9 @@ export const removeImage = async (req: Request, res: Response) => {
     try {
         const { postId } = req.params;
         const { uri } = req.query;
+
+        const user = res.locals.user;
+        const hashUid = user.hashUid
 
         if (!postId) {
             return res.status(400).json({ message: "No postId provided." });
@@ -326,7 +343,7 @@ export const removeImage = async (req: Request, res: Response) => {
 
         const filePath = getFilePathFromURI(uri);
         await removeImageInFirebase(filePath);
-        const updatedListing = await removeImageInDB(postId, uri);
+        const updatedListing = await removeImageInDB(postId, hashUid, uri);
         res.status(200).json({
             message: "Image removed successfully.",
             updatedListing: updatedListing,
@@ -334,7 +351,17 @@ export const removeImage = async (req: Request, res: Response) => {
 
         // removes image in firestore
     } catch (err) {
-        console.error("Error updating listing: ", err);
+        if (err instanceof Error) {
+            if (err.message === "User not permitted to change this listing") {
+                return res.status(403).json({ error: err.message });
+            }
+            if (err.message === "Listing not found." || err.message === "Listing data could not be retrieved.") {
+                return res.status(404).json({ error: err.message });
+            }
+            return res.status(500).json({ error: err.message });
+        }
+        
+        // console.error("Error updating listing: ", err);
         return res.status(500).json({ message: "Failed to update listing." });
     }
 };
@@ -343,6 +370,9 @@ export const changeCaption = async (req: Request, res: Response) => {
     try {
         const { postId } = req.params;
         const { uri, caption } = req.body;
+
+        const user = res.locals.user;
+        const hashUid = user.hashUid
 
         // console.log(`Caption: ${caption}`)
         if (!postId) {
@@ -361,7 +391,7 @@ export const changeCaption = async (req: Request, res: Response) => {
                 .json({ message: "No valid new caption provided." });
         }
 
-        const updatedListing = await changeCaptionInDB(postId, uri, caption);
+        const updatedListing = await changeCaptionInDB(postId, hashUid, uri, caption);
         if (!updatedListing) {
             return res.status(404).json({
                 message: "Listing not found or image URI does not exist.",
@@ -373,8 +403,18 @@ export const changeCaption = async (req: Request, res: Response) => {
             listing: updatedListing,
         });
     } catch (err) {
-        console.error("Error updating caption:", err);
-        res.status(500).json({ message: "Failed to update caption." });
+        if (err instanceof Error) {
+            if (err.message === "User not permitted to change this listing") {
+                return res.status(403).json({ error: err.message });
+            }
+            if (err.message === "Listing not found." || err.message === "Listing data could not be retrieved.") {
+                return res.status(404).json({ error: err.message });
+            }
+            return res.status(500).json({ error: err.message });
+        }
+        
+        // console.error("Error updating listing: ", err);
+        return res.status(500).json({ message: "Failed to update listing." });
     }
 };
 
@@ -383,11 +423,14 @@ export const deleteListing = async (req: Request, res: Response) => {
     try {
         const { postId } = req.params;
 
+        const user = res.locals.user;
+        const hashUid = user.hashUid
+
         if (!postId) {
             return res.status(400).json({ error: "Missing postId parameter" });
         }
 
-        const deletedListing = await removeListingInDB(postId);
+        const deletedListing = await removeListingInDB(postId, hashUid);
 
         if (!deletedListing) {
             return res.status(404).json({ error: "Listing not found" });
