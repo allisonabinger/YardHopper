@@ -11,19 +11,12 @@ import {
     updateListingInDB,
 } from "../services/listingService";
 import { Listing, Status } from "../models/listingModel";
-import {
-    generateCoordinatesByAddress,
-    generateCoordinatesByZipcode,
-    generateGeo,
-} from "../services/geolocateService";
-import {
-    getFilePathFromURI,
-    removeImageInFirebase,
-    uploadImageToFirebase,
-} from "../services/imageService";
-import { hashUid } from "./usersController";
+import { generateCoordinatesByAddress, generateCoordinatesByZipcode, generateGeo } from "../services/geolocateService";
+import { getFilePathFromURI, removeImageInFirebase, uploadImageToFirebase } from "../services/imageService";
+import { BadRequestError, InternalServerError, UnauthorizedError } from "../middlewares/errors";
+// import { hashUid } from "./usersController";
 
-export const fetchListings = async (req: Request, res: Response) => {
+export const fetchListings = async (req: Request, res: Response, next: NextFunction) => {
     const { lat, long, radius, categories, zipcode } = req.query;
     //   console.log("fetchListings called");
 
@@ -33,7 +26,7 @@ export const fetchListings = async (req: Request, res: Response) => {
         const hashUid = user.hashUid;
 
         if (!user || !hashUid) {
-            return res.status(400).json({ error: "User not authorized." });
+            throw new UnauthorizedError("User not authorized.");
         }
 
         let latitude: number | undefined;
@@ -42,9 +35,7 @@ export const fetchListings = async (req: Request, res: Response) => {
         if (!lat && !long) {
             // if no lat or long provided in request, try to use zipcode instead
             if (!zipcode) {
-                // if not lat, long, or zipcode provided, listings cannot be fetched
-                // console.error("No location provided");
-                return res.status(400).json({ error: "No location provided." });
+                throw new BadRequestError("No location provided.");
             }
 
             // convert zipcode to an integer
@@ -54,10 +45,7 @@ export const fetchListings = async (req: Request, res: Response) => {
             if (coordinates) {
                 ({ latitude, longitude } = coordinates);
             } else {
-                // console.error("Failed to generate coordinates form zipcode");
-                return res
-                    .status(500)
-                    .json({ error: "Invalid zipcode or location" });
+                throw new BadRequestError("Invalid zipcode or location.");
             }
         } else {
             // if lat and long provided, convert them to integers and use them
@@ -71,13 +59,9 @@ export const fetchListings = async (req: Request, res: Response) => {
         let parsedCategories: string[] = [];
         if (categories) {
             try {
-                parsedCategories = (categories as string)
-                    .split(",")
-                    .map((cat) => cat.trim());
+                parsedCategories = (categories as string).split(",").map((cat) => cat.trim());
             } catch (error) {
-                return res
-                    .status(400)
-                    .json({ error: "Invalid categories format" });
+                throw new BadRequestError("Invalid categories format.");
             }
         }
 
@@ -88,67 +72,46 @@ export const fetchListings = async (req: Request, res: Response) => {
             radius: searchRadius,
             categories: parsedCategories,
         });
-        if (!listings) {
-            console.log("No listings from fetchListings");
-        }
-        // console.log(listings)
-
-        res.status(200).json({ listings });
+        return res.status(200).json({ listings });
     } catch (err) {
-        res.status(500).json({ error: err });
+        next(err);
     }
 };
 
-export const fetchSingleListing = async (req: Request, res: Response) => {
+export const fetchSingleListing = async (req: Request, res: Response, next: NextFunction) => {
     const { postId } = req.params;
     //   console.log("fetchListings called");
 
-    const user = res.locals.user;
-    const hashUid = user.hashUid;
-
-    if (!user || !hashUid) {
-        return res.status(400).json({ error: "User not authorized." });
-    }
-    try {
-        if (!postId) {
-            return res.status(400).json({ message: "No postId provided." });
-        }
-        // call query function in services with formatted filters
-        const listing = await getListing(postId);
-        if (!listing) {
-            console.log("No listing with postId: ", postId);
-            res.status(500).json({
-                message: "No listing found with that id.",
-            });
-        }
-        // console.log(listings)
-
-        res.status(200).json({ listing });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: err });
-    }
-};
-
-export const createListing = async (req: Request, res: Response) => {
     try {
         const user = res.locals.user;
         const hashUid = user.hashUid;
 
         if (!user || !hashUid) {
-            return res.status(400).json({ error: "User not authorized." });
+            throw new UnauthorizedError("User not authorized.");
         }
-        const {
-            title,
-            description,
-            address,
-            dates,
-            startTime,
-            endTime,
-            categories,
-            subcategories,
-        } = req.body;
-        
+
+        if (!postId) {
+            throw new BadRequestError("No postId provided.");
+        }
+        // call query function in services with formatted filters
+        const listing = await getListing(postId);
+
+        return res.status(200).json({ listing });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const createListing = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user = res.locals.user;
+        const hashUid = user.hashUid;
+
+        if (!user || !hashUid) {
+            throw new UnauthorizedError("User not authorized.");
+        }
+        const { title, description, address, dates, startTime, endTime, categories, subcategories } = req.body;
+
         const requiredFields = {
             title,
             description,
@@ -158,15 +121,13 @@ export const createListing = async (req: Request, res: Response) => {
             endTime,
             categories,
         };
-        
+
         const missingFields = Object.entries(requiredFields)
             .filter(([key, value]) => !value) // Check for missing fields
             .map(([key]) => key); // Collect field names
-        
+
         if (missingFields.length > 0) {
-            return res.status(400).json({
-                error: `Missing required fields: ${missingFields.join(", ")}.`,
-            });
+            throw new BadRequestError(`Missing required fields: ${missingFields.join(", ")}.`);
         }
 
         // generate timestamp for generatedAt (format = YYYY-MM-DDTHH:mm:ss.sssZ )
@@ -179,26 +140,23 @@ export const createListing = async (req: Request, res: Response) => {
         const today = new Date().toISOString().split("T")[0];
         if (dates.some((date: string) => date === today)) {
             status = "active"; // Sale is today
-        } else if (
-            dates.some((date: string) => new Date(date) > new Date(today))
-        ) {
+        } else if (dates.some((date: string) => new Date(date) > new Date(today))) {
             status = "upcoming"; // Sale is in the future
         } else {
             status = "archived"; // Sale is in the past
         }
+
         // call api to get coordinates from address (geoapify)
         const coordinates = await generateCoordinatesByAddress(address);
         if (!coordinates) {
-            throw new Error("Could not retrieve coodinates");
+            throw new InternalServerError("Geolocation data by address could not be retrieved.");
         }
         const { latitude, longitude } = coordinates;
 
         // call func to get geohash and geopoint from coordinates
         const geolocation = await generateGeo(latitude, longitude);
         if (!geolocation) {
-            return res.status(500).json({
-                message: "Unable to generate geolocation data.",
-            });
+            throw new InternalServerError("Geolocation data could not be retrieved.");
         }
 
         // insert authentication here to attach userId
@@ -223,39 +181,28 @@ export const createListing = async (req: Request, res: Response) => {
             "Listing created with new postId": newListing.postId,
         });
     } catch (err) {
-        console.log("Error: ", err);
-        return res.status(500).json({
-            error: "Failed to create listing. Internal Server Error",
-        });
+        next(err);
     }
 };
 
-export const updateListing = async (req: Request, res: Response) => {
+export const updateListing = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = res.locals.user;
         const hashUid = user.hashUid;
 
         if (!user || !hashUid) {
-            return res.status(400).json({ error: "User not authorized." });
+            throw new UnauthorizedError("User not authorized.");
         }
         // console.log(req.file)
         const { postId } = req.params;
         const updatedFields = { ...req.body };
 
-        // if (req.file) {
-        //     const {file, body: {caption}} = req;
-        //     const imageURI = await uploadImageToFirebase(file, postId)
+        if (!postId) {
+            throw new BadRequestError("No postId provided.");
+        }
 
-        //     // console.log(imageURI)
-        //     updatedFields.images = updatedFields.images || [];
-        //     updatedFields.images.push({uri: imageURI, caption})
-        //     // console.log("Updated Fields: ", updatedFields)
-        // }
-
-        if (!updatedFields) {
-            return res
-                .status(400)
-                .json({ error: "No fields provided to update" });
+        if (Object.keys(updatedFields).length === 0) {
+            throw new BadRequestError("No fields provided to update.");
         }
 
         const updatedListing = await updateListingInDB(postId, hashUid, updatedFields);
@@ -265,80 +212,58 @@ export const updateListing = async (req: Request, res: Response) => {
             listing: updatedListing,
         });
     } catch (err) {
-        if (err instanceof Error) {
-            if (err.message === "User not permitted to change this listing") {
-                return res.status(403).json({ error: err.message });
-            }
-            if (err.message === "Listing not found." || err.message === "Listing data could not be retrieved.") {
-                return res.status(404).json({ error: err.message });
-            }
-            return res.status(500).json({ error: err.message });
-        }
-        
-        // console.error("Error updating listing: ", err);
-        return res.status(500).json({ message: "Failed to update listing." });
+        next(err);
     }
 };
 
-export const addImage = async (req: Request, res: Response) => {
-    // needs auth
+export const addImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { postId } = req.params;
         const { caption } = req.body;
         const { file } = req;
 
         const user = res.locals.user;
-        const hashUid = user.hashUid
+        const hashUid = user.hashUid;
+
+        if (!user || !hashUid) {
+            throw new UnauthorizedError("User not authorized.");
+        }
 
         if (!file) {
-            return res.status(400).json({ message: "No image file provided." });
+            throw new BadRequestError("No image file provided.");
         }
 
         const imageURI = await uploadImageToFirebase(file, postId);
 
-        const updatedListing = await addImageToListing(
-            postId,
-            hashUid,
-            imageURI,
-            caption
-        );
+        const updatedListing = await addImageToListing(postId, hashUid, imageURI, caption);
 
         return res.status(200).json({
             message: "Listing updated successfully",
             listing: updatedListing,
         });
     } catch (err) {
-        if (err instanceof Error) {
-            if (err.message === "User not permitted to change this listing") {
-                return res.status(403).json({ error: err.message });
-            }
-            if (err.message === "Listing not found." || err.message === "Listing data could not be retrieved.") {
-                return res.status(404).json({ error: err.message });
-            }
-            return res.status(500).json({ error: err.message });
-        }
-        
-        // console.error("Error updating listing: ", err);
-        return res.status(500).json({ message: "Failed to update listing." });
+        next(err);
     }
 };
 
-export const removeImage = async (req: Request, res: Response) => {
+export const removeImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { postId } = req.params;
         const { uri } = req.query;
 
         const user = res.locals.user;
-        const hashUid = user.hashUid
+        const hashUid = user.hashUid;
+
+        if (!user || !hashUid) {
+            throw new UnauthorizedError("User not authorized.");
+        }
 
         if (!postId) {
-            return res.status(400).json({ message: "No postId provided." });
+            throw new BadRequestError("No postId provided.");
         }
 
         if (!uri || typeof uri !== "string") {
-            return res
-                .status(400)
-                .json({ message: "No valid image URI provided." });
+            throw new BadRequestError("No valid image URI provided.");
         }
 
         const filePath = getFilePathFromURI(uri);
@@ -351,97 +276,68 @@ export const removeImage = async (req: Request, res: Response) => {
 
         // removes image in firestore
     } catch (err) {
-        if (err instanceof Error) {
-            if (err.message === "User not permitted to change this listing") {
-                return res.status(403).json({ error: err.message });
-            }
-            if (err.message === "Listing not found." || err.message === "Listing data could not be retrieved.") {
-                return res.status(404).json({ error: err.message });
-            }
-            return res.status(500).json({ error: err.message });
-        }
-        
-        // console.error("Error updating listing: ", err);
-        return res.status(500).json({ message: "Failed to update listing." });
+        next(err);
     }
 };
 
-export const changeCaption = async (req: Request, res: Response) => {
+export const changeCaption = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { postId } = req.params;
         const { uri, caption } = req.body;
 
         const user = res.locals.user;
-        const hashUid = user.hashUid
+        const hashUid = user.hashUid;
 
-        // console.log(`Caption: ${caption}`)
+        if (!user || !hashUid) {
+            throw new UnauthorizedError("User not authorized.");
+        }
+
         if (!postId) {
-            return res.status(400).json({ message: "No postId provided." });
+            throw new BadRequestError("No postId provided.");
         }
 
         if (!uri || typeof uri !== "string") {
-            return res
-                .status(400)
-                .json({ message: "No valid image URI provided." });
+            throw new BadRequestError("No valid image URI provided.");
         }
 
         if (!caption || typeof caption !== "string") {
-            return res
-                .status(400)
-                .json({ message: "No valid new caption provided." });
+            throw new BadRequestError("No valid new caption provided.");
         }
 
         const updatedListing = await changeCaptionInDB(postId, hashUid, uri, caption);
-        if (!updatedListing) {
-            return res.status(404).json({
-                message: "Listing not found or image URI does not exist.",
-            });
-        }
 
         res.status(200).json({
             message: "Caption updated successfully.",
             listing: updatedListing,
         });
     } catch (err) {
-        if (err instanceof Error) {
-            if (err.message === "User not permitted to change this listing") {
-                return res.status(403).json({ error: err.message });
-            }
-            if (err.message === "Listing not found." || err.message === "Listing data could not be retrieved.") {
-                return res.status(404).json({ error: err.message });
-            }
-            return res.status(500).json({ error: err.message });
-        }
-        
-        // console.error("Error updating listing: ", err);
-        return res.status(500).json({ message: "Failed to update listing." });
+        next(err);
     }
 };
 
-export const deleteListing = async (req: Request, res: Response) => {
+export const deleteListing = async (req: Request, res: Response, next: NextFunction) => {
     // needs auth
     try {
         const { postId } = req.params;
 
         const user = res.locals.user;
-        const hashUid = user.hashUid
+        const hashUid = user.hashUid;
+
+        if (!user || !hashUid) {
+            throw new UnauthorizedError("User not authorized.");
+        }
 
         if (!postId) {
-            return res.status(400).json({ error: "Missing postId parameter" });
+            throw new BadRequestError("Missing postId parameter.");
         }
 
         const deletedListing = await removeListingInDB(postId, hashUid);
-
-        if (!deletedListing) {
-            return res.status(404).json({ error: "Listing not found" });
-        }
 
         return res.status(200).json({
             message: "Listing deleted successfully",
             listing: deletedListing,
         });
     } catch (err) {
-        console.error("Error deleting listing: ", err);
-        return res.status(500).json({ error: "Failed to delete listing" });
+        next(err);
     }
 };

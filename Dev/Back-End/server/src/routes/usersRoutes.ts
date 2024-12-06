@@ -1,5 +1,14 @@
 // usersRouters - routes for user management
-import { createUser, deleteUser, fetchSavedListings, fetchUser, fetchUserListings, saveListing, unsaveListing, updateUser } from "../controllers/usersController";
+import {
+    createUser,
+    deleteUser,
+    fetchSavedListings,
+    fetchUser,
+    fetchUserListings,
+    saveListing,
+    unsaveListing,
+    updateUser,
+} from "../controllers/usersController";
 import express from "express";
 import { Request, Response, NextFunction } from "express";
 import { authenticateUser } from "../middlewares/authMiddleware";
