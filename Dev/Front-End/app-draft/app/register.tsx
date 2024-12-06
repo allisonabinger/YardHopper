@@ -16,7 +16,6 @@ import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/components/AuthProvider";
 
-
 export default function RegisterPage() {
   const auth = useAuth();
   const router = useRouter();
@@ -25,10 +24,17 @@ export default function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [zipcode, setZipcode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  async function handleRegister(email: string, password: string, confirmPassword: string) {
+  async function handleRegister(email: string, zipcode: string, password: string, confirmPassword: string) {
+    if (!firstName || !lastName || !email || !zipcode || !password || !confirmPassword) {
+      console.log("All fields are required");
+      alert("All fields are required");
+      return;
+    }
+
     if (password !== confirmPassword) {
       console.log("Passwords do not match");
       alert("Passwords do not match");
@@ -59,61 +65,91 @@ export default function RegisterPage() {
         {/* Form Container */}
         <View style={styles.formContainer}>
           {/* First Name Input */}
-          <TextInput
-            placeholder="First Name"
-            placeholderTextColor="#A9A9A9"
-            style={styles.input}
-            value={firstName}
-            onChangeText={setFirstName}
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="First Name"
+              placeholderTextColor="#A9A9A9"
+              style={styles.input}
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+            <Text style={styles.requiredAsterisk}>*</Text>
+          </View>
 
           {/* Last Name Input */}
-          <TextInput
-            placeholder="Last Name"
-            placeholderTextColor="#A9A9A9"
-            style={styles.input}
-            value={lastName}
-            onChangeText={setLastName}
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Last Name"
+              placeholderTextColor="#A9A9A9"
+              style={styles.input}
+              value={lastName}
+              onChangeText={setLastName}
+            />
+            <Text style={styles.requiredAsterisk}>*</Text>
+          </View>
 
           {/* Email Input */}
-          <TextInput
-            placeholder="Email"
-            placeholderTextColor="#A9A9A9"
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor="#A9A9A9"
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <Text style={styles.requiredAsterisk}>*</Text>
+          </View>
+
+          {/* Zipcode Input */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Zipcode"
+              placeholderTextColor="#A9A9A9"
+              style={styles.input}
+              value={zipcode}
+              onChangeText={setZipcode}
+              keyboardType="numeric"
+            />
+            <Text style={styles.requiredAsterisk}>*</Text>
+          </View>
 
           {/* Password Input */}
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor="#A9A9A9"
-            secureTextEntry
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Password"
+              placeholderTextColor="#A9A9A9"
+              secureTextEntry
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <Text style={styles.requiredAsterisk}>*</Text>
+          </View>
 
           {/* Confirm Password Input */}
-          <TextInput
-            placeholder="Confirm Password"
-            placeholderTextColor="#A9A9A9"
-            secureTextEntry
-            style={styles.input}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Confirm Password"
+              placeholderTextColor="#A9A9A9"
+              secureTextEntry
+              style={styles.input}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            <Text style={styles.requiredAsterisk}>*</Text>
+          </View>
 
-          {/* Register Button */}
-          <Pressable
-            onPress={() => handleRegister(email, password, confirmPassword)}
-            style={styles.registerButton}
-          >
-            <Text style={styles.registerButtonText}>Create Account</Text>
-          </Pressable>
+          {/* Register Button Container */}
+          <View style={styles.registerButtonContainer}>
+            <Pressable
+              onPress={() => handleRegister(email, zipcode, password, confirmPassword)}
+              style={styles.registerButton}
+            >
+              <Text style={styles.registerButtonText}>Create Account</Text>
+            </Pressable>
+          </View>
 
           {/* Redirect to Login */}
           <View style={styles.loginRedirectContainer}>
@@ -150,12 +186,22 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 20,
   },
-  input: {
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
+  },
+  input: {
+    flex: 1,
     padding: 10,
-    borderRadius: 30,
+    borderRadius: 8,
     backgroundColor: "#F0F0F0",
-    width: "100%",
+  },
+  requiredAsterisk: {
+    color: 'red',
+    position: 'absolute',
+    right: 10,
+    fontSize: 18,
   },
   registerButton: {
     backgroundColor: "#159636",
@@ -163,6 +209,7 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: "center",
     marginTop: 20,
+    width: "60%",
   },
   registerButtonText: {
     color: "#FFFFFF",
@@ -183,4 +230,9 @@ const styles = StyleSheet.create({
     color: "#159636",
     fontSize: 16,
   },
+  registerButtonContainer: {
+    alignItems: "center",
+    width: "100%",
+  },
 });
+
