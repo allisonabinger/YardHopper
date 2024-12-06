@@ -3,7 +3,7 @@ import path from "path"
 import { db, storage } from '../config/firebase';
 import { v4 as uuidv4 } from "uuid"
 import { ENV } from '../config/environment';
-import { InternalServerError, NotFoundError } from 'middlewares/errors';
+import { InternalServerError, NotFoundError } from '../middlewares/errors';
 
 // ads image to firebase and returns uri
 export const uploadImageToFirebase = async (file: Express.Multer.File, postId: string): Promise<string> => {

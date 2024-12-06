@@ -1,5 +1,5 @@
 // Server actions for listing management
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
     addImageToListing,
     changeCaptionInDB,

@@ -1,6 +1,6 @@
 // routes for listing management
 import express from "express";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import multer from "multer";
 import {
     addImage,
