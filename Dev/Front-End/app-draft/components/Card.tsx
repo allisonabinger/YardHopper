@@ -1,24 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   Image,
-  GestureResponderEvent,
+  Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 interface CardProps {
   postId: string;
   title: string;
   description: string;
   image: string;
-  date: string;
   address: string;
-  startTime: string;
-  endTime: string;
-  onPress: (event: GestureResponderEvent) => void;
+  date: string;
+  categories?: string[];
+  isLiked: boolean;
+  onToggleLike: (postId: string) => void;
+  isExpanded?: boolean;
+  disableToggle?: boolean; // Added this prop to disable toggling
+  onPress: () => void;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -26,49 +30,52 @@ const Card: React.FC<CardProps> = ({
   title,
   description,
   image,
-  date,
   address,
-  startTime,
-  endTime,
+  date,
+  categories,
+  isLiked,
+  onToggleLike,
+  disableToggle = false,
   onPress,
+
 }) => {
-  const [liked, setLiked] = useState(false);
+  const router = useRouter();
+  const fadeAnimation = useRef(new Animated.Value(0)).current;
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  // Fallback logic for image
-  const imageUri = image || "https://via.placeholder.com/150";
-
-  // Helper function to format the date
-  const formatDate = (dateString: string): string => {
-    const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "long", year: "numeric" };
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", options).format(date);
-  };
-
-  const formatTime = (time?: string): string => {
-    if (!time || !time.includes(":")) {
-      return "Invalid Time";
+  const handleExpandToggle = () => {
+    if (disableToggle) {
+      onPress(); // If toggle is disabled, just trigger onPress
+      return;
     }
+    setIsExpanded(!isExpanded);
 
-    const [hours, minutes] = time.split(":").map(Number);
-    const period = hours >= 12 ? "PM" : "AM";
-    const formattedHours = hours % 12 || 12;
-    return `${formattedHours}:${minutes.toString().padStart(2, "0")} ${period}`;
-  };
-
-  const toggleLike = () => {
-    setLiked(!liked);
+    // Animate the fade in or out
+    Animated.spring(fadeAnimation, {
+      toValue: isExpanded ? 0 : 1,
+      friction: 9,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity style={styles.card} onPress={handleExpandToggle}>
       {/* Image Section */}
       <View style={styles.imageContainer}>
-        <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
-        <TouchableOpacity style={styles.likeButton} onPress={toggleLike}>
+        <Image
+          source={{ uri: image || "https://via.placeholder.com/150" }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <TouchableOpacity
+          style={styles.likeButton}
+          onPress={() => onToggleLike(postId)}
+        >
           <Ionicons
-            name={liked ? "heart" : "heart-outline"}
+            name={isLiked ? "heart" : "heart-outline"}
             size={24}
-            color={liked ? "#159636" : "gray"}
+            color={isLiked ? "#159636" : "gray"}
           />
         </TouchableOpacity>
       </View>
@@ -77,20 +84,40 @@ const Card: React.FC<CardProps> = ({
       <View style={styles.cardContent}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.address}>{address}</Text>
-        <Text style={styles.description}>{description}</Text>
 
-        {/* Date and Time Section */}
-        <View style={styles.dateTimeContainer}>
-          <Text style={styles.date}>Date(s): {formatDate(date)}</Text>
-          <Text style={styles.time}>
-            {formatTime(startTime)} - {formatTime(endTime)}
-          </Text>
-        </View>
+        {isExpanded && (
+          <Animated.View style={[styles.expandedDetails, { opacity: fadeAnimation }]}>
+            <Text style={styles.description}>{description}</Text>
+
+            {/* Categories Section */}
+            {categories && categories.length > 0 ? (
+              <View style={styles.categoriesContainer}>
+                {categories.map((category, index) => (
+                  <View key={index} style={styles.categoryTag}>
+                    <Text style={styles.categoryText}>{category}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.noCategories}>No categories available</Text>
+            )}
+
+            {/* Date Section */}
+            <Text style={styles.date}>Date: {date}</Text>
+
+            {/* See More Details Button */}
+            <TouchableOpacity
+              style={styles.seeMoreButton}
+              onPress={() => router.push(`/listing/${postId}`)}
+            >
+              <Text style={styles.seeMoreText}>See More Details</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </View>
     </TouchableOpacity>
   );
 };
-
 
 export default Card;
 
@@ -144,21 +171,53 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 8,
   },
+  expandedDetails: {
+    marginTop: 16,
+  },
   description: {
     fontSize: 14,
     color: "#333",
     marginBottom: 8,
   },
-  dateTimeContainer: {
-    marginTop: 8,
+  categoriesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 8,
+  },
+  categoryTag: {
+    backgroundColor: "#E0E0E0",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 8,
+    marginBottom: 8,
+    borderColor: "#A9A9A9",
+    borderWidth: 1,
+  },
+  categoryText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  noCategories: {
+    fontSize: 14,
+    color: "#999",
+    fontStyle: "italic",
+    marginVertical: 8,
   },
   date: {
     fontSize: 14,
     color: "#666",
-    marginBottom: 4,
   },
-  time: {
-    fontSize: 14,
-    color: "#555",
+  seeMoreButton: {
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: "#159636",
+    borderRadius: 20,
+    alignItems: "center",
+  },
+  seeMoreText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
   },
 });
