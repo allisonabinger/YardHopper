@@ -7,6 +7,8 @@ import {
   StyleSheet,
   TextInput,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
@@ -173,6 +175,10 @@ export default function AddListingDetails() {
 
   return (
     <PageLayout step={2} steps={4}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
@@ -184,6 +190,7 @@ export default function AddListingDetails() {
               <TextInput
                 style={styles.input}
                 placeholder="Enter title"
+                placeholderTextColor={"#999"}
                 value={title}
                 onChangeText={(text) => {
                   setTitle(text);
@@ -193,6 +200,7 @@ export default function AddListingDetails() {
               <TextInput
                 style={[styles.input, styles.textArea]}
                 placeholder="Enter description"
+                placeholderTextColor={"#999"}
                 multiline
                 numberOfLines={4}
                 value={description}
@@ -225,6 +233,7 @@ export default function AddListingDetails() {
               <TextInput
                 style={styles.input}
                 placeholder="Street Address"
+                placeholderTextColor={"#999"}
                 value={address.street}
                 onChangeText={(text) => {
                   setAddress((prev) => ({ ...prev, street: text }));
@@ -235,6 +244,7 @@ export default function AddListingDetails() {
               <TextInput
                 style={styles.input}
                 placeholder="City"
+                placeholderTextColor={"#999"}
                 value={address.city}
                 onChangeText={(text) => {
                   setAddress((prev) => ({ ...prev, city: text }));
@@ -244,6 +254,7 @@ export default function AddListingDetails() {
               <TextInput
                 style={styles.input}
                 placeholder="State"
+                placeholderTextColor={"#999"}
                 value={address.state}
                 onChangeText={(text) => {
                   setAddress((prev) => ({ ...prev, state: text }));
@@ -253,6 +264,7 @@ export default function AddListingDetails() {
               <TextInput
                 style={styles.input}
                 placeholder="ZIP Code"
+                placeholderTextColor={"#999"}
                 keyboardType="numeric"
                 value={address.zip}
                 onChangeText={(text) => {
@@ -350,12 +362,13 @@ export default function AddListingDetails() {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </KeyboardAvoidingView>
     </PageLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#white", marginTop: -50 },
+  safeArea: { flex: 1, backgroundColor: "#white", marginTop: -30 },
   scrollContainer: { flexGrow: 1, marginBottom: 0 },
   container: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center"},

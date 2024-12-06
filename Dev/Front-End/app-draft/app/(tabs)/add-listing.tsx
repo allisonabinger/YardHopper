@@ -15,7 +15,6 @@ import PageLayout from "../PageLayout";
 import { useListingContext } from "../context/ListingContext";
 import { useAuth } from "@/components/AuthProvider";
 
-
 const categories = [
   { id: "1", name: "Decor & Art", subcategories: ["Paintings", "Sculptures", "Wall Art", "Pottery", "Mirrors", "Candles", "Clocks"] },
   { id: "2", name: "Clothing", subcategories: ["Mens", "Womens", "Kids", "Winter", "Summer", "Outerwear", "Belts", "Sunglasses"] },
@@ -122,22 +121,33 @@ export default function AddListingPage() {
       useNativeDriver: false,
     }).start();
 
-    // Update selected categories when expanding or collapsing
-    setSelectedCategories((prev) => {
-      const categoryName = categories.find((cat) => cat.id === id)?.name; // get category name
+    // Update selected categories
+  setSelectedCategories((prev) => {
+    const categoryName = categories.find((cat) => cat.id === id)?.name;
 
-      if (!categoryName) {
-        return prev; // Return the previous state if no category is found (in case the ID doesn't exist)
-      }
-      if (isExpanded) {
-        // Remove the category if it was previously selected and is being collapsed
-        return prev.filter((cat) => cat !== categoryName);
+    if (!categoryName) {
+      return prev; // If category is not found, return the current state
+    }
+
+    if (isExpanded) {
+      // If collapsing, check if any subcategories are selected
+      const hasSelectedSubcategories = subcategories.some((sub) =>
+        selectedSubcategories.includes(sub)
+      );
+
+      if (hasSelectedSubcategories) {
+        // Keep the category selected if subcategories are selected
+        return prev;
       } else {
-        // Add the category if it's being expanded
-        return [...prev, categoryName];
+        // Remove the category if no subcategories are selected
+        return prev.filter((cat) => cat !== categoryName);
       }
-    });
-  };
+    } else {
+      // Add the category if it's being expanded
+      return [...prev, categoryName];
+    }
+  });
+};
 
   const toggleSubcategory = (subcategory) => {
     setSelectedSubcategories((prev) =>
@@ -149,7 +159,7 @@ export default function AddListingPage() {
 
   const isCategorySelected = (category) => {
     return (
-      selectedCategories.includes(category.id) ||
+      selectedCategories.includes(category.name) ||
       (category.subcategories || []).some((sub) => selectedSubcategories.includes(sub))
     );
   };
@@ -307,7 +317,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   selectedCategory: {
-    backgroundColor: "#4caf50",
+    backgroundColor: "#159636",
     borderColor: "#388e3c",
   },
   icon: {
