@@ -213,7 +213,7 @@ export const updateListingInDB = async (
         };
     } catch (err) {
         if (!(err instanceof BadRequestError || err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
-            throw new InternalServerError("An unexpected error occurred while posting the listing.");
+            throw new InternalServerError("An unexpected error occurred while updating the listing.");
         }
         throw err;
     }
