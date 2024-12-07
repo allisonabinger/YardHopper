@@ -2,19 +2,15 @@ import React, { useLayoutEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import LogoutComponent from '@/components/LogoutComponent';
+import { useAuth } from '@/components/AuthProvider';
+import { getAuth, deleteUser } from 'firebase/auth';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
-
-  // Simulated logged-in user data
-  const user = {
-    name: "John Doe", // Replace this with dynamic data from your auth provider or state management
-  };
-
-  // Extract the first name
-  const firstName = user?.name?.split(" ")[0] || "User";
+  const { profile, getIdToken, deleteUser, logout } = useAuth();
+  const firstName = profile?.first || 'User';
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -27,42 +23,62 @@ export default function SettingsScreen() {
           onPress={() => navigation.goBack()}
         />
       ),
-      headerTitle: "",
+      headerTitle: '',
     });
   }, [navigation]);
 
-  // Greeting Logic
-  const currentHour = new Date().getHours();
-  const greetings = [
-    { start: 6, end: 12, icon: "sunny", text: "Morning" },
-    { start: 12, end: 17, icon: "sunny", text: "Afternoon" },
-    { start: 17, end: 21, icon: "moon", text: "Evening" },
-    { start: 21, end: 24, icon: "moon", text: "Night" },
-  ];
-
-  type IoniconsName = "sunny" | "moon";
-  const greeting = greetings.find(({ start, end }) => currentHour >= start && currentHour < end);
-  const { icon, text } = greeting || { icon: "sunny", text: "Hello" };
-
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     Alert.alert(
-      "Delete Account",
-      "Are you sure you want to delete your account? This action cannot be undone.",
+      'Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone.',
       [
         {
-          text: "Cancel",
-          style: "cancel"
+          text: 'Cancel',
+          style: 'cancel',
         },
         {
-          text: "Delete",
-          onPress: () => {
-            // Implement account deletion logic here
-            console.log("Account deletion requested");
-            // After successful deletion, you might want to sign out the user and redirect to the login page
-            // navigation.navigate('Login');
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const firebaseAuth = getAuth();
+              const { currentUser } = firebaseAuth;
+
+              if (!currentUser) {
+                Alert.alert('Error', 'User is not authenticated.');
+                return;
+              }
+
+              // Call the DELETE endpoint for your backend
+              const idToken = await getIdToken(); // Get the user's ID token
+              const response = await fetch('https://yardhopperapi.onrender.com/api/users/me', {
+                method: 'DELETE', // Correct HTTP method
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${idToken}`,
+                },
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete account.');
+              }
+
+              // Sign out the user from Firebase Auth
+              await deleteUser();
+              await logout();
+              Alert.alert('Success', 'Account successfully deleted.');
+              router.push('/login'); // Redirect to the login screen
+            } catch (error: unknown) {
+              if (error instanceof Error) {
+                Alert.alert('Error', error.message || 'Failed to delete account. Please try again.');
+              } else {
+                console.error('Unexpected error:', error);
+                Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+              }
+            }
           },
-          style: "destructive"
-        }
+        },
       ]
     );
   };
@@ -75,8 +91,8 @@ export default function SettingsScreen() {
 
       <View style={styles.card}>
         <View style={styles.profileSection}>
-          <Ionicons name={icon as IoniconsName} size={38} color="#159636" style={styles.greetingIcon} />
-          <Text style={styles.profileName}>{`${text}, ${firstName}!`}</Text>
+          <Ionicons name="sunny" size={38} color="#159636" style={styles.greetingIcon} />
+          <Text style={styles.profileName}>{`Hello, ${firstName}!`}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Account Settings</Text>
@@ -187,4 +203,3 @@ const styles = StyleSheet.create({
     color: '#FF0000',
   },
 });
-
