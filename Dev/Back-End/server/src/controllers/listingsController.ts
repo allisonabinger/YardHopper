@@ -271,7 +271,7 @@ export const removeImage = async (req: Request, res: Response, next: NextFunctio
         const updatedListing = await removeImageInDB(postId, hashUid, uri);
         res.status(200).json({
             message: "Image removed successfully.",
-            updatedListing: updatedListing,
+            listing: updatedListing,
         });
 
         // removes image in firestore
