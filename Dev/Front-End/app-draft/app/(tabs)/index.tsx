@@ -136,9 +136,8 @@ export default function HomeScreen() {
     setSelectedListing(null);
   };
 
-  // Simplified handleToggleLike function
   const handleToggleLike = (listing: ListingItem) => {
-    const isAlreadyLiked = savedListings.some((listing) => listing.postId === listing.postId);
+    const isAlreadyLiked = savedListings.some((savedListing) => savedListing.postId === listing.postId);
     if (isAlreadyLiked) {
       removeSavedListing(listing.postId);
     } else {
@@ -169,10 +168,6 @@ export default function HomeScreen() {
       />
     );
   };
-
-  // function toggleLike(postId: string): void {
-  //   throw new Error("Function not implemented.");
-  // }
 
   return (
     <View style={styles.container}>
