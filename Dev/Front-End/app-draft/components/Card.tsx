@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useSavedPosts } from "@/app/context/SavedListingsContext";
 
 interface CardProps {
   images: { uri: string }[];
@@ -34,19 +33,15 @@ const Card: React.FC<CardProps> = ({
   description,
   address,
   date,
+  isLiked,
   categories,
+  onToggleLike,
   disableToggle = false,
   route,
 }) => {
   const router = useRouter();
   const fadeAnimation = useRef(new Animated.Value(0)).current;
   const [isExpanded, setIsExpanded] = useState(false);
-
-  // Access SavedPostsContext
-  const { savedPosts, addSavedPost, removeSavedPost } = useSavedPosts();
-
-  // Determine if the post is already liked
-  const isLiked = savedPosts.some((post) => post.postId === postId);
 
   const handleExpandToggle = () => {
     if (disableToggle) {
@@ -62,20 +57,6 @@ const Card: React.FC<CardProps> = ({
       tension: 40,
       useNativeDriver: true,
     }).start();
-  };
-
-  const handleToggleLike = () => {
-    if (isLiked) {
-      removeSavedPost(postId); // Remove from saved posts
-    } else {
-      addSavedPost({
-        id: postId,
-        title,
-        description,
-        image: images[0]?.uri || "https://via.placeholder.com/150",
-        g: undefined
-      });
-    }
   };
 
   return (
@@ -100,7 +81,7 @@ const Card: React.FC<CardProps> = ({
             />
           )}
         </ScrollView>
-        <TouchableOpacity style={styles.likeButton} onPress={handleToggleLike}>
+        <TouchableOpacity style={styles.likeButton} onPress={onToggleLike}>
           <Ionicons
             name={isLiked ? "heart" : "heart-outline"}
             size={24}

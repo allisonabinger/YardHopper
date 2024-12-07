@@ -138,16 +138,16 @@ export default function HomeScreen() {
 
   // Simplified handleToggleLike function
   const handleToggleLike = (listing: ListingItem) => {
-    const isAlreadyLiked = savedPosts.some((post) => post.postId === listing.postId);
+    const isAlreadyLiked = savedListings.some((listing) => listing.postId === listing.postId);
     if (isAlreadyLiked) {
-      removeSavedPost(listing.postId);
+      removeSavedListing(listing.postId);
     } else {
-      addSavedPost(listing); // Pass the entire listing directly
+      addSavedListing(listing.postId); // Pass the entire listing directly
     }
   };
 
   const renderItem = ({ item }: { item: ListingItem }) => {
-    const isLiked = savedPosts.some((post) => post.postId === item.postId);
+    const isLiked = savedListings.some((listing) => listing.postId === item.postId);
 
     return (
       <Card
