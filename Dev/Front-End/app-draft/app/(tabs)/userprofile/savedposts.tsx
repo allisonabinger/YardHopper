@@ -1,86 +1,63 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   FlatList,
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
-  ActivityIndicator,
+  RefreshControl,
+  Animated,
 } from "react-native";
+import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-
-interface Movie {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-}
+import Card from "@/components/Card";
+import FilterModal from "@/components/FilterModal";
+import PopupCardModal from "@/components/PopupCardModal";
+import { useSavedPosts } from "@/app/context/SavedPostsContext";
 
 export default function SavedPosts() {
-  const router = useRouter();
-  const [savedPosts, setSavedPosts] = useState<Movie[]>([]);
-  const [page, setPage] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const { savedPosts } = useSavedPosts();
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedListing, setSelectedListing] = useState(null);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [radius, setRadius] = useState(5);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const fetchSavedPosts = async (isRefresh = false) => {
-    if (loading) return; // Prevent multiple calls
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(
-        `https://yardhopperapi.onrender.com/api/users/savedListings?page=${isRefresh ? 1 : page}`
-      );
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-      const data = await response.json();
-      setSavedPosts((prevPosts) =>
-        isRefresh ? data.favorites : [...prevPosts, ...data.favorites]
-      );
-      if (isRefresh) setPage(2); // Reset to page 2 for next fetch
-      else setPage(page + 1);
-    } catch (error: any) {
-      setError(error.message || "Failed to load saved posts");
-    } finally {
-      setLoading(false);
-    }
+  const toggleFilter = () => {
+    setFilterModalVisible(!filterModalVisible);
   };
 
-  useEffect(() => {
-    fetchSavedPosts(true); // Fetch initial data with refresh logic
-  }, []);
+  const onRefresh = () => {
+    setRefreshing(true);
+    // No additional fetch needed since savedPosts is managed in context
+    setRefreshing(false);
+  };
 
-  const renderItem = ({ item }: { item: Movie }) => (
-    <View style={styles.cardContainer}>
-      <TouchableOpacity
-        style={styles.likeButton}
-        onPress={() => console.log(`Remove post with ID: ${item.id}`)}
-      >
-        <Ionicons name="heart" size={24} color="red" />
-      </TouchableOpacity>
-      <Image
-        source={{
-          uri:
-            item.image ||
-            "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
-        }}
-        style={styles.cardImage}
-      />
-      <Text style={styles.cardTitle}>{item.title}</Text>
-      <Text style={styles.cardDescription}>{item.description}</Text>
-      <TouchableOpacity
-        style={styles.viewDetailsButton}
-        onPress={() =>
-          router.push({ pathname: "./(sale)/[id]", params: { id: item.id } })
-        }
-      >
-        <Text style={styles.viewDetailsText}>View Details</Text>
-      </TouchableOpacity>
-    </View>
+  const openModal = (listing: any) => {
+    setSelectedListing(listing);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedListing(null);
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <Card
+      images={item.images?.map((img) => ({ uri: img.uri })) || []}
+      postId={item.postId}
+      title={item.title}
+      description={item.description}
+      address={`${item.street}, ${item.city}`}
+      date={item.date || "No date available"}
+      categories={item.categories || []}
+      isLiked={true}
+      onToggleLike={() => {}}
+      onPress={() => {}}
+    />
   );
 
   return (
@@ -88,13 +65,90 @@ export default function SavedPosts() {
       <View style={styles.header}>
         <Text style={styles.headerText}>Saved Posts</Text>
       </View>
-      {loading && <ActivityIndicator size="large" color="#159636" />}
-      {error && <Text style={styles.errorText}>{error}</Text>}
-      <FlatList
-        data={savedPosts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
+
+      <View style={styles.actionsRow}>
+        <TouchableOpacity onPress={toggleFilter} style={styles.filterButton}>
+          <Ionicons
+            name={filterModalVisible ? "filter-circle" : "filter-circle-outline"}
+            size={28}
+            color="#159636"
+          />
+          <Text style={styles.filterText}>Filter</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setViewMode(viewMode === "list" ? "map" : "list")}
+          style={styles.toggleButton}
+        >
+          <Ionicons
+            name={viewMode === "list" ? "map-outline" : "list-outline"}
+            size={28}
+            color="#159636"
+          />
+          <Text style={styles.toggleText}>
+            {viewMode === "list" ? "Map View" : "List View"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {viewMode === "list" ? (
+        <FlatList
+          data={savedPosts}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#159636", "#28a745", "#85e085"]}
+              tintColor="#159636"
+            />
+          }
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No saved posts available.</Text>
+          }
+        />
+      ) : (
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: savedPosts[0]?.g?.geopoint?._latitude || 37.7749,
+            longitude: savedPosts[0]?.g?.geopoint?._longitude || -122.4194,
+            latitudeDelta: 0.1,
+            longitudeDelta: 0.1,
+          }}
+        >
+          {savedPosts.map((item) => (
+            <Marker
+              key={item.id}
+              coordinate={{
+                latitude: item.g.geopoint._latitude,
+                longitude: item.g.geopoint._longitude,
+              }}
+              title={item.title}
+              description={`${item.address.street}, ${item.address.city}`}
+              onPress={() => openModal(item)}
+            />
+          ))}
+        </MapView>
+      )}
+
+      <PopupCardModal
+        isVisible={isModalVisible}
+        item={selectedListing}
+        onClose={closeModal}
+        animation={new Animated.Value(1)}
+        onLikeToggle={(postId) => console.log("Toggled like for:", postId)}
+        onCardPress={(postId) => console.log("Card pressed:", postId)}
+      />
+
+      <FilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        setRadius={setRadius}
+        selectedCategories={selectedCategories}
+        setSelectedCategories={setSelectedCategories}
+        radius={radius}
       />
     </View>
   );
@@ -121,54 +175,41 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#159636",
   },
-  errorText: {
-    textAlign: "center",
-    color: "red",
-    marginVertical: 10,
+  actionsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  listContent: {
-    paddingVertical: 16,
-  },
-  cardContainer: {
-    backgroundColor: "#D9D9D9",
-    borderRadius: 8,
-    margin: 20,
-    padding: 16,
-    elevation: 4,
-  },
-  likeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    zIndex: 1,
-    backgroundColor: "white",
-    padding: 5,
-    borderRadius: 50,
-  },
-  cardImage: {
-    height: 150,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#159636",
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: "#333",
-    marginVertical: 8,
-  },
-  viewDetailsButton: {
-    backgroundColor: "#159636",
-    padding: 10,
-    borderRadius: 5,
+  filterButton: {
+    flexDirection: "row",
     alignItems: "center",
   },
-  viewDetailsText: {
-    color: "#FFFFFF",
+  filterText: {
     fontSize: 16,
-    fontWeight: "500",
+    color: "#159636",
+    marginLeft: 4,
+  },
+  toggleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  toggleText: {
+    fontSize: 16,
+    marginLeft: 8,
+    color: "#159636",
+  },
+  listContent: {
+    paddingBottom: 28,
+    paddingHorizontal: 8,
+  },
+  emptyText: {
+    textAlign: "center",
+    marginVertical: 20,
+    fontSize: 16,
+    color: "#999",
+  },
+  map: {
+    flex: 1,
   },
 });

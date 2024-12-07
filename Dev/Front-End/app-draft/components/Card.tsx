@@ -6,15 +6,17 @@ import {
   TouchableOpacity,
   Image,
   Animated,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useSavedPosts } from "@/app/context/SavedPostsContext";
 
 interface CardProps {
+  images: { uri: string }[];
   postId: string;
   title: string;
   description: string;
-  image: string;
   address: string;
   date: string;
   categories?: string[];
@@ -26,26 +28,29 @@ interface CardProps {
 }
 
 const Card: React.FC<CardProps> = ({
+  images = [],
   postId,
   title,
   description,
-  image,
   address,
   date,
   categories,
-  isLiked,
-  onToggleLike,
   disableToggle = false,
   onPress,
-
 }) => {
   const router = useRouter();
   const fadeAnimation = useRef(new Animated.Value(0)).current;
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Access SavedPostsContext
+  const { savedPosts, addSavedPost, removeSavedPost } = useSavedPosts();
+
+  // Determine if the post is already liked
+  const isLiked = savedPosts.some((post) => post.id === postId);
+
   const handleExpandToggle = () => {
     if (disableToggle) {
-      onPress(); // If toggle is disabled, just trigger onPress
+      onPress(); // Trigger onPress if toggling is disabled
       return;
     }
     setIsExpanded(!isExpanded);
@@ -59,19 +64,43 @@ const Card: React.FC<CardProps> = ({
     }).start();
   };
 
+  const handleToggleLike = () => {
+    if (isLiked) {
+      removeSavedPost(postId); // Remove from saved posts
+    } else {
+      addSavedPost({
+        id: postId,
+        title,
+        description,
+        image: images[0]?.uri || "https://via.placeholder.com/150",
+        g: undefined
+      });
+    }
+  };
+
   return (
     <TouchableOpacity style={styles.card} onPress={handleExpandToggle}>
-      {/* Image Section */}
+      {/* Image Carousel Section */}
       <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: image || "https://via.placeholder.com/150" }}
-          style={styles.image}
-          resizeMode="cover"
-        />
-        <TouchableOpacity
-          style={styles.likeButton}
-          onPress={() => onToggleLike(postId)}
-        >
+        <ScrollView horizontal pagingEnabled style={styles.imageCarousel}>
+          {images.length > 0 ? (
+            images.map((img, idx) => (
+              <Image
+                key={idx}
+                source={{ uri: img.uri }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            ))
+          ) : (
+            <Image
+              source={{ uri: "https://via.placeholder.com/150" }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          )}
+        </ScrollView>
+        <TouchableOpacity style={styles.likeButton} onPress={handleToggleLike}>
           <Ionicons
             name={isLiked ? "heart" : "heart-outline"}
             size={24}
@@ -86,7 +115,9 @@ const Card: React.FC<CardProps> = ({
         <Text style={styles.address}>{address}</Text>
 
         {isExpanded && (
-          <Animated.View style={[styles.expandedDetails, { opacity: fadeAnimation }]}>
+          <Animated.View
+            style={[styles.expandedDetails, { opacity: fadeAnimation }]}
+          >
             <Text style={styles.description}>{description}</Text>
 
             {/* Categories Section */}
@@ -135,13 +166,19 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     borderRadius: 8,
-    height: 150,
+    height: 200,
     overflow: "hidden",
     position: "relative",
   },
-  image: {
-    width: "100%",
+  imageCarousel: {
     height: "100%",
+    borderRadius: 10,
+  },
+  image: {
+    height: "100%",
+    width: 300,
+    borderRadius: 10,
+    marginRight: 10,
   },
   likeButton: {
     position: "absolute",
