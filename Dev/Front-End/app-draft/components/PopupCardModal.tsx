@@ -69,7 +69,7 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
             onPress={handleCardPress}
             isExpanded={false}
             disableToggle
-            route={}
+            // route={}
           />
         </View>
           </Animated.View>
