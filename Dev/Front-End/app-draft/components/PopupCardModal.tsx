@@ -66,10 +66,9 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
             images={(item?.images?.[0]?.uri) || "https://via.placeholder.com/150"}
             date={item.dates[0]}
             address={`${item.address.street}, ${item.address.city}`}
-            onPress={handleCardPress}
+            route={handleCardPress}
             isExpanded={false}
             disableToggle
-            route={}
           />
         </View>
           </Animated.View>

@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Card from "@/components/Card";
 import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
-import { useSavedPosts } from "@/app/context/SavedPostsContext";
+import { useSavedListings } from "@/app/context/SavedListingsContext";
 import { useRouter } from "expo-router";
 
 type ListingItem = {
@@ -38,7 +38,7 @@ type ListingItem = {
 };
 
 export default function SavedPosts() {
-  const { savedPosts, addSavedPost, removeSavedPost } = useSavedPosts();
+  const { savedListings, addSavedListing, removeSavedListing } = useSavedListings();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [refreshing, setRefreshing] = useState(false);

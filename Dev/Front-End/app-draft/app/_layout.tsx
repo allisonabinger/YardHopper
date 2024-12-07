@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { AuthProvider } from '@/components/AuthProvider';
 import { ListingProvider } from '@/app/context/ListingContext'
-import { SavedPostsProvider } from '@/app/context/SavedPostsContext';
+import { SavedListingsProvider } from '@/app/context/SavedListingsContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -32,7 +32,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ListingProvider>
-        <SavedPostsProvider>
+        <SavedListingsProvider>
           <ThemeProvider value={DefaultTheme}>
             <Stack>
               <Stack.Screen name="login" options={{ headerShown: false }} />
@@ -48,7 +48,7 @@ export default function RootLayout() {
             </Stack>
           </ThemeProvider>
           <StatusBar style="auto" />
-        </SavedPostsProvider>
+        </SavedListingsProvider>
       </ListingProvider>
     </AuthProvider>
   );

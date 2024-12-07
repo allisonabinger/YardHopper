@@ -14,7 +14,7 @@ import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
 import Card from "@/components/Card";
 import { useRouter } from "expo-router";
-import { useSavedPosts } from "../context/SavedPostsContext";
+import { useSavedListings} from "../context/SavedListingsContext";
 
 type ListingItem = {
   title: string;
@@ -52,12 +52,12 @@ export default function HomeScreen() {
   const [isLiked, setIsLiked] = useState(false);
 
   // Access SavedPostsContext
-  const { savedPosts, addSavedPost, removeSavedPost } = useSavedPosts();
+  const { savedListings, addSavedListing, removeSavedListing } = useSavedListings();
 
   const router = useRouter();
 
  // Fetch listings data from API
- const fetchListings = async ({
+  const fetchListings = async ({
   isRefresh = false,
   lat = 36.1555,
   long = -95.9950,
