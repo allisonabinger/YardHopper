@@ -139,7 +139,7 @@ const Card: React.FC<CardProps> = ({
             {/* See More Details Button */}
             <TouchableOpacity
               style={styles.seeMoreButton}
-              onPress={(onPress) => router.push(`/listing/${postId}`)}
+              onPress={onPress}
             >
               <Text style={styles.seeMoreText}>See More Details</Text>
             </TouchableOpacity>
