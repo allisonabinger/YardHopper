@@ -94,7 +94,7 @@ export const fetchSingleListing = async (req: Request, res: Response, next: Next
             throw new BadRequestError("No postId provided.");
         }
         // call query function in services with formatted filters
-        const listing = await getListing(postId);
+        const listing = await getListing(postId, hashUid);
 
         return res.status(200).json({ listing });
     } catch (err) {

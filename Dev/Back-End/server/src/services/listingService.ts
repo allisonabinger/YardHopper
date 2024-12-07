@@ -81,7 +81,7 @@ export const getListings = async ({
     }
 };
 
-export const getListing = async (postId: string) => {
+export const getListing = async (postId: string, hashUid: string) => {
     try {
         if (!postId) {
             throw new NotFoundError("No postId provided.");
@@ -97,6 +97,12 @@ export const getListing = async (postId: string) => {
 
         if (!data) {
             throw new InternalServerError(`Listing with postId "${postId}" could not be retrieved.`);
+        }
+
+        if (data.status !== "active" && data.status !== "upcoming") {
+            if (data.userId !== hashUid) {
+                throw new NotFoundError("Listing is no longer available.");
+            }
         }
         
         return {
