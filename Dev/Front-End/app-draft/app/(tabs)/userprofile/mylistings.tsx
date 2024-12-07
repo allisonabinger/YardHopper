@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FlatList, View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/components/AuthProvider";
+import Card from "@/components/Card";
 
 type ListingItem = {
   title: string;
@@ -24,20 +25,20 @@ type ListingItem = {
   };
 };
 
-const Card: React.FC<{
-  title: string;
-  description: string;
-  image: any;
-  onPress: () => void;
-}> = ({ title, description, image, onPress }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress}>
-    <Image source={{ uri: image }} style={styles.cardImage} />
-    <View style={styles.cardContent}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardDescription}>{description}</Text>
-    </View>
-  </TouchableOpacity>
-);
+// const Card: React.FC<{
+//   title: string;
+//   description: string;
+//   image: any;
+//   onPress: () => void;
+// }> = ({ title, description, image, onPress }) => (
+//   <TouchableOpacity style={styles.card} onPress={onPress}>
+//     <Image source={{ uri: image }} style={styles.cardImage} />
+//     <View style={styles.cardContent}>
+//       <Text style={styles.cardTitle}>{title}</Text>
+//       <Text style={styles.cardDescription}>{description}</Text>
+//     </View>
+//   </TouchableOpacity>
+// );
 
 export default function MyListings() {
   const [loading, setLoading] = useState(false);
@@ -56,16 +57,19 @@ export default function MyListings() {
 
     try {
 
-         const idToken = await getIdToken();
-        if (!idToken) {
-          console.error("Unable to retrieve ID token. User might not be authenticated.");
-          return;
-        }
-        console.log("idToken: ", idToken);
-        if (loading) return; // Prevent multiple calls
-        setLoading(true);
-    
-        setError(null);
+      const idToken = await getIdToken();
+      if (!idToken) {
+        console.error("Unable to retrieve ID token. User might not be authenticated.");
+        return;
+      }
+      console.log("idToken: ", idToken);
+      if (loading) {
+        console.warn("Fetch already in progress, skipping duplicate request...");
+        return;
+      }
+      setLoading(true);
+      setError(null);
+
       // Build the URL dynamically based on the parameters
       let url = `https://yardhopperapi.onrender.com/api/users/listings`;
 
@@ -86,8 +90,17 @@ export default function MyListings() {
 
       const data = await response.json();
 
-      if (data.listings && Array.isArray(data.listings)) {
-        setListings(data.listings);
+      console.log(JSON.stringify(data, null, 2))
+
+      data.forEach((listing) => {
+        console.log("Title:", listing.title);
+        console.log("Geopoint Latitude:", listing.g.geopoint._latitude);
+        console.log("First Image URL:", listing.images[0].url);
+      });
+
+      if (data && Array.isArray(data)) {
+        console.log("Data contains valid listings. Updating state...");
+        setListings(data);
       } else {
         console.error("Unexpected data format: ", data);
       }
@@ -95,11 +108,13 @@ export default function MyListings() {
       // Log the fetched data for debugging
       console.log("Fetched data:", data);
 
-      setListings(data.listings);
+      setListings(data);
 
     } catch (error: any) {
+      console.error("Error while fetching listings:", error.message);
       setError(error.message || "Failed to load listings");
     } finally {
+      console.log("Fetch complete. Setting loading to false.");
       setLoading(false);
     }
   };
@@ -111,23 +126,32 @@ export default function MyListings() {
     }
   }, [user]);
 
-  const renderItem = ({ item }: { item: ListingItem }) => (
-    <Card
-      title={item.title}
-      description={item.description}
-      image={item.images[0]?.uri || "https://example.com/default-image.jpg"}
-      onPress={() =>
-        router.push({
-          pathname: "./userprofile/(sale)/[id]",
-          params: { id: item.postId },
-        })
-      }
-    />
-  );
+  const renderItem = ({ item }: { item: ListingItem }) => {
+    console.log("Rendering item:", item.title, "Post ID:", item.postId);
+    return (
+      <Card
+        postId={item.postId}
+        title={item.title}
+        description={item.description}
+        image={item.images[0]?.uri || "https://example.com/default-image.jpg"}
+        address={`${item.address.street}, ${item.address.city}`}
+        date={item.dates[0]}
+        categories={item.categories || []}
+        onPress={() =>
+          router.push({
+            pathname: "./userprofile/(sale)/[id]",
+            params: { id: item.postId },
+          })
+        }
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
       {/* Header */}
+      {loading && <Text>Loading...</Text>}
+      {error && <Text>{error}</Text>}
       <View style={styles.header}>
         <Text style={styles.headerText}>My Listings</Text>
       </View>

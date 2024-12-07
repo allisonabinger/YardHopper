@@ -18,11 +18,11 @@ interface CardProps {
   address: string;
   date: string;
   categories?: string[];
-  isLiked: boolean;
-  onToggleLike: (postId: string) => void;
+  isLiked?: boolean;
+  onToggleLike?: (postId: string) => void;
   isExpanded?: boolean;
   disableToggle?: boolean; // Added this prop to disable toggling
-  onPress: () => void;
+  onPress?: () => void;
 }
 
 const Card: React.FC<CardProps> = ({
