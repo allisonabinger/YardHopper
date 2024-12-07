@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext } from "react";
+import { useEffect } from "react";
 
 // Define types for sale and saved posts
 interface Sale {
@@ -11,6 +12,9 @@ interface Sale {
 
 interface SavedPostsContextType {
   savedPosts: Sale[];
+  loading: boolean;
+  error: string | null;
+  fetchSavedPosts: (isRefresh?: boolean) => void;
   addSavedPost: (post: Sale) => void;
   removeSavedPost: (id: string) => void;
 }
@@ -21,6 +25,34 @@ const SavedPostsContext = createContext<SavedPostsContextType | undefined>(undef
 // Provider component to wrap the app and provide context
 export const SavedPostsProvider: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const [savedPosts, setSavedPosts] = useState<Sale[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSavedPosts = async (isRefresh = false) => {
+    if (loading) return; // Prevent multiple calls
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `https://yardhopperapi.onrender.com/api/users/savedListings?page=${isRefresh ? 1 : page}`
+      );
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setSavedPosts((prevPosts) =>
+        isRefresh ? data.favorites : [...prevPosts, ...data.favorites]
+      );
+      if (isRefresh) setPage(2); // Reset to page 2 for next fetch
+      else setPage(page + 1);
+    } catch (error: any) {
+      setError(error.message || "Failed to load saved posts");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addSavedPost = (post: Sale) => {
     console.log("Adding post:", post);
@@ -32,8 +64,14 @@ export const SavedPostsProvider: React.FC<{ children?: React.ReactNode }> = ({ c
     setSavedPosts((prev) => prev.filter((post) => post.id !== id));
   };
 
+  useEffect(() => {
+    fetchSavedPosts(true); // Fetch initial data
+  }, []);
+
   return (
-    <SavedPostsContext.Provider value={{ savedPosts, addSavedPost, removeSavedPost }}>
+    <SavedPostsContext.Provider
+      value={{ savedPosts, loading, error, fetchSavedPosts, addSavedPost, removeSavedPost }}
+    >
       {children}
     </SavedPostsContext.Provider>
   );

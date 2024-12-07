@@ -38,7 +38,7 @@ type ListingItem = {
 
 export default function HomeScreen() {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [radius, setRadius] = useState(5);
+  const [radius, setRadius] = useState(25);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [listings, setListings] = useState<ListingItem[]>([]);
@@ -94,8 +94,8 @@ export default function HomeScreen() {
     setListings((prevListings) => {
       const newListings = isRefresh ? data.listings : [...prevListings, ...data.listings];
       return newListings.filter(
-        (listing, index, self) =>
-          index === self.findIndex((l) => l.postId === listing.postId) // Deduplicate
+        (listing: { postId: any; }, index: any, self: any[]) =>
+          index === self.findIndex((l: { postId: any; }) => l.postId === listing.postId) // Deduplicate
       );
     });
 
@@ -135,13 +135,21 @@ export default function HomeScreen() {
 
   const renderItem = ({ item }: { item: ListingItem }) => (
     <Card
+      images={item.images?.map((img) => ({ uri: img.uri })) || []} // Ensure an array of { uri: string }
       postId={item.postId}
       title={item.title}
       description={item.description}
-      image={item.images?.[0]?.uri || ""}
       address={`${item.address.street}, ${item.address.city}`}
       date={item.dates[0]}
       categories={item.categories}
+      isLiked={item.isLiked}
+      onToggleLike={() => console.log(`Toggled like for ${item.postId}`)}
+      route={() =>
+        router.push({
+          pathname: "./listing/[id]",
+          params: { id: item.postId },
+        })
+      }
     />
   );
 
