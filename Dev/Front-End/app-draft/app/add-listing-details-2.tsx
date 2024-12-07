@@ -224,35 +224,40 @@ export default function AddListingDetailsPage2() {
                     onChange={(event, selectedTime) => {
                       if (selectedTime) {
                         const formattedTime = formatTime(selectedTime);
-                        setEndTime(selectedTime);
-                        updateListingData({ endTime: formattedTime });
+                    
                         if (currentPicker === "start") {
                           setStartTime(selectedTime);
                           updateListingData({ startTime: formattedTime });
-                          const oneHourAhead = new Date(
-                            selectedTime.getTime() + 60 * 60 * 1000
-                          );
-                          if (!endTime || endTime <= selectedTime) {
-                            setEndTime(oneHourAhead);
-                            updateListingData({ endTime: formatTime(oneHourAhead) });
-                          }
                         } else if (currentPicker === "end") {
-                          const minEndTime = new Date(
-                            startTime.getTime() + 60 * 60 * 1000
-                          );
+                          const startMinutes = startTime.getMinutes();
+                          const endMinutes = selectedTime.getMinutes();
+                    
+                          // Check if the end time is within 10 minutes of the hour from the start time
+                          const diff = Math.abs(startMinutes - endMinutes);
+                    
+                          if (diff > 10 && diff < 50) {
+                            Alert.alert(
+                              "Invalid End Time",
+                              "End time must be within 10 minutes of an hour from the start time."
+                            );
+                            return;
+                          }
+                    
+                          const minEndTime = new Date(startTime.getTime() + 1 * 61 * 1000); // 10 minutes after start time
                           if (selectedTime >= minEndTime) {
                             setEndTime(selectedTime);
                             updateListingData({ endTime: formattedTime });
                           } else {
                             Alert.alert(
-                              "Invalid Time",
-                              "End time must be at least 1 hour after the start time."
+                              "Invalid End Time",
+                              "End time must be at least 60 minutes after the start time."
                             );
                           }
                         }
                       }
                       setCurrentPicker(null);
                     }}
+                    textColor="black"
                   />
                   <TouchableOpacity
                     style={styles.closeModalButton}
@@ -306,6 +311,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#159636",
     marginBottom: 8,
+    fontWeight: "semibold",
   },
   modalContainer: {
     flex: 1,
