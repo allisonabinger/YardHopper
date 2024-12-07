@@ -90,14 +90,6 @@ export default function MyListings() {
 
       const data = await response.json();
 
-      console.log(JSON.stringify(data, null, 2))
-
-      data.forEach((listing) => {
-        console.log("Title:", listing.title);
-        console.log("Geopoint Latitude:", listing.g.geopoint._latitude);
-        console.log("First Image URL:", listing.images[0].url);
-      });
-
       if (data && Array.isArray(data)) {
         console.log("Data contains valid listings. Updating state...");
         setListings(data);
