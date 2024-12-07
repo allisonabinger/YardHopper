@@ -131,7 +131,7 @@ export default function MyListings() {
         categories={item.categories || []}
         onPress={() =>
           router.push({
-            pathname: "./userprofile/(sale)/[id]",
+            pathname: "./(sale)/[id]",
             params: { id: item.postId },
           })
         }
