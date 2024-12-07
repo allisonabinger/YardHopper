@@ -14,7 +14,7 @@ import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
 import Card from "@/components/Card";
 import { useRouter } from "expo-router";
-import { useSavedPosts } from "../context/SavedPostsContext";
+import { useSavedListings} from "../context/SavedListingsContext";
 
 type ListingItem = {
   title: string;
@@ -52,12 +52,12 @@ export default function HomeScreen() {
   const [isLiked, setIsLiked] = useState(false);
 
   // Access SavedPostsContext
-  const { savedPosts, addSavedPost, removeSavedPost } = useSavedPosts();
+  const { savedListings, addSavedListing, removeSavedListing } = useSavedListings();
 
   const router = useRouter();
 
  // Fetch listings data from API
- const fetchListings = async ({
+  const fetchListings = async ({
   isRefresh = false,
   lat = 36.1555,
   long = -95.9950,
@@ -136,18 +136,17 @@ export default function HomeScreen() {
     setSelectedListing(null);
   };
 
-  // Simplified handleToggleLike function
   const handleToggleLike = (listing: ListingItem) => {
-    const isAlreadyLiked = savedPosts.some((post) => post.postId === listing.postId);
+    const isAlreadyLiked = savedListings.some((savedListing) => savedListing.postId === listing.postId);
     if (isAlreadyLiked) {
-      removeSavedPost(listing.postId);
+      removeSavedListing(listing.postId);
     } else {
-      addSavedPost(listing); // Pass the entire listing directly
+      addSavedListing(listing.postId); // Pass the entire listing directly
     }
   };
 
   const renderItem = ({ item }: { item: ListingItem }) => {
-    const isLiked = savedPosts.some((post) => post.postId === item.postId);
+    const isLiked = savedListings.some((listing) => listing.postId === item.postId);
 
     return (
       <Card
@@ -169,10 +168,6 @@ export default function HomeScreen() {
       />
     );
   };
-
-  // function toggleLike(postId: string): void {
-  //   throw new Error("Function not implemented.");
-  // }
 
   return (
     <View style={styles.container}>

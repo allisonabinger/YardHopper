@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Card from "@/components/Card";
 import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
-import { useSavedPosts } from "@/app/context/SavedPostsContext";
+import { useSavedListings } from "@/app/context/SavedListingsContext";
 import { useRouter } from "expo-router";
 
 type ListingItem = {
@@ -38,7 +38,7 @@ type ListingItem = {
 };
 
 export default function SavedPosts() {
-  const { savedPosts, addSavedPost, removeSavedPost } = useSavedPosts();
+  const { savedListings, addSavedListing, removeSavedListing, loading, error } = useSavedListings();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [refreshing, setRefreshing] = useState(false);
@@ -49,59 +49,36 @@ export default function SavedPosts() {
 
   const router = useRouter();
 
-  const toggleFilter = () => {
-    setFilterModalVisible(!filterModalVisible);
-  };
 
   const onRefresh = () => {
     setRefreshing(true);
-    // No additional fetch needed since savedPosts is managed in context
+    // Assuming the `fetchSavedListings` function is automatically triggered by the context.
     setRefreshing(false);
   };
 
-  const openModal = (listing: any) => {
-    setSelectedListing(listing);
-    setModalVisible(true);
+  const handleToggleLike = (postId: string) => {
+    removeSavedListing(postId);
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-    setSelectedListing(null);
-  };
-
-  // Simplified handleToggleLike function
-  const handleToggleLike = (listing: ListingItem) => {
-    const isAlreadyLiked = savedPosts.some((post) => post.postId === listing.postId);
-    if (isAlreadyLiked) {
-      removeSavedPost(listing.postId);
-    } else {
-      addSavedPost(listing); // Pass the entire listing directly
-    }
-  };
-
-  const renderItem = ({ item }: { item: ListingItem }) => {
-    const isLiked = savedPosts.some((post) => post.postId === item.postId);
-
-    return (
-      <Card
-        images={item.images?.map((img) => ({ uri: img.uri })) || []}
-        postId={item.postId}
-        title={item.title}
-        description={item.description}
-        address={`${item.address}, ${item.address}`}
-        date={item.dates[0]}
-        categories={item.categories}
-        isLiked={isLiked}
-        onToggleLike={() => handleToggleLike(item)}
-        route={() =>
-          router.push({
-            pathname: "./listing/[id]",
-            params: { id: item.postId },
-          })
-        }
-      />
-    );
-  };
+  const renderItem = ({ item }: { item: ListingItem }) => (
+    <Card
+      images={item.images.map((img) => ({ uri: img.uri }))}
+      postId={item.postId}
+      title={item.title}
+      description={item.description}
+      address={`${item.address.street}, ${item.address.city}, ${item.address.state}`}
+      date={item.dates[0]}
+      categories={item.categories}
+      isLiked={true}
+      onToggleLike={() => handleToggleLike(item.postId)}
+      route={() =>
+        router.push({
+          pathname: "./listing/[id]",
+          params: { id: item.postId },
+        })
+      }
+    />
+  );
 
   return (
     <View style={styles.container}>
@@ -109,35 +86,17 @@ export default function SavedPosts() {
         <Text style={styles.headerText}>Saved Posts</Text>
       </View>
 
-      <View style={styles.actionsRow}>
-        <TouchableOpacity onPress={toggleFilter} style={styles.filterButton}>
-          <Ionicons
-            name={filterModalVisible ? "filter-circle" : "filter-circle-outline"}
-            size={28}
-            color="#159636"
-          />
-          <Text style={styles.filterText}>Filter</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setViewMode(viewMode === "list" ? "map" : "list")}
-          style={styles.toggleButton}
-        >
-          <Ionicons
-            name={viewMode === "list" ? "map-outline" : "list-outline"}
-            size={28}
-            color="#159636"
-          />
-          <Text style={styles.toggleText}>
-            {viewMode === "list" ? "Map View" : "List View"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {viewMode === "list" ? (
+      {loading ? (
+        <Text style={styles.loadingText}>Loading saved posts...</Text>
+      ) : error ? (
+        <Text style={styles.errorText}>{error}</Text>
+      ) : savedListings.length === 0 ? (
+        <Text style={styles.emptyText}>No saved posts available.</Text>
+      ) : (
         <FlatList
-          data={savedPosts}
+          data={savedListings}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.postId}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
@@ -147,56 +106,11 @@ export default function SavedPosts() {
               tintColor="#159636"
             />
           }
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No saved posts available.</Text>
-          }
         />
-      ) : (
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: savedPosts[0]?.g?.geopoint?._latitude || 37.7749,
-            longitude: savedPosts[0]?.g?.geopoint?._longitude || -122.4194,
-            latitudeDelta: 0.1,
-            longitudeDelta: 0.1,
-          }}
-        >
-          {savedPosts.map((item) => (
-            <Marker
-              key={item.id}
-              coordinate={{
-                latitude: item.g.geopoint._latitude,
-                longitude: item.g.geopoint._longitude,
-              }}
-              title={item.title}
-              description={`${item.address.street}, ${item.address.city}`}
-              onPress={() => openModal(item)}
-            />
-          ))}
-        </MapView>
       )}
-
-      <PopupCardModal
-        isVisible={isModalVisible}
-        item={selectedListing}
-        onClose={closeModal}
-        animation={new Animated.Value(1)}
-        onLikeToggle={(postId) => console.log("Toggled like for:", postId)}
-        onCardPress={(postId) => console.log("Card pressed:", postId)}
-      />
-
-      <FilterModal
-        visible={filterModalVisible}
-        onClose={() => setFilterModalVisible(false)}
-        setRadius={setRadius}
-        selectedCategories={selectedCategories}
-        setSelectedCategories={setSelectedCategories}
-        radius={radius}
-      />
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -245,6 +159,18 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 28,
     paddingHorizontal: 8,
+  },
+  loadingText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+    color: "#999",
+  },
+  errorText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+    color: "#FF0000",
   },
   emptyText: {
     textAlign: "center",
