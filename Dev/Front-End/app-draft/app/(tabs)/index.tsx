@@ -144,7 +144,12 @@ export default function HomeScreen() {
       categories={item.categories}
       isLiked={item.isLiked}
       onToggleLike={() => console.log(`Toggled like for ${item.postId}`)}
-      onPress={() => console.log(`Pressed item ${item.postId}`)}
+      route={() =>
+        router.push({
+          pathname: "./listing/[id]",
+          params: { id: item.postId },
+        })
+      }
     />
   );
 
