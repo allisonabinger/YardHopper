@@ -24,7 +24,7 @@ interface CardProps {
   onToggleLike?: (postId: string) => void;
   isExpanded?: boolean;
   disableToggle?: boolean; // Added this prop to disable toggling
-  route?: () => void;
+  route: () => void;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -46,7 +46,7 @@ const Card: React.FC<CardProps> = ({
   const { savedPosts, addSavedPost, removeSavedPost } = useSavedPosts();
 
   // Determine if the post is already liked
-  const isLiked = savedPosts.some((post) => post.id === postId);
+  const isLiked = savedPosts.some((post) => post.postId === postId);
 
   const handleExpandToggle = () => {
     if (disableToggle) {

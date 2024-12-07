@@ -14,6 +14,7 @@ import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
 import Card from "@/components/Card";
 import { useRouter } from "expo-router";
+import { useSavedPosts } from "../context/SavedPostsContext";
 
 type ListingItem = {
   title: string;
@@ -48,8 +49,10 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [isLiked, setIsLiked] = useState(false);
 
-
+  // Access SavedPostsContext
+  const { savedPosts, addSavedPost, removeSavedPost } = useSavedPosts();
 
   const router = useRouter();
 
@@ -133,29 +136,43 @@ export default function HomeScreen() {
     setSelectedListing(null);
   };
 
-  const renderItem = ({ item }: { item: ListingItem }) => (
-    <Card
-      images={item.images?.map((img) => ({ uri: img.uri })) || []} // Ensure an array of { uri: string }
-      postId={item.postId}
-      title={item.title}
-      description={item.description}
-      address={`${item.address.street}, ${item.address.city}`}
-      date={item.dates[0]}
-      categories={item.categories}
-      isLiked={item.isLiked}
-      onToggleLike={() => console.log(`Toggled like for ${item.postId}`)}
-      route={() =>
-        router.push({
-          pathname: "./listing/[id]",
-          params: { id: item.postId },
-        })
-      }
-    />
-  );
+  // Simplified handleToggleLike function
+  const handleToggleLike = (listing: ListingItem) => {
+    const isAlreadyLiked = savedPosts.some((post) => post.postId === listing.postId);
+    if (isAlreadyLiked) {
+      removeSavedPost(listing.postId);
+    } else {
+      addSavedPost(listing); // Pass the entire listing directly
+    }
+  };
 
-  function toggleLike(postId: string): void {
-    throw new Error("Function not implemented.");
-  }
+  const renderItem = ({ item }: { item: ListingItem }) => {
+    const isLiked = savedPosts.some((post) => post.postId === item.postId);
+
+    return (
+      <Card
+        images={item.images?.map((img) => ({ uri: img.uri })) || []}
+        postId={item.postId}
+        title={item.title}
+        description={item.description}
+        address={`${item.address.street}, ${item.address.city}`}
+        date={item.dates[0]}
+        categories={item.categories}
+        isLiked={isLiked}
+        onToggleLike={() => handleToggleLike(item)}
+        route={() =>
+          router.push({
+            pathname: "./listing/[id]",
+            params: { id: item.postId },
+          })
+        }
+      />
+    );
+  };
+
+  // function toggleLike(postId: string): void {
+  //   throw new Error("Function not implemented.");
+  // }
 
   return (
     <View style={styles.container}>
@@ -232,7 +249,7 @@ export default function HomeScreen() {
         item={selectedListing}
         onClose={closeModal}
         animation={new Animated.Value(1)}
-        onLikeToggle={(postId) => toggleLike(postId)}
+        onLikeToggle={() => selectedListing && handleToggleLike(selectedListing)}
         onCardPress={(postId) => console.log("Card pressed:", postId)}
       />
       <FilterModal
