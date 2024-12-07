@@ -1,174 +1,230 @@
 {
-    "Listing": {
+    "Address": {
       "type": "object",
-      "description": "A single listing to view on a user's feed. Uploaded by users.",
+      "description": "Address details of the listing",
       "properties": {
-        "address": {
-          "type": "object",
-          "description": "Address details",
-          "properties": {
-            "city": {
-              "type": "string",
-              "example": "Jenks"
-            },
-            "state": {
-              "type": "string",
-              "example": "OK"
-            },
-            "street": {
-              "type": "string",
-              "example": "300 Aquarium Drive"
-            },
-            "zip": {
-              "type": "number",
-              "example": 74037
-            }
-          }
+        "street": {
+          "type": "string",
+          "example": "300 Aquarium Drive"
+        },
+        "city": {
+          "type": "string",
+          "example": "Jenks"
+        },
+        "state": {
+          "type": "string",
+          "example": "OK"
+        },
+        "zip": {
+          "type": "number",
+          "example": 74037
+        }
+      },
+      "required": ["street", "city", "state", "zip"]
+    },
+    "Image": {
+      "type": "object",
+      "description": "Image details for the listing",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "example": "https://example.com/image.jpg"
         },
         "caption": {
           "type": "string",
-          "description": "Caption for the listing",
-          "example": "Sale2"
+          "example": "Sample Caption"
+        }
+      }
+    },
+    "Geolocation": {
+      "type": "object",
+      "description": "Geolocation details of the listing",
+      "properties": {
+        "geohash": {
+          "type": "string",
+          "example": "9y7ubmnmd"
+        },
+        "geopoint": {
+          "type": "object",
+          "properties": {
+            "_latitude": {
+              "type": "number",
+              "example": 36.01965545
+            },
+            "_longitude": {
+              "type": "number",
+              "example": -95.95690706606644
+            }
+          },
+          "required": ["_latitude", "_longitude"]
+        }
+      },
+      "required": ["geohash", "geopoint"]
+    },
+    "Status": {
+      "type": "string",
+      "description": "Current status of the listing",
+      "enum": ["active", "upcoming", "postponed", "archived"],
+      "example": "active"
+    },
+    "Listing": {
+      "type": "object",
+      "description": "A single listing to view on a user's feed, uploaded by users.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title of the listing",
+          "example": "Estate Sale"
         },
         "description": {
           "type": "string",
           "description": "Detailed description of the listing",
           "example": "Lots of clothes, office supplies, electronics, and more."
         },
+        "address": {
+          "$ref": "#/Address"
+        },
+        "dates": {
+          "type": "array",
+          "description": "Dates for the event",
+          "items": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-12-16"
+          }
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Start time of the event",
+          "example": "07:00"
+        },
         "endTime": {
           "type": "string",
           "description": "End time of the event",
           "example": "14:00"
         },
-        "generatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp of when the listing was generated",
-          "example": "2024-11-20T20:29:00.923Z"
-        },
         "images": {
           "type": "array",
-          "description": "Array of images associated with the listing",
+          "description": "List of images for the listing",
           "items": {
-            "type": "object",
-            "properties": {
-              "uri": {
-                "type": "string",
-                "description": "URI of the image",
-                "example": "https://example.com/image1.jpg"
-              },
-              "caption": {
-                "type": "string",
-                "description": "Caption for the image",
-                "example": "Main sale table"
-              }
+            "$ref": "#/Image"
+          }
+        },
+        "categories": {
+          "type": "array",
+          "description": "Categories of the listing",
+          "items": {
+            "type": "string",
+            "example": "Electronics"
+          }
+        },
+        "subcategories": {
+          "type": "object",
+          "description": "Subcategories grouped by broad category",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
+          },
+          "example": {
+            "Electronics": ["TVs/Home Entertainment", "Gaming"]
           }
         },
         "postId": {
           "type": "string",
           "description": "Unique identifier for the listing",
-          "example": "DOcNhHR25vTD70cmlySs"
+          "example": "f2mq3QX1bSVGRX8zkYLH"
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the listing was generated",
+          "example": "2024-11-20T20:29:00.923Z"
+        },
+        "status": {
+          "$ref": "#/Status"
+        },
+        "g": {
+          "$ref": "#/Geolocation"
+        },
+        "userId": {
+          "type": "string",
+          "description": "User ID of the creator",
+          "example": "user12345"
+        }
+      },
+      "required": ["title", "description", "address", "dates", "startTime", "endTime", "categories", "postId", "status", "g"]
+    },
+    "publicListing": {
+      "type": "object",
+      "description": "The response given by the API, only showing public values.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "example": "Estate Sale"
+        },
+        "description": {
+          "type": "string",
+          "example": "Lots of clothes, office supplies, electronics, and more."
+        },
+        "address": {
+          "$ref": "#/Address"
+        },
+        "dates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-12-16"
+          }
         },
         "startTime": {
           "type": "string",
-          "description": "Start time of the event",
-          "example": "10:00"
+          "example": "07:00"
+        },
+        "endTime": {
+          "type": "string",
+          "example": "14:00"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/Image"
+          }
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "Electronics"
+          }
+        },
+        "subcategories": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "example": {
+            "Electronics": ["TVs/Home Entertainment", "Gaming"]
+          }
+        },
+        "postId": {
+          "type": "string",
+          "example": "f2mq3QX1bSVGRX8zkYLH"
         },
         "status": {
-          "type": "string",
-          "description": "Status of the listing",
-          "enum": ["active", "upcoming", "postponed", "archived"],
-          "example": "upcoming"
+          "$ref": "#/Status"
         },
-        "title": {
-          "type": "string",
-          "description": "Title of the listing",
-          "example": "Multi Family Sale"
-        },
-        "userId": {
-          "type": ["string", "null"],
-          "description": "ID of the user who created the listing. Null if not set.",
-          "example": null
+        "g": {
+          "$ref": "#/Geolocation"
         }
-      }
-    },
-    "publicListing": {
-        "type": "object",
-        "description": "The response given by the API, only shows public values",
-        "properties": {
-          "address": {
-            "type": "object",
-            "description": "Address details",
-            "properties": {
-              "city": {
-                "type": "string",
-                "example": "Jenks"
-              },
-              "state": {
-                "type": "string",
-                "example": "OK"
-              },
-              "street": {
-                "type": "string",
-                "example": "300 Aquarium Drive"
-              },
-              "zip": {
-                "type": "number",
-                "example": 74037
-              }
-            }
-          },
-          "caption": {
-            "type": "string",
-            "description": "Caption for the listing",
-            "example": "Sale2"
-          },
-          "description": {
-            "type": "string",
-            "description": "Detailed description of the listing",
-            "example": "Lots of clothes, office supplies, electronics, and more."
-          },
-          "endTime": {
-            "type": "string",
-            "description": "End time of the event",
-            "example": "14:00"
-          },
-          "images": {
-            "type": "array",
-            "description": "Array of images associated with the listing",
-            "items": {
-              "type": "object",
-              "properties": {
-                "uri": {
-                  "type": "string",
-                  "description": "URI of the image",
-                  "example": "https://example.com/image1.jpg"
-                },
-                "caption": {
-                  "type": "string",
-                  "description": "Caption for the image",
-                  "example": "Main sale table"
-                }
-              }
-            }
-          },
-          "startTime": {
-            "type": "string",
-            "description": "Start time of the event",
-            "example": "10:00"
-          },
-          "status": {
-            "type": "string",
-            "description": "Status of the listing",
-            "enum": ["active", "upcoming", "postponed", "archived"],
-            "example": "upcoming"
-          },
-          "title": {
-            "type": "string",
-            "description": "Title of the listing",
-            "example": "Multi Family Sale"
-          }
-        }
-      }
+      },
+      "required": ["title", "description", "address", "dates", "startTime", "endTime", "categories", "postId", "status", "g"]
+    }
   }
+  

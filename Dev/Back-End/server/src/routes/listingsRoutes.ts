@@ -21,9 +21,17 @@ const upload = multer({ storage: storage });
 
 /**
  * @swagger
+ * tags:
+ *   - name: Listings
+ *     description: Endpoints for managing listings.
+ */
+
+
+/**
+ * @swagger
  * /:
  *   get:
- *     summary: Fetch all listings
+ *     summary: Fetch all active and upcoming listings
  *     tags:
  *       - Listings
  *     parameters:
@@ -32,13 +40,13 @@ const upload = multer({ storage: storage });
  *         required: false
  *         schema:
  *           type: number
- *         description: Latitude of the area to search for listings
+ *         description: Latitude of the client's area to search for listings.
  *       - name: lng
  *         in: query
  *         required: false
  *         schema:
  *           type: number
- *         description: Longitude of the area to search for listings
+ *         description: Longitude of the client's area to search for listings.
  *       - name: zipcode
  *         in: query
  *         required: false
@@ -47,13 +55,47 @@ const upload = multer({ storage: storage });
  *         description: Zip code to search for listings
  *     responses:
  *       200:
- *         description: A list of listings matching the query
+ *         description: An array of listings matching the query
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Listing'
+ *                 $ref: '#/components/schemas/publicListing'
+ *       400:
+ *         description: Bad Request: No location provided. Missing or invalid input in request.
+ *       401:
+ *         description: Unauthorized: User not authorized
+ */
+
+/**
+ * @swagger
+ * /api/listings/{postId}:
+ *   get:
+ *     summary: Fetch a single listing by postId. If listing is archived, will not retrieve unless user is owner of listing.
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - name: postId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique identifier of the listing.
+ *     responses:
+ *       200:
+ *         description: Listing retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 listing:
+ *                   $ref: '#/components/schemas/publicListing'
+ *       404:
+ *         description: Listing not found.
+ *       401:
+ *         description: Unauthorized.
  */
 
 /**
