@@ -24,7 +24,7 @@ interface CardProps {
   onToggleLike?: (postId: string) => void;
   isExpanded?: boolean;
   disableToggle?: boolean; // Added this prop to disable toggling
-  onPress?: () => void;
+  route?: () => void;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -36,7 +36,7 @@ const Card: React.FC<CardProps> = ({
   date,
   categories,
   disableToggle = false,
-  onPress,
+  route,
 }) => {
   const router = useRouter();
   const fadeAnimation = useRef(new Animated.Value(0)).current;
@@ -50,7 +50,7 @@ const Card: React.FC<CardProps> = ({
 
   const handleExpandToggle = () => {
     if (disableToggle) {
-      onPress(); // Trigger onPress if toggling is disabled
+      route(); // Trigger onPress if toggling is disabled
       return;
     }
     setIsExpanded(!isExpanded);
@@ -139,7 +139,7 @@ const Card: React.FC<CardProps> = ({
             {/* See More Details Button */}
             <TouchableOpacity
               style={styles.seeMoreButton}
-              onPress={(onPress) => router.push(`/listing/${postId}`)}
+              onPress={route}
             >
               <Text style={styles.seeMoreText}>See More Details</Text>
             </TouchableOpacity>

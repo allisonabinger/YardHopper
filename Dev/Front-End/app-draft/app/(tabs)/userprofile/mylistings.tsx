@@ -129,9 +129,9 @@ export default function MyListings() {
         address={`${item.address.street}, ${item.address.city}`}
         date={item.dates[0]}
         categories={item.categories || []}
-        onPress={() =>
+        route={() =>
           router.push({
-            pathname: "./userprofile/(sale)/[id]",
+            pathname: "./(sale)/[id]",
             params: { id: item.postId },
           })
         }
