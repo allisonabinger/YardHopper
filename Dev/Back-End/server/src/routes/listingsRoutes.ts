@@ -24,6 +24,8 @@ const upload = multer({ storage: storage });
  * tags:
  *   - name: Listings
  *     description: Endpoints for managing listings.
+ *   - name: Users
+ *     description: Endpoints for managing users.
  */
 
 
@@ -35,6 +37,13 @@ const upload = multer({ storage: storage });
  *     tags:
  *       - Listings
  *     parameters:
+ *       - name: Authorization
+ *         in: header
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: "Bearer eyJhbGciOi..."
+ *           description: Bearer token for authentication
  *       - name: lat
  *         in: query
  *         required: false
@@ -76,6 +85,13 @@ const upload = multer({ storage: storage });
  *     tags:
  *       - Listings
  *     parameters:
+ *       - name: Authorization
+ *         in: header
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "Bearer eyJhbGciOi..."
+ *         description: Bearer token for authentication
  *       - name: postId
  *         in: path
  *         required: true
@@ -92,19 +108,31 @@ const upload = multer({ storage: storage });
  *               properties:
  *                 listing:
  *                   $ref: '#/components/schemas/publicListing'
+ *       400:
+ *         description: Bad Request: No postId provided
+ *       400:
+ *         description: Listing no longer available.
  *       404:
  *         description: Listing not found.
  *       401:
- *         description: Unauthorized.
+ *         description: User not authorized.
  */
 
 /**
  * @swagger
- * /:
+ * /api/listings
  *   post:
  *     summary: Create a new listing
  *     tags:
  *       - Listings
+ *     parameters:
+ *       - name: Authorization
+ *         in: header
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "Bearer eyJhbGciOi..."
+ *         description: Bearer token for authentication
  *     requestBody:
  *       required: true
  *       content:
@@ -149,17 +177,38 @@ const upload = multer({ storage: storage });
  *                 $ref: '#/components/schemas/Listing/properties/subcategories'
  *     responses:
  *       201:
- *         description: Listing created successfully
+*         description: Listing created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   example: "Listing created successfully"
+ *                 postId:
+ *                   type: string
+ *                   example: "asdfnj24n52..."
+ *       400:
+ *         description: Missing required fields: [Missing fields]
+ *       401:
+ *         description: User not authorized.
  */
 
 /**
  * @swagger
- * /{postId}:
+ * /api/listings/{postId}:
  *   put:
  *     summary: Update a listing
  *     tags:
  *       - Listings
  *     parameters:
+ *       - name: Authorization
+ *         in: header
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "Bearer eyJhbGciOi..."
+ *         description: Bearer token for authentication
  *       - name: postId
  *         in: path
  *         required: true
@@ -178,16 +227,94 @@ const upload = multer({ storage: storage });
  *     responses:
  *       200:
  *         description: Listing updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   example: "Listing updated successfully"
+ *                 listing:
+ *                   $ref: '#/components/schemas/publicListing'
+ *       400:
+ *         description: No postId provided.
+ *       400:
+ *         description: No fields provided to update.
+ *       404:
+ *         description: Listing not found.
+ *       401:
+ *         description: User not authorized.
+ *       401:
+ *         description: User not permitted to change this listing.
  */
 
 /**
  * @swagger
- * /{postId}/images:
- *   put:
- *     summary: Upload an image for a listing
+ * /api/listings/{postId}:
+ *   delete:
+ *     summary: Delete a listing
  *     tags:
  *       - Listings
  *     parameters:
+ *       - name: Authorization
+ *         in: header
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "Bearer eyJhbGciOi..."
+ *         description: Bearer token for authentication
+ *       - name: postId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique identifier of the listing
+ *     responses:
+ *       200:
+ *         description: Listing removed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   example: "Listing deleted successfully"
+ *                 listing:
+ *                   type: object
+ *                   properties:
+ *                     title: string
+ *                       type: string
+ *                       example: "Estate Sale"
+ *                     postId: string
+ *                       type: string
+ *                       example: "as44n53js..."
+ *       400:
+ *         description: No postId provided.
+ *       400:
+ *         description: No fields provided to update.
+ *       404:
+ *         description: Listing not found.
+ *       401:
+ *         description: User not authorized.
+ *       401:
+ *         description: User not permitted to update this listing.
+ */
+
+/**
+ * @swagger
+ * /api/listings/{postId}/images:
+ *   post:
+ *     summary: Upload an image for an existing listing
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - name: Authorization
+ *         in: header
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "Bearer eyJhbGciOi..."
+ *         description: Bearer token for authentication
  *       - name: postId
  *         in: path
  *         required: true
@@ -210,12 +337,96 @@ const upload = multer({ storage: storage });
  *                 description: Optional caption for the image
  *     responses:
  *       200:
- *         description: Image added successfully
+ *         description: Listing updated successfully with new image.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   example: "Listing updated successfully"
+ *                 listing:
+ *                   $ref: '#/components/schemas/publicListing'
+ *       400:
+ *         description: No image file provided.
+ *       404:
+ *         description: Listing not found.
+ *       401:
+ *         description: User not authorized.
+ *       401:
+ *         description: User not permitted to update this listing.
+ */
+
+/**
+ * @swagger
+ * /api/listings/{postId}/images:
  *    delete:
  *     summary: Removes an image from a listing
  *     tags:
  *       - Listings
  *     parameters:
+ *       - name: Authorization
+ *         in: header
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "Bearer eyJhbGciOi..."
+ *         description: Bearer token for authentication
+ *       - name: postId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique identifier of the listing
+ *       - name: uri
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Public URI of the image to delete
+ *     responses:
+ *       200:
+ *         description: Image removed from listing.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   example: "Image removed successfully"
+ *                 listing:
+ *                   $ref: '#/components/schemas/publicListing'
+ *       400:
+ *         description: No vaild image URI provided.
+ *       400:
+ *         description: No postId provided.
+ *       404:
+ *         description: Listing with ID [postId] not found.
+ *       404:
+ *         description: No images found for listing ID "[postId]"
+ *       404:
+ *         description: Image URI "[uri]" not found in listing ID "[postId]"
+ *       401:
+ *         description: User not authorized.
+ *       401:
+ *         description: User not permitted to delete this listing.
+ */
+
+/**
+ * @swagger
+ * /api/listings/{postId}/images:
+ *    put:
+ *     summary: Updates an image caption
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - name: Authorization
+ *         in: header
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "Bearer eyJhbGciOi..."
+ *         description: Bearer token for authentication
  *       - name: postId
  *         in: path
  *         required: true
@@ -225,20 +436,44 @@ const upload = multer({ storage: storage });
  *     requestBody:
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               imageURI:
+ *               uri:
  *                 type: string
- *                 format: binary
- *                 description: Image path file to upload
+ *                 description: uri of the image uploaded
  *               caption:
  *                 type: string
- *                 description: Caption for the image
+ *                 description: new caption for the image
  *     responses:
  *       200:
- *         description: Image deleted successfully
+ *         description: Image removed from listing.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   example: "Caption updated successfully"
+ *                 listing:
+ *                   $ref: '#/components/schemas/publicListing'
+ *       400:
+ *         description: No vaild image URI provided.
+ *       400:
+ *         description: No postId provided.
+ *       400:
+ *         description: No valid new caption provided.
+ *       404:
+ *         description: Listing with ID [postId] not found.
+ *       404:
+ *         description: No images found for listing ID "[postId]"
+ *       404:
+ *         description: Image URI "[uri]" not found in listing ID "[postId]"
+ *       401:
+ *         description: User not authorized.
+ *       401:
+ *         description: User not permitted to delete this listing.
  */
 
 // gets all listings within a radius
