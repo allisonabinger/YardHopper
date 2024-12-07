@@ -210,6 +210,7 @@ Here is an example of user submitted listing data that is sufficient to post to 
 The API will respond with the postId of the newly created listing:
 ```
 {
+    "message": "Listing created with new postId",
     "postId": "KwLTqIjazVDMMPkS3ldZ"
 }
 ```

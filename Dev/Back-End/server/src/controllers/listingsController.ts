@@ -178,7 +178,7 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
 
         const newListing = await postListing(listingData);
         return res.status(201).json({
-            "Listing created with new postId": newListing.postId,
+            message: "Listing created successfully", postId: newListing.postId,
         });
     } catch (err) {
         next(err);
