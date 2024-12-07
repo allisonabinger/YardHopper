@@ -16,9 +16,29 @@ import PopupCardModal from "@/components/PopupCardModal";
 import { useSavedPosts } from "@/app/context/SavedPostsContext";
 import { useRouter } from "expo-router";
 
+type ListingItem = {
+  title: string;
+  description: string;
+  address: {
+    zip: number;
+    city: string;
+    street: string;
+    state: string;
+  };
+  dates: string[];
+  images: { uri: string; caption: string }[];
+  categories: string[];
+  postId: string;
+  g: {
+    geopoint: {
+      _latitude: number;
+      _longitude: number;
+    };
+  };
+};
 
 export default function SavedPosts() {
-  const { savedPosts } = useSavedPosts();
+  const { savedPosts, addSavedPost, removeSavedPost } = useSavedPosts();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [refreshing, setRefreshing] = useState(false);
@@ -49,25 +69,39 @@ export default function SavedPosts() {
     setSelectedListing(null);
   };
 
-  const renderItem = ({ item }: { item: any }) => (
-    <Card
-      images={item.images?.map((img) => ({ uri: img.uri })) || []}
-      postId={item.postId}
-      title={item.title}
-      description={item.description}
-      address={`${item.street}, ${item.city}`}
-      date={item.date || "No date available"}
-      categories={item.categories || []}
-      isLiked={true}
-      onToggleLike={() => {}}
-      route={() =>
-        router.push({
-          pathname: "../../listing/[id]",
-          params: { id: item.id },
-        })
-      }
-    />
-  );
+  // Simplified handleToggleLike function
+  const handleToggleLike = (listing: ListingItem) => {
+    const isAlreadyLiked = savedPosts.some((post) => post.postId === listing.postId);
+    if (isAlreadyLiked) {
+      removeSavedPost(listing.postId);
+    } else {
+      addSavedPost(listing); // Pass the entire listing directly
+    }
+  };
+
+  const renderItem = ({ item }: { item: ListingItem }) => {
+    const isLiked = savedPosts.some((post) => post.postId === item.postId);
+
+    return (
+      <Card
+        images={item.images?.map((img) => ({ uri: img.uri })) || []}
+        postId={item.postId}
+        title={item.title}
+        description={item.description}
+        address={`${item.address}, ${item.address}`}
+        date={item.dates[0]}
+        categories={item.categories}
+        isLiked={isLiked}
+        onToggleLike={() => handleToggleLike(item)}
+        route={() =>
+          router.push({
+            pathname: "./listing/[id]",
+            params: { id: item.postId },
+          })
+        }
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
