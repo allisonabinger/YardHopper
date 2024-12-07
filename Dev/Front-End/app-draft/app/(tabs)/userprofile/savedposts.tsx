@@ -14,6 +14,8 @@ import Card from "@/components/Card";
 import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
 import { useSavedPosts } from "@/app/context/SavedPostsContext";
+import { useRouter } from "expo-router";
+
 
 export default function SavedPosts() {
   const { savedPosts } = useSavedPosts();
@@ -24,6 +26,8 @@ export default function SavedPosts() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [radius, setRadius] = useState(5);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  const router = useRouter();
 
   const toggleFilter = () => {
     setFilterModalVisible(!filterModalVisible);
@@ -56,7 +60,12 @@ export default function SavedPosts() {
       categories={item.categories || []}
       isLiked={true}
       onToggleLike={() => {}}
-      onPress={() => {}}
+      route={() =>
+        router.push({
+          pathname: "../../listing/[id]",
+          params: { id: item.id },
+        })
+      }
     />
   );
 
