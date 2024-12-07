@@ -1,5 +1,5 @@
 import React, { useLayoutEffect } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
@@ -44,10 +44,32 @@ export default function SettingsScreen() {
   const greeting = greetings.find(({ start, end }) => currentHour >= start && currentHour < end);
   const { icon, text } = greeting || { icon: "sunny", text: "Hello" };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          onPress: () => {
+            // Implement account deletion logic here
+            console.log("Account deletion requested");
+            // After successful deletion, you might want to sign out the user and redirect to the login page
+            // navigation.navigate('Login');
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Ionicons name="settings-outline" size={28} color="white" />
         <Text style={styles.headerTitle}>Profile</Text>
       </View>
 
@@ -77,13 +99,18 @@ export default function SettingsScreen() {
 
         <Link href="/userprofile/updatesettings" asChild>
           <Pressable style={styles.menuItem}>
-            <Ionicons name="lock-closed-outline" size={24} color="#333" />
-            <Text style={styles.menuText}>Change password</Text>
+            <Ionicons name="settings-outline" size={24} color="black" />
+            <Text style={styles.menuText}>Account Settings</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
           </Pressable>
         </Link>
 
         <LogoutComponent style={styles.menuItem} />
+
+        <Pressable style={styles.menuItem} onPress={handleDeleteAccount}>
+          <Ionicons name="trash-outline" size={24} color="#FF0000" />
+          <Text style={[styles.menuText, styles.deleteAccountText]}>Delete Account</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -156,4 +183,8 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 10,
   },
+  deleteAccountText: {
+    color: '#FF0000',
+  },
 });
+
