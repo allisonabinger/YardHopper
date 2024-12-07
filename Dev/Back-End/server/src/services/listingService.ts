@@ -315,7 +315,7 @@ export const removeListingInDB = async (postId: string, hashUid: string) => {
         // return listingData;
     } catch (err) {
         if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
-            throw new InternalServerError("An unexpected error occurred while posting the listing.");
+            throw new InternalServerError("An unexpected error occurred while deleting the listing.");
         }
         throw err;
     }
