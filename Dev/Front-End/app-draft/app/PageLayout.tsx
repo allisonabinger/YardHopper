@@ -54,20 +54,18 @@ const PageLayout = ({ children, step = 1, steps = 3 }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 50,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     backgroundColor: "#f2f2f2",
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: "#e0e0e0", 
   },
   backButton: {
-    marginRight: 16,
+    marginLeft: 16,
     padding: 10,
+    marginTop: 40,
   },
   progressBar: {
     flex: 1,
@@ -75,6 +73,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#e0e0e0",
     borderRadius: 4,
     overflow: "hidden",
+    marginTop: 40,
+    marginLeft: 16,
+    width: "80%",
+    marginRight: 30,
   },
   progress: {
     height: "100%",

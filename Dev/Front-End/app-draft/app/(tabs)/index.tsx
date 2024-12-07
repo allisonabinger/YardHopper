@@ -38,7 +38,7 @@ type ListingItem = {
 
 export default function HomeScreen() {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [radius, setRadius] = useState(5);
+  const [radius, setRadius] = useState(25);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [listings, setListings] = useState<ListingItem[]>([]);
