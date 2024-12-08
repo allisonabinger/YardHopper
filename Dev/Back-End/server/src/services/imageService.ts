@@ -1,11 +1,11 @@
-import * as multer from 'multer';
-import path from "path"
-import { db, storage } from '../config/firebase';
-import { v4 as uuidv4 } from "uuid"
-import { ENV } from '../config/environment';
-import { InternalServerError, NotFoundError } from '../middlewares/errors';
+import * as multer from "multer";
+import path from "path";
+import { db, storage } from "../config/firebase";
+import { v4 as uuidv4 } from "uuid";
+import { ENV } from "../config/environment";
+import { BadRequestError, InternalServerError, NotFoundError } from "../middlewares/errors";
 
-// ads image to firebase and returns uri
+// Uploads image to firebase and returns uri
 export const uploadImageToFirebase = async (file: Express.Multer.File, postId: string): Promise<string> => {
     const imageId = uuidv4();
     const fileName = `${imageId}-${file.originalname}`;
@@ -17,68 +17,75 @@ export const uploadImageToFirebase = async (file: Express.Multer.File, postId: s
         const fileUpload = bucket.file(imagePath);
 
         if (!fileUpload) {
-            throw new NotFoundError("Unable to find image in Firebase storage.")
+            throw new NotFoundError("Unable to find image in Firebase storage.");
         }
-
         await fileUpload.save(file.buffer, {
             contentType: file.mimetype,
             public: false,
         });
         const encodedPath = encodeURIComponent(imagePath);
-        const fileUri = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media`
+        const fileUri = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media`;
         return fileUri;
     } catch (err) {
-        // console.error("Error uploading image to Firebase", err);
-        throw new InternalServerError("Error uploading image to Firebase");
+        if (!(err instanceof NotFoundError)) {
+            throw new InternalServerError(
+                `An unexpected error occurred while uploading the image to Firebase Storage. Path: ${imagePath}`
+            );
+        }
+        throw err;
     }
-}
+};
 
 // removes image stored in Firebase from bucket
 export const removeImageInFirebase = async (filePath: string): Promise<void> => {
     try {
         const file = storage.bucket().file(filePath);
-
+        if (!file) {
+            throw new NotFoundError(`File not found at path: ${filePath}`);
+        }
         await file.delete();
-
-        // console.log(`Successfully deleted file: ${file}`)
     } catch (err) {
-        // console.error(`Error deleting file: ${filePath}`, err);
-        throw new InternalServerError(`Error deleting file: ${filePath}`);
+        if (!(err instanceof NotFoundError)) {
+            throw new InternalServerError(`An unexpected error occurred while deleting the file at path: ${filePath}`);
+        }
+        throw err;
     }
-}
+};
 
 export const removeFolderInFirebase = async (folderPath: string): Promise<void> => {
     try {
         const [files] = await storage.bucket().getFiles({ prefix: folderPath });
 
-        if (files.length === 0) {
-            console.log(`No files found in folder: ${folderPath}`);
-            return;
+        if (!files || files.length === 0) {
+            throw new NotFoundError(`No files found in folder: ${folderPath}`);
         }
 
-        const deletePromises = files.map(file => file.delete());
+        const deletePromises = files.map((file) => file.delete());
         await Promise.all(deletePromises);
-
-        // console.log(`Successfully delete all images in the folder: ${folderPath}`)
     } catch (err) {
-        // console.error(`Error deleting files in folder: ${folderPath}`, err);
-        throw new InternalServerError(`Error deleting files in folder: ${folderPath}`);
+        if (!(err instanceof NotFoundError)) {
+            throw new InternalServerError(`An unexpected error occurred while deleting files in folder: ${folderPath}`);
+        }
+        throw err;
     }
-}
+};
 
-// updated with new URI format AB 12/2/24 12:17pm
+// obtains the file path of an image in firebase based on public uri
 export const getFilePathFromURI = (imageURI: string): string => {
+    try {
+        const bucketBaseURL = `https://firebasestorage.googleapis.com/v0/b/${ENV.FIREBASE_STORAGE_BUCKET}/o/`;
 
-    const bucketBaseURL = `https://firebasestorage.googleapis.com/v0/b/${ENV.FIREBASE_STORAGE_BUCKET}/o/`;
-
-    // console.log(bucketBaseURL)
-    // console.log(imageURI)
-    if (!imageURI.startsWith(bucketBaseURL)) {
-        throw new Error("Invalid image URI.")
+        if (!imageURI.startsWith(bucketBaseURL)) {
+            throw new BadRequestError(`Invalid image URI: ${imageURI}`);
+        }
+        const encodedPath = imageURI.replace(bucketBaseURL, "").split("?")[0];
+        const decodedPath = decodeURIComponent(encodedPath);
+    
+        return decodedPath;
+    } catch (err) {
+        if (!(err instanceof BadRequestError)) {
+            throw new InternalServerError(`Error decoding image URI: ${imageURI}`);
+        }
+        throw err;
     }
-    const encodedPath = imageURI.replace(bucketBaseURL, "").split("?")[0];
-    const decodedPath = decodeURIComponent(encodedPath);
-
-    return decodedPath;
-
-}
+};
