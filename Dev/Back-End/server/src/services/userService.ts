@@ -1,10 +1,8 @@
 // Service layer for user management
 import { signInWithCustomToken } from "firebase/auth";
 import { db, auth } from "../config/firebase";
-import { hashUid } from "../controllers/usersController";
 import { User } from "../models/userModel";
-import { BadRequestError, InternalServerError, NotFoundError, UnauthorizedError } from "../middlewares/errors";
-// import { generateCoordinates, generateGeo } from "./geolocateService";
+import { BadRequestError, InternalServerError, NotFoundError } from "../middlewares/errors";
 
 export const getUserProfile = async (hashUid: string) => {
     try {
@@ -78,28 +76,31 @@ export const makeUserProfile = async (hashUid: string, uid: string, userDetails:
             createdAt: firebaseUser.metadata.creationTime || new Date().toISOString(),
         };
 
-        const userdoc = await userRef.set(newUserProfile);
+        try {
+            await userRef.set(newUserProfile);
 
-        const createdUserDoc = await userRef.get();
-        const createdData = createdUserDoc.data();
-
-        if (!createdData) {
-            throw new InternalServerError("Failed to retrieve the newly created user profile");
+            const createdUserDoc = await userRef.get();
+            const createdData = createdUserDoc.data();
+    
+            if (!createdData) {
+                throw new InternalServerError("Failed to retrieve the newly created user profile");
+            }
+            return {
+                userId: createdData.userId,
+                first: createdData.first,
+                last: createdData.last,
+                email: createdData.email,
+                street: createdData.street ?? undefined,
+                city: createdData.city ?? undefined,
+                state: createdData.state ?? undefined,
+                zipcode: createdData.zipcode,
+                savedListings: createdData.savedListings || [],
+                userListings: createdData.userListings || [],
+                createdAt: createdData.createdAt,
+            };
+        } catch (err) {
+            throw new InternalServerError("Error updating user profile with provided data.");
         }
-
-        return {
-            userId: createdData.userId,
-            first: createdData.first,
-            last: createdData.last,
-            email: createdData.email,
-            street: createdData.street ?? undefined,
-            city: createdData.city ?? undefined,
-            state: createdData.state ?? undefined,
-            zipcode: createdData.zipcode,
-            savedListings: createdData.savedListings || [],
-            userListings: createdData.userListings || [],
-            createdAt: createdData.createdAt,
-        };
     } catch (err) {
         if (!(err instanceof BadRequestError || err instanceof InternalServerError)) {
             throw new InternalServerError("An unexpected error occurred while creating the user profile.");
