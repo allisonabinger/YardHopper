@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 250,
+    width: 255,
     height: 300,
     marginBottom: 60,
     padding: 30,
