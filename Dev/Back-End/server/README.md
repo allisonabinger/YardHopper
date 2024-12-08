@@ -423,15 +423,45 @@ The API responds with a success message of the newly updated listing, which shou
 ### Get a user's profile: GET /api/users/me
 This endpoint is for verfiying a user and displaying their profile. A user's uid is extracted from the `Authorization` header and the uid is used to gather their account in Firebase Auth. An encryption service is used to find their user profile stored in the Firestore Database. 
 
-The endpoint will accept user inputted information in the `body` of the request. Fields required in the body are `first`, `last`, and `zipcode`. Optional fields are address fields, such as `street`, `city`, and `state`. The user's `email` will be gathered from their account made through Firebase, as well as the account's `generatedAt` timestamp.
-
 **Request Endpoint Example**
 GET https://yardhopperapi.onrender.com/api/users/me
 
 **Request Header**
 `Authorization: Bearer ${idToken}`
 
-**Request Body - JSON**
+**Server Response**
+The API will return data regarding the user's profile. Here is an example response:
+
+```
+{
+    "first": "John",
+    "last": "Doe",
+    "email": "test@test.com",
+    "street": "15 N Cheyenne Ave",
+    "city": "Tulsa",
+    "state": "OK",
+    "zipcode": 74103,
+    "createdAt": "2024-12-03T16:17:33Z"
+}
+```
+
+---
+
+### Create a new user profile: POST /api/users/create
+This endpoint is designed to create a new user profile in the Firestore Database with user information. It does not create a user account in Firebase Auth, so the account will be created in the client app. 
+
+The endpoint will accept user inputted information in the `body` of the request.
+
+Fields **required** in the body are `first`, `last`, and `zipcode`. Optional fields are address fields, such as `street`, `city`, and `state`. The user's `email` will be gathered from their account made through Firebase, as well as the account's `generatedAt` timestamp.
+
+
+**Request Endpoint Example**
+POST https://yardhopperapi.onrender.com/api/users/create
+
+**Request Header**
+`Authorization: Bearer ${idToken}`
+
+**Request Body -- JSON**
 FORMAT:
 ```
   {
@@ -455,55 +485,12 @@ Example Request:
 
   }
 ```
-
-**Server Response**
-The API will return data regarding the user's profile. Here is an example response:
-
-```
-{
-    "first": "John",
-    "last": "Doe",
-    "email": "test@test.com",
-    "street": "15 N Cheyenne Ave",
-    "city": "Tulsa",
-    "state": "OK",
-    "zipcode": 74103,
-    "createdAt": "2024-12-03T16:17:33Z"
-}
-```
-
----
-
-### Create a new user profile: POST /api/users/create
-This endpoint is designed to create a new user profile in the Firestore Database with user information. It does not create a user account in Firebase Auth, so the account will be created in the client app. The requests accepts user details in the body, connects the `email` and `createdAt` fields stored in FirebaseAuth with the uid, and creates a user document with their profile details. 
-
-The required fields in the **body** are `first`, `last`, and `zipcode`.
-Option fields are the address of the user, including `street` (street address), `city`, and `state`.
-
-**Request Endpoint Example**
-POST https://yardhopperapi.onrender.com/api/users/create
-
-**Request Header**
-`Authorization: Bearer ${idToken}`
-
-**Request Body -- MUST BE JSON**
-```
-{
-    "first": "Jenny",
-    "last": "Doe",
-    "street": "15 N Cheyenne Ave",
-    "city": "Tulsa",
-    "state": "OK",
-    "zipcode": 74103,
-}
-```
-
 **Server Response**
 The response returned from the API will message and the newly created profile.
 ```
 {
     "message": "User profile created successfully",
-    "data": {
+    "user": {
         "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57",
         "first": "Yard",
         "last": "Hopper",
@@ -562,7 +549,7 @@ The response returned from the API will be a successful updated message, as well
 ```
 {
     "message": "User profile updated successfully",
-    "data": {
+    "user": {
         "first": "Georgia",
         "last": "Doe",
         "email": "user2@yahoo.com",
@@ -703,7 +690,9 @@ The server will respond with a message upon successful deletion:
 ---
 
 ## API Core Structure
-The API aligns with the **Separation of Concerns**, which makes it more modular, testable, and maintainable. With this principle, the functionality is broken up so that one file or function is not handling too much at a time.
+The API aligns with **Separation of Concerns**, which makes it more modular, testable, and maintainable. With this principle, the functionality is broken up so that one file or function is not handling too much at a time.
+
+Requests come through the an open port provided by the **server**, which will use the **routes** provided as endpoints. A request will be sent through the authentication **middleware**, then sent to the appropriate **controller**. The **controller** will verify the authentication, handle any request **query** or **body** sent from the client, and then call the appropriate **service** function. The **services** handle database and storage logic, and return the any data back to the **controller**, which will then send the response back to the client. Any errors caught will call on the appropriate error class created by the error handler **middleware**, which will send the appropriate status code and message as a response.
 
 ### File Structure
 
@@ -769,13 +758,17 @@ Contains interfaces and types used for consistency across the project.
 - Contains the most up to date interface of `Listing`, which is used across the project.
 
 #### Middleware - middlewares/
-Holds the middleware configurations needed for authentication and error handling (**not yet implemented**)
+Holds the middleware configurations needed for authentication and error handling.
 
 `authMiddleware.ts`
-- (**not yet implemented**)
+- Parses the authentication header form the request and verifies the ID token provided by the client auth. Contains the `authenticateUser` and `hashUid` functions used across the server.
+
+`errors`
+- Constructs the `AppError` class to define the specific errors and statuses used across the server. Contains the following errors: `BadRequestError` (status 400), `UnauthorizedError` (status 401), `ForbiddenError` (status 403) [currently unused], `NotFoundError` (status 404), and `InternalServerError` (status 500).
 
 `errorHandler.ts`
-- (**not yet implemented**)
+- Responds to the client's request with the approprate status code and message. If the error is one of the defined `AppErrors` imported from `errors`, then it will respond accordingly. If the errr is not, then it responds with an `Unknown Error` message with the details. 
+
 
 #### Seed - seed/
 Used to seeding the database. Contains lots of formatting for previous versions of data, and was updated frequently with new requests for posting documents. Should not be used to seed database, but housed for future implementations. Also hold images/ used in the project. 
