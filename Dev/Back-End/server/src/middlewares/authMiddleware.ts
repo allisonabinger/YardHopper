@@ -3,8 +3,12 @@
 
 import { auth } from "../config/firebase";
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import { hashUid } from "../controllers/usersController";
+import { createHash } from "crypto";
 import { ForbiddenError, UnauthorizedError } from "./errors";
+
+export const hashUid = (uid: string): string => {
+    return createHash("sha256").update(uid).digest("hex");
+};
 
 export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
