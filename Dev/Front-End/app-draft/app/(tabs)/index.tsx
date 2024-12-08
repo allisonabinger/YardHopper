@@ -52,7 +52,7 @@ export default function HomeScreen() {
   const [isLiked, setIsLiked] = useState(false);
 
   // Access SavedPostsContext
-  const { savedListings, addSavedListing, removeSavedListing } = useSavedListings();
+  const { savedListings, addSavedListing, removeSavedListing, fetchSavedListings } = useSavedListings();
 
   const router = useRouter();
 
@@ -93,7 +93,7 @@ export default function HomeScreen() {
     const data = await response.json();
 
     // Update listings state
-
+    console.log(JSON.stringify(data, null, 2));
     setListings((prevListings) => {
       const newListings = isRefresh ? data.listings : [...prevListings, ...data.listings];
       return newListings.filter(
@@ -112,13 +112,18 @@ export default function HomeScreen() {
   }
 };
 
-  useEffect(() => {
-    fetchListings();
-  }, []);
+useEffect(() => {
+  // Fetch both listings and saved listings on initial load
+  const initializeData = async () => {
+    await Promise.all([fetchListings(), fetchSavedListings()]);
+  };
+
+  initializeData();
+}, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchListings();
+    await Promise.all([fetchListings({ isRefresh: true }), fetchSavedListings()]);
     setRefreshing(false);
   };
 
@@ -146,7 +151,9 @@ export default function HomeScreen() {
   };
 
   const renderItem = ({ item }: { item: ListingItem }) => {
-    const isLiked = savedListings.some((listing) => listing.postId === item.postId);
+    const isLiked = savedListings.some(
+      (savedListing) => savedListing.postId === item.postId
+    );
 
     return (
       <Card
