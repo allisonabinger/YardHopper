@@ -782,10 +782,10 @@ Holds the configurations for the swaggerUI documentation.
 
 
 ### Framework
-Node.js, Express, Firebase, Firestore, Swagger
+Node.js, Express, Firebase, Firestore, Swagger, Multer, Crypto, Firebase, Firestore, geoFirestore.
 
 ### Firestore
-Firestore will manage our listings and user data. `server.js` will utilize the Firebase Admin SDK to interact with Firebase Storage and the Firestore Database
+Firestore will manage our listings and user data. `config/firebase.ts` will utilize the Firebase Admin SDK to interact with Firebase Storage and the Firestore Database
 
 ## Data Management
 We are using a NoSQL structured schema for our data management using Firestore Database storage as our main database.
@@ -835,7 +835,9 @@ USER - Provided by user input via front-end interaction
 ## Security
 
 ### Authentication
-Firebase Authentication is used to authenticte users, as well as Google OAuth for users to be able to sign in with their google account. Each request to the API must be from an authenticated user. Authentication is handled in the app with firebase authentication, and user information is encrypted before requests are sent and handled within the server to ensure no interception of sensitive information occurs. 
+Each request to the API must be from an authenticated user. Authentication is handled in the app with Firebase authentication, and user information is encrypted before requests are sent and handled within the server to ensure no interception of sensitive information occurs. 
+
+When a user signs into their account on the app, they are assigned a temporary ID Token for their session. That IDToken is passed as a header in each request and then carefully computer to match any user profile settings or listing management for that user. 
 
 ### Encryption
 Certain protected information is encrypted before being sent through HTTP requests and other data transfers. The backend API can validate tokens sent from client to ensure private data is not public traffic.
@@ -843,11 +845,7 @@ Certain protected information is encrypted before being sent through HTTP reques
 ### Privacy
 Users will not have their information public to others, so there is not identifying data that is listed on sales. The response from the API will only include public fields that will be necessary to display the listing and filter the posts by user input.
 
-Users will be able to archive their posts, and once a post has been archived, the image will be deleted from the database to perserve storage and ensure privacy. 
-
-
-## Optimization
-
+Users will be able to archive their posts, and once a post has been archived, the image will be deleted from the database to perserve storage and ensure privacy. Users can also update their information and delete their account, which will delete any listing they have made or image they have uploaded from our database and blob storage.
 
 ## Auto-Cleanup
 There is currently one cloud function service that will check for any listings that should be archived. At midnight each day, it looks at the listings for their active dates and compares it to the current date. It will then update the `status` of the sale accordingly to ensure no expired sales are shown, and upcoming sales are switched to `active` when the day arrives. 
