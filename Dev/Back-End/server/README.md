@@ -639,7 +639,11 @@ POST https://yardhopperapi.onrender.com/api/users/savedListings
 The server will respond with a message upon successful addition:
 ```
 {
-    "message": "Listing saved successfully"
+    "message": "Listing 6VpUpFaeAHvA9Ew9zAkj added to user's saved listings", 
+    "savedListings": [
+        "6VpUpFaeAHvA9Ew9zAkj",
+        "KwLTqIjazVDMMPkS3ldZ"
+    ]
 }
 ```
 

@@ -168,12 +168,10 @@ export const saveListing = async (req: Request, res: Response, next: NextFunctio
                 error: "Unauthorized request. User details not found.",
             });
         }
-        const result = await saveListingToUser(user.hashUid, postId);
+        const savedListings = await saveListingToUser(user.hashUid, postId);
 
-        res.status(201).json(result);
+        res.status(201).json({ message: `Listing ${postId} added to user's saved listings`, savedListings: savedListings });
     } catch (err) {
-        console.log(`Error occured in createUserProfile: ${err}`);
-
         next(err);
     }
 };
@@ -190,12 +188,10 @@ export const unsaveListing = async (req: Request, res: Response, next: NextFunct
                 error: "Unauthorized request. User details not found.",
             });
         }
-        const result = await unsaveListingToUser(user.hashUid, postId);
+        const savedListings = await unsaveListingToUser(user.hashUid, postId);
 
-        res.status(201).json(result);
+        res.status(201).json({ message: `Listing ${postId} removed from user's saved listings`, savedListings: savedListings });
     } catch (err) {
-        console.log(`Error occured in createUserProfile: ${err}`);
-
         next(err);
     }
 };

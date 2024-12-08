@@ -3,25 +3,24 @@ import { signInWithCustomToken } from "firebase/auth";
 import { db, auth } from "../config/firebase";
 import { hashUid } from "../controllers/usersController";
 import { User } from "../models/userModel";
+import { BadRequestError, InternalServerError, NotFoundError, UnauthorizedError } from "../middlewares/errors";
 // import { generateCoordinates, generateGeo } from "./geolocateService";
 
-export const getUserProfile = async (
-    hashUid: string,
-) => {
+export const getUserProfile = async (hashUid: string) => {
     try {
-          const userRef = db.collection("users").doc(hashUid);
-          const userDoc = await userRef.get();
+        const userRef = db.collection("users").doc(hashUid);
+        const userDoc = await userRef.get();
 
-          if (!userDoc.exists) {
-            return null;
-      }
+        if (!userDoc.exists) {
+            throw new NotFoundError(`No user found with ID: ${hashUid}`);
+        }
 
-          const data = userDoc.data();
+        const data = userDoc.data();
 
-          if (!data) {
-            return null;
-          }
-          return {
+        if (!data) {
+            throw new InternalServerError(`Could not retrieve data for user with ID "${hashUid}"`);
+        }
+        return {
             userId: data.hash,
             first: data.first,
             last: data.last,
@@ -31,38 +30,40 @@ export const getUserProfile = async (
             state: data.state ?? undefined,
             zipcode: data.zipcode,
             createdAt: data.createdAt,
-          };
-
+        };
     } catch (err) {
-          console.error("Error finding listing in Firestore: ", err);
-          throw err;
+        if (!(err instanceof NotFoundError || err instanceof InternalServerError)) {
+            throw new InternalServerError("An unexpected error occurred while fetching user profile data.");
+        }
+        throw err;
     }
 };
 
 export const makeUserProfile = async (hashUid: string, uid: string, userDetails: Partial<User>) => {
     try {
-        const {first, last, zipcode} = userDetails;
-        if (!userDetails) {
-            throw new Error("Missing user details.")
-        }
+        const { first, last, zipcode } = userDetails;
+
         if (!first || !last || !zipcode) {
             const missingFields = [];
             if (!first) missingFields.push("first");
             if (!last) missingFields.push("last");
             if (!zipcode) missingFields.push("zipcode");
-            throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
+            throw new BadRequestError(`Missing required fields: ${missingFields.join(", ")}`);
         }
 
         const firebaseUser = await auth.getUser(uid);
+
         if (!firebaseUser) {
-            throw new Error("Cannot make user profile unless account is created.")
+            throw new InternalServerError(
+                "Could not find user account. User account must exist before creating profile."
+            );
         }
 
         const userRef = db.collection("users").doc(hashUid);
 
         const userDoc = await userRef.get();
         if (userDoc.exists) {
-            throw new Error("User profile already exists");
+            throw new BadRequestError("User profile already exists");
         }
 
         const newUserProfile = {
@@ -75,18 +76,18 @@ export const makeUserProfile = async (hashUid: string, uid: string, userDetails:
             city: userDetails.city ?? null,
             state: userDetails.state ?? null,
             createdAt: firebaseUser.metadata.creationTime || new Date().toISOString(),
-        }
+        };
 
-        const userdoc = await userRef.set(newUserProfile)
+        const userdoc = await userRef.set(newUserProfile);
 
         const createdUserDoc = await userRef.get();
         const createdData = createdUserDoc.data();
 
         if (!createdData) {
-            throw new Error("Failed to retrieve the newly created user profile");
-          }
+            throw new InternalServerError("Failed to retrieve the newly created user profile");
+        }
 
-          return {
+        return {
             userId: createdData.userId,
             first: createdData.first,
             last: createdData.last,
@@ -98,25 +99,26 @@ export const makeUserProfile = async (hashUid: string, uid: string, userDetails:
             savedListings: createdData.savedListings || [],
             userListings: createdData.userListings || [],
             createdAt: createdData.createdAt,
-          };
-
-    } catch (error) {
-        console.error("Error creating user profile:", error);
-        throw error;
-      }
-}
+        };
+    } catch (err) {
+        if (!(err instanceof BadRequestError || err instanceof InternalServerError)) {
+            throw new InternalServerError("An unexpected error occurred while creating the user profile.");
+        }
+        throw err;
+    }
+};
 
 export const updateUserProfile = async (hashUid: string, uid: string, updatedDetails: Partial<User>) => {
     try {
         if (Object.keys(updatedDetails).length === 0) {
-            throw new Error("No fields to update.");
+            throw new BadRequestError("No information provided to update user profile.");
         }
-        
+
         const userRef = db.collection("users").doc(hashUid);
 
         const userDoc = await userRef.get();
         if (!userDoc.exists) {
-            throw new Error("User profile does not exist");
+            throw new NotFoundError(`No user profile found with ID: ${hashUid}`);
         }
 
         await userRef.update(updatedDetails);
@@ -125,7 +127,7 @@ export const updateUserProfile = async (hashUid: string, uid: string, updatedDet
         const updatedData = updatedUserDoc.data();
 
         if (!updatedData) {
-          throw new Error('listing not found');
+            throw new InternalServerError(`Failed to confirm update for user with ID "${hashUid}".`);
         }
         return {
             first: updatedData.first,
@@ -135,119 +137,120 @@ export const updateUserProfile = async (hashUid: string, uid: string, updatedDet
             city: updatedData.city ?? undefined,
             state: updatedData.state ?? undefined,
             zipcode: updatedData.zipcode,
-    };
-
-    } catch (error) {
-        console.error("Error creating user profile:", error);
-        throw error;
-      }
-}
+        };
+    } catch (err) {
+        if (!(err instanceof NotFoundError || err instanceof InternalServerError || err instanceof BadRequestError)) {
+            throw new InternalServerError("An unexpected error occurred while updating user profile.");
+        }
+        throw err;
+    }
+};
 
 export const removeUser = async (hashUid: string, uid: string) => {
     try {
-        await auth.deleteUser(uid);
+        try {
+            await auth.deleteUser(uid);
+        } catch (err) {
+            throw new InternalServerError("Error occured when deleting user account from Firebase.");
+        }
         const userRef = db.collection("users").doc(hashUid);
 
         const userDoc = await userRef.get();
         if (!userDoc.exists) {
-            throw new Error("User profile does not exist");
+            throw new NotFoundError(`No user found with ID: ${hashUid}`);
         }
 
         await userRef.delete();
 
         try {
-            await auth.getUser(uid);
-            throw new Error("Failed to delete user from Firebase Authentication.");
-          } catch (error: any) {
-            if (error.code !== "auth/user-not-found") {
-              throw error; // Rethrow unexpected errors
-            }
-          }
-
-        try {
             const userListingsSnapshot = await db.collection("listings").where("userId", "==", hashUid).get();
             if (!userListingsSnapshot.empty) {
                 const deletePromises = userListingsSnapshot.docs.map((doc) => doc.ref.delete());
-                await Promise.all(deletePromises)
+                await Promise.all(deletePromises);
             }
-        } catch (error) {
-              console.error("Error finding user listing in Firestore: ", error);
-              throw error;
+        } catch (err) {
+            throw new InternalServerError("Error occured while searching for user's listings.");
         }
+    } catch (err) {
+        if (!(err instanceof NotFoundError || err instanceof InternalServerError)) {
+            throw new InternalServerError("An unexpected error occurred while deleting the user's account and profile.");
+        }
+        throw err;
+    }
+};
 
-    } catch (error) {
-        console.error("Error deleting user:", error);
-        throw error;
-      }
-}
-
-export const getUserListings = async (
-    hashUid: string
-) => {
+export const getUserListings = async (hashUid: string) => {
     try {
         const listingsSnapshot = await db.collection("listings").where("userId", "==", hashUid).get();
 
         if (listingsSnapshot.empty) {
-            throw new Error("User has no listings");
+            throw new NotFoundError(`No listings found from user with ID: ${hashUid}`);
         }
 
         const listings = listingsSnapshot.docs.map((doc) => {
             const data = doc.data();
+            if (!data) {
+                throw new InternalServerError(`Could not retrieve listings data from user with ID: ${hashUid}`);
+            }
             return {
-                  title: data.title,
-                  description: data.description,
-                  address: data.address,
-                  dates: data.dates,
-                  startTime: data.startTime,
-                  endTime: data.endTime,
-                  images: data.images,
-                  categories: data.categories,
-                  status: data.status,
-                  g: data.g,
-                  postId: data.postId,
+                title: data.title,
+                description: data.description,
+                address: data.address,
+                dates: data.dates,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                images: data.images,
+                categories: data.categories,
+                status: data.status,
+                g: data.g,
+                postId: data.postId,
             };
-      });
-      return listings;
-
-    } catch (error) {
-          console.error("Error finding user listing in Firestore: ", error);
-          throw error;
+        });
+        return listings;
+    } catch (err) {
+        if (!(err instanceof NotFoundError || err instanceof InternalServerError)) {
+            throw new InternalServerError("An unexpected error occurred while fetching the user's listings.");
+        }
+        throw err;
     }
 };
 
-export const getSavedListings = async (
-    hashUid: string
-) => {
+export const getSavedListings = async (hashUid: string) => {
     try {
         const userRef = db.collection("users").doc(hashUid);
         const userDoc = await userRef.get();
-    
+
         if (!userDoc.exists) {
-          throw new Error("User not found");
+            throw new NotFoundError(`No user found with ID: ${hashUid}`);
         }
-    
+
         const userData = userDoc.data();
         if (!userData) {
-          throw new Error("User data is empty");
+            throw new InternalServerError(`Could not retrieve data for user with ID "${hashUid}"`);
         }
-    
+
         const savedListings: string[] = userData.savedListings || [];
         if (savedListings.length === 0) {
-          return [];
+            throw new NotFoundError(`No saved listings found from user with ID: ${hashUid}`);
         }
-        const listingsQuery = db
-        .collection("listings")
-        .where("postId", "in", savedListings)
+        const listingsQuery = db.collection("listings").where("postId", "in", savedListings);
 
         const querySnapshot = await listingsQuery.get();
+        
 
         const validListings = querySnapshot.docs.filter((doc) => {
             const data = doc.data();
+            if (!data) {
+                throw new InternalServerError(`Could not retrieve saved listings data for user with ID "${hashUid}"`);
+            }
             return ["active", "upcoming"].includes(data.status);
         });
 
         const listings = validListings.map((doc) => {
             const data = doc.data();
+            if (!data) {
+                throw new InternalServerError(`Could not retrieve saved listings data for user with ID "${hashUid}"`);
+            }
             return {
                 title: data.title,
                 description: data.description,
@@ -264,88 +267,100 @@ export const getSavedListings = async (
         });
 
         const validPostIds = validListings.map((doc) => doc.data().postId);
-        const updatedSavedListings = savedListings.filter((postId) =>
-            validPostIds.includes(postId)
-        );
+        const updatedSavedListings = savedListings.filter((postId) => validPostIds.includes(postId));
 
         if (updatedSavedListings.length !== savedListings.length) {
-            await userRef.update({
-                savedListings: updatedSavedListings,
-            });
+            try {
+                await userRef.update({
+                    savedListings: updatedSavedListings,
+                });
+            } catch (err) {
+                throw new InternalServerError(`Error updating saved listings with valid listings for user with ID "${hashUid}"`);
+            }
         }
-
+        if (!listings) {
+            throw new NotFoundError(`No saved listings found from user with ID: ${hashUid}`);
+        }
         return listings;
-
-    } catch (error) {
-          console.error("Error finding user listing in Firestore: ", error);
-          throw error;
+    } catch (err) {
+        if (!(err instanceof NotFoundError || err instanceof InternalServerError)) {
+            throw new InternalServerError("An unexpected error occurred while fetching the user's saved listings.");
+        }
+        throw err;
     }
 };
 
 export const saveListingToUser = async (hashUid: string, postId: string) => {
     try {
-        
         const userRef = db.collection("users").doc(hashUid);
 
         const userDoc = await userRef.get();
         if (!userDoc.exists) {
-            throw new Error("User profile does not exist");
+            throw new NotFoundError(`No user found with ID: ${hashUid}`);
         }
 
         const userData = userDoc.data();
         if (!userData) {
-          throw new Error("User data is empty");
+            throw new NotFoundError(`No user profile found with ID: ${hashUid}`);
         }
 
         const savedListings: string[] = userData.savedListings || [];
         if (savedListings.includes(postId)) {
-          return { message: "Listing is already saved" };
+            throw new BadRequestError(`Listing with ID "${postId} is already saved for user.`);
         }
-        savedListings.push(postId);
 
-        await userRef.update({ savedListings });
+        try {
+            savedListings.push(postId);
+            await userRef.update({ savedListings });
+        } catch (err) {
+            throw new InternalServerError(`Error occured while saving listing to user with ID: ${hashUid}`);
+        }
 
         const updatedUserDoc = await userRef.get();
         const updatedData = updatedUserDoc.data();
 
         if (!updatedData) {
-            throw new Error("Unable to confirm listing added to user's saved listings");
+            throw new InternalServerError(`Failed to confirm listing with ID "${postId}" was saved to user with ID: ${hashUid}`);
         }
 
-        if(updatedData.savedListings.includes(postId)) {
-            return { message: "Listing saved successfully"}
+        if (updatedData.savedListings.includes(postId)) {
+            return updatedData.savedListings;
         } else {
-            throw new Error("Unable to confirm listing added to user's saved listings");
+            throw new InternalServerError(`Failed to confirm listing with ID "${postId}" was saved to user with ID: ${hashUid}`);
         }
-
-    } catch (error) {
-        console.error("Error saving listing: ", error);
-        throw error;
-      }
-}
+    } catch (err) {
+        if (!(err instanceof NotFoundError || err instanceof InternalServerError || err instanceof BadRequestError)) {
+            throw new InternalServerError("An unexpected error occurred while saving listing for user.");
+        }
+        throw err;
+    }
+};
 
 export const unsaveListingToUser = async (hashUid: string, postId: string) => {
     try {
-        
         const userRef = db.collection("users").doc(hashUid);
 
         const userDoc = await userRef.get();
         if (!userDoc.exists) {
-            throw new Error("User profile does not exist");
+            throw new NotFoundError(`No user found with ID: ${hashUid}`);
         }
 
         const userData = userDoc.data();
         if (!userData) {
-          throw new Error("User data is empty");
+            throw new NotFoundError(`No user profile found with ID: ${hashUid}`);
         }
 
         const savedListings: string[] = userData.savedListings || [];
         if (!savedListings.includes(postId)) {
-          return { message: "Listing is not saved" };
+            throw new BadRequestError(`Listing with ID "${postId} is not saved for user.`);
         }
-        const updatedSavedListings = savedListings.filter(id => id !== postId);
 
-        await userRef.update({ savedListings: updatedSavedListings });
+        try {
+            const updatedSavedListings = savedListings.filter((id) => id !== postId);
+            await userRef.update({ savedListings: updatedSavedListings });
+        } catch (err) {
+            throw new InternalServerError(`Error occured while unsaving listing from user with ID: ${hashUid}`);
+        }
 
         const updatedUserDoc = await userRef.get();
         const updatedData = updatedUserDoc.data();
@@ -354,12 +369,14 @@ export const unsaveListingToUser = async (hashUid: string, postId: string) => {
             throw new Error("Unable to confirm listing added to user's saved listings");
         }
 
-        if(updatedData.savedListings.includes(postId)) {
-            throw new Error("Unable to confirm listing added to user's saved listings");    
+        if (updatedData.savedListings.includes(postId)) {
+            throw new InternalServerError("Unable to confirm listing added to user's saved listings");
         }
-        return { message: "Listing removed successfully"}
-    } catch (error) {
-        console.error("Error saving listing: ", error);
-        throw error;
-      }
-}
+        return updatedData.savedListings;
+    } catch (err) {
+        if (!(err instanceof NotFoundError || err instanceof InternalServerError || err instanceof BadRequestError)) {
+            throw new InternalServerError("An unexpected error occurred while saving listing for user.");
+        }
+        throw err;
+    }
+};
