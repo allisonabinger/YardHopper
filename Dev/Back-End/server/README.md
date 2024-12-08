@@ -421,13 +421,40 @@ The API responds with a success message of the newly updated listing, which shou
 ## Users Endpoints
 
 ### Get a user's profile: GET /api/users/me
-This endpoint is for verfiying a user and displaying their profile. A user's uid is extracted from the `Authorization` header and the uid is used to gather their account in Firebase Auth. An encryption service is used to find their user profile stored in the Firestore Database.
+This endpoint is for verfiying a user and displaying their profile. A user's uid is extracted from the `Authorization` header and the uid is used to gather their account in Firebase Auth. An encryption service is used to find their user profile stored in the Firestore Database. 
+
+The endpoint will accept user inputted information in the `body` of the request. Fields required in the body are `first`, `last`, and `zipcode`. Optional fields are address fields, such as `street`, `city`, and `state`. The user's `email` will be gathered from their account made through Firebase, as well as the account's `generatedAt` timestamp.
 
 **Request Endpoint Example**
 GET https://yardhopperapi.onrender.com/api/users/me
 
 **Request Header**
 `Authorization: Bearer ${idToken}`
+
+**Request Body - JSON**
+FORMAT:
+```
+  {
+    "first": string,
+    "last": string,
+    "street": string,
+    "city": string,
+    "state": string,
+    "zipcode": number,
+  }
+```
+Example Request: 
+```
+  {
+    "first": "John",
+    "last": "Doe",
+    "street": "15 N Cheyenne Ave",
+    "city": "Tulsa",
+    "state": "OK",
+    "zipcode": 74103,
+
+  }
+```
 
 **Server Response**
 The API will return data regarding the user's profile. Here is an example response:
