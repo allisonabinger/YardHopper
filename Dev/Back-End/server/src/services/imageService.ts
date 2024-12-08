@@ -1,6 +1,4 @@
-import * as multer from "multer";
-import path from "path";
-import { db, storage } from "../config/firebase";
+import { storage } from "../config/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { ENV } from "../config/environment";
 import { BadRequestError, InternalServerError, NotFoundError } from "../middlewares/errors";
