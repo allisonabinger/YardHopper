@@ -43,7 +43,7 @@ export default function SavedScreen() {
   const [selectedListing, setSelectedListing] = useState<ListingItem | null>(null);
 
   // Access SavedPostsContext
-  const { savedListings, fetchSavedListings } = useSavedListings();
+  const { savedListings, fetchSavedListings, removeSavedListing } = useSavedListings();
 
   const router = useRouter();
 
@@ -68,6 +68,14 @@ export default function SavedScreen() {
     setSelectedListing(null);
   };
 
+
+  const handleToggleLike = (listing: ListingItem) => {
+    const isAlreadyLiked = savedListings.some((savedListing) => savedListing.postId === listing.postId);
+    if (isAlreadyLiked) {
+      removeSavedListing(listing.postId);
+    }
+  };
+
   const renderItem = ({ item }: { item: ListingItem }) => (
     <Card
       images={item.images?.map((img) => ({ uri: img.uri })) || []}
@@ -78,10 +86,10 @@ export default function SavedScreen() {
       date={item.dates[0]}
       categories={item.categories}
       isLiked={true} // All items in this screen are saved
-      onToggleLike={() => {}} // Optional: Handle unliking here if needed
+      onToggleLike={() => handleToggleLike(item)}
       route={() =>
         router.push({
-          pathname: "./listing/[id]",
+          pathname: "../../listing/[id]",
           params: { id: item.postId },
         })
       }
