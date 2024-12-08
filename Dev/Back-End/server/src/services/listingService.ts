@@ -6,8 +6,12 @@ import * as admin from "firebase-admin";
 import { Listing } from "../models/listingModel";
 import { error } from "console";
 import { removeFolderInFirebase } from "./imageService";
-import { BadRequestError, ForbiddenError, InternalServerError, NotFoundError, UnauthorizedError } from "../middlewares/errors";
-// import { generateCoordinates, generateGeo } from "./geolocateService";
+import {
+    BadRequestError,
+    InternalServerError,
+    NotFoundError,
+    UnauthorizedError,
+} from "../middlewares/errors";
 
 const geoFirestore = new GeoFirestore(db);
 
@@ -23,11 +27,10 @@ export const getListings = async ({
     categories?: string[];
 }) => {
     try {
-
         if (typeof lat !== "number" || typeof long !== "number" || typeof radius !== "number") {
             throw new BadRequestError("Latitude, longitude, and radius must be valid numbers.");
         }
-        
+
         if (radius <= 0) {
             throw new BadRequestError("Radius must be greater than zero.");
         }
@@ -52,7 +55,6 @@ export const getListings = async ({
         if (snapshot.empty) {
             throw new NotFoundError("No listings found matching the criteria.");
         }
-
 
         // only get public fields
         const listings = snapshot.docs.map((doc) => {
@@ -104,7 +106,7 @@ export const getListing = async (postId: string, hashUid: string) => {
                 throw new NotFoundError("Listing is no longer available.");
             }
         }
-        
+
         return {
             title: data.title,
             description: data.description,
@@ -126,9 +128,7 @@ export const getListing = async (postId: string, hashUid: string) => {
     }
 };
 
-export const postListing = async (
-    listingData: Omit<Listing, "images" | "postId">
-) => {
+export const postListing = async (listingData: Omit<Listing, "images" | "postId">) => {
     try {
         if (!listingData.title || !listingData.description || !listingData.address) {
             throw new BadRequestError("Missing required fields: title, description, or address.");
@@ -142,15 +142,20 @@ export const postListing = async (
             images: null,
         };
 
-        const listingRef = await db
-            .collection("listings")
-            .add(preparedListingData);
+        const listingRef = await db.collection("listings").add(preparedListingData);
 
         const postId = listingRef.id;
 
         await listingRef.update({
             postId,
         });
+
+        const newDoc = await listingRef.get();
+        const newData = newDoc.data();
+
+        if (!newData) {
+            throw new InternalServerError(`Failed to confirm creation of listing with ID "${postId}".`);
+        }
         return { postId };
 
         // console.log(
@@ -164,11 +169,7 @@ export const postListing = async (
     }
 };
 
-export const updateListingInDB = async (
-    postId: string,
-    hashUid: string,
-    updatedFields: Record<string, any>
-) => {
+export const updateListingInDB = async (postId: string, hashUid: string, updatedFields: Record<string, any>) => {
     try {
         if (Object.keys(updatedFields).length === 0) {
             throw new BadRequestError("No fields to update.");
@@ -183,7 +184,7 @@ export const updateListingInDB = async (
 
         const listingData = existingDoc.data();
         if (!listingData) {
-            throw new InternalServerError("Listing data could not be retrieved.");
+            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
         }
 
         if (listingData.userId !== hashUid) {
@@ -212,8 +213,53 @@ export const updateListingInDB = async (
             postId: updatedData.postId,
         };
     } catch (err) {
-        if (!(err instanceof BadRequestError || err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
+        if (
+            !(
+                err instanceof BadRequestError ||
+                err instanceof InternalServerError ||
+                err instanceof NotFoundError ||
+                err instanceof UnauthorizedError
+            )
+        ) {
             throw new InternalServerError("An unexpected error occurred while updating the listing.");
+        }
+        throw err;
+    }
+};
+
+export const removeListingInDB = async (postId: string, hashUid: string) => {
+    try {
+        const listingRef = db.collection("listings").doc(postId);
+        // console.log("Updating firestore doc: ", listingRef.path);
+
+        const existingDoc = await listingRef.get();
+        if (!existingDoc.exists) {
+            throw new NotFoundError(`Listing with ID "${postId}" not found.`);
+        }
+
+        const listingData = existingDoc.data();
+        if (!listingData) {
+            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
+        }
+
+        if (listingData.userId !== hashUid) {
+            throw new UnauthorizedError("User not permitted to delete this listing.");
+        }
+
+        const storagePath = `listings/${postId}`;
+        await removeFolderInFirebase(storagePath);
+
+        // Delete the document
+        await listingRef.delete();
+        return {
+            title: listingData.title,
+            postId: listingData.postId,
+        };
+        // console.log(`Listing with ID ${postId} deleted.`);
+        // return listingData;
+    } catch (err) {
+        if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
+            throw new InternalServerError("An unexpected error occurred while deleting the listing.");
         }
         throw err;
     }
@@ -246,10 +292,7 @@ export const addImageToListing = async (
         // console.log("Existing listing data:", listingDoc);
         const currentImages = listingData?.images || [];
 
-        const updatedImages = [
-            ...currentImages,
-            { uri: imageURI, caption: caption || "" },
-        ];
+        const updatedImages = [...currentImages, { uri: imageURI, caption: caption || "" }];
         // console.log("Updated images array:", updatedImages);
         await listingRef.update({ images: updatedImages });
 
@@ -257,9 +300,7 @@ export const addImageToListing = async (
         const updatedData = updatedDoc.data();
 
         if (!updatedData) {
-            throw new InternalServerError(
-                `Failed to confirm image update for listing ID "${postId}".`
-            );
+            throw new InternalServerError(`Failed to confirm image update for listing ID "${postId}".`);
         }
         return {
             title: updatedData.title,
@@ -276,121 +317,7 @@ export const addImageToListing = async (
         };
     } catch (err) {
         if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
-            throw new InternalServerError("An unexpected error occurred while posting the listing.");
-        }
-        throw err;
-    }
-};
-
-export const removeListingInDB = async (postId: string, hashUid: string) => {
-    try {
-        const listingRef = db.collection("listings").doc(postId);
-        // console.log("Updating firestore doc: ", listingRef.path);
-
-        const existingDoc = await listingRef.get();
-        if (!existingDoc.exists) {
-            throw new NotFoundError(`Listing with ID "${postId}" not found.`);
-        }
-
-        const listingData = existingDoc.data();
-        if (!listingData) {
-            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
-        }
-
-
-        if (listingData.userId !== hashUid) {
-            throw new UnauthorizedError("User not permitted to delete this listing.");
-        }
-
-        const storagePath = `listings/${postId}`;
-        await removeFolderInFirebase(storagePath);
-
-        // Delete the document
-        await listingRef.delete();
-        return {
-            title: listingData.title,
-            postId: listingData.postId,
-        };
-        // console.log(`Listing with ID ${postId} deleted.`);
-        // return listingData;
-    } catch (err) {
-        if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
-            throw new InternalServerError("An unexpected error occurred while deleting the listing.");
-        }
-        throw err;
-    }
-};
-
-export const removeImageInDB = async (
-    postId: string,
-    hashUid: string,
-    uri: string
-) => {
-    try {
-        // console.log(`Uri: ${uri}`)
-        const listingRef = db.collection("listings").doc(postId);
-
-        const existingDoc = await listingRef.get();
-        if (!existingDoc.exists) {
-            throw new NotFoundError(`Listing with ID "${postId}" not found.`);
-        }
-
-        const listingData = existingDoc.data();
-        if (!listingData) {
-            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
-        }
-
-        if (listingData.userId !== hashUid) {
-            throw new UnauthorizedError("User not permitted to update this listing.");
-        }
-
-        if (!Array.isArray(listingData.images)) {
-            throw new NotFoundError(`No images found for listing ID "${postId}".`);
-        }
-
-        const currentImages = listingData.images;
-        const updatedImages = currentImages.filter(
-            (image: { uri: string }) =>
-                decodeURIComponent(image.uri.trim()) !== decodeURIComponent(uri.trim())
-        );
-
-        if (currentImages.length === updatedImages.length) {
-            throw new NotFoundError(`Image URI "${uri}" not found in listing ID "${postId}".`);
-        }
-
-        //   console.log("Updated images:", JSON.stringify(updatedImages, null, 2));
-
-        const uriExists = updatedImages.some(
-            (image: { uri: string }) =>
-                decodeURIComponent(image.uri.trim()) ===
-                decodeURIComponent(uri.trim())
-        );
-        await listingRef.update({ images: updatedImages });
-
-        const updatedDoc = await listingRef.get();
-        const updatedData = updatedDoc.data();
-
-        if (!updatedData) {
-            throw new InternalServerError(
-                `Failed to confirm image removal for listing ID "${postId}".`
-            );
-        }
-        return {
-            title: updatedData.title,
-            description: updatedData.description,
-            address: updatedData.address,
-            dates: updatedData.dates,
-            startTime: updatedData.startTime,
-            endTime: updatedData.endTime,
-            images: updatedData.images,
-            categories: updatedData.categories,
-            status: updatedData.status,
-            g: updatedData.g,
-            postId: updatedData.postId,
-        };
-    } catch (err) {
-        if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
-            throw new InternalServerError("An unexpected error occurred while posting the listing.");
+            throw new InternalServerError("An unexpected error occurred while adding an image to the listing.");
         }
         throw err;
     }
@@ -424,22 +351,16 @@ export const changeCaptionInDB = async (
         }
 
         const currentImages = listingData.images;
-        const updatedImages = currentImages.map(
-            (image: { uri: string; caption: string }) => {
-                if (
-                    decodeURIComponent(image.uri.trim()) ===
-                    decodeURIComponent(uri.trim())
-                ) {
-                    return { ...image, caption };
-                }
-                return image;
+        const updatedImages = currentImages.map((image: { uri: string; caption: string }) => {
+            if (decodeURIComponent(image.uri.trim()) === decodeURIComponent(uri.trim())) {
+                return { ...image, caption };
             }
-        );
+            return image;
+        });
 
         const uriExists = updatedImages.some(
             (image: { uri: string; caption: string }) =>
-                decodeURIComponent(image.uri.trim()) ===
-                decodeURIComponent(uri.trim())
+                decodeURIComponent(image.uri.trim()) === decodeURIComponent(uri.trim())
         );
 
         if (!uriExists) {
@@ -448,14 +369,11 @@ export const changeCaptionInDB = async (
 
         await listingRef.update({ images: updatedImages });
 
-
         const updatedDoc = await listingRef.get();
         const updatedData = updatedDoc.data();
 
         if (!updatedData) {
-            throw new InternalServerError(
-                `Failed to confirm image removal for listing ID "${postId}".`
-            );
+            throw new InternalServerError(`Failed to confirm caption update for listing ID "${postId}".`);
         }
         return {
             title: updatedData.title,
@@ -472,7 +390,73 @@ export const changeCaptionInDB = async (
         };
     } catch (err) {
         if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
-            throw new InternalServerError("An unexpected error occurred while posting the listing.");
+            throw new InternalServerError("An unexpected error occurred while updating the caption for the listing.");
+        }
+        throw err;
+    }
+};
+
+export const removeImageInDB = async (postId: string, hashUid: string, uri: string) => {
+    try {
+        // console.log(`Uri: ${uri}`)
+        const listingRef = db.collection("listings").doc(postId);
+
+        const existingDoc = await listingRef.get();
+        if (!existingDoc.exists) {
+            throw new NotFoundError(`Listing with ID "${postId}" not found.`);
+        }
+
+        const listingData = existingDoc.data();
+        if (!listingData) {
+            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
+        }
+
+        if (listingData.userId !== hashUid) {
+            throw new UnauthorizedError("User not permitted to update this listing.");
+        }
+
+        if (!Array.isArray(listingData.images)) {
+            throw new NotFoundError(`No images found for listing ID "${postId}".`);
+        }
+
+        const currentImages = listingData.images;
+        const updatedImages = currentImages.filter(
+            (image: { uri: string }) => decodeURIComponent(image.uri.trim()) !== decodeURIComponent(uri.trim())
+        );
+
+        if (currentImages.length === updatedImages.length) {
+            throw new NotFoundError(`Image URI "${uri}" not found in listing ID "${postId}".`);
+        }
+
+        //   console.log("Updated images:", JSON.stringify(updatedImages, null, 2));
+
+        const uriExists = updatedImages.some(
+            (image: { uri: string }) => decodeURIComponent(image.uri.trim()) === decodeURIComponent(uri.trim())
+        );
+        await listingRef.update({ images: updatedImages });
+
+        const updatedDoc = await listingRef.get();
+        const updatedData = updatedDoc.data();
+
+        if (!updatedData) {
+            throw new InternalServerError(`Failed to confirm image removal for listing ID "${postId}".`);
+        }
+        return {
+            title: updatedData.title,
+            description: updatedData.description,
+            address: updatedData.address,
+            dates: updatedData.dates,
+            startTime: updatedData.startTime,
+            endTime: updatedData.endTime,
+            images: updatedData.images,
+            categories: updatedData.categories,
+            status: updatedData.status,
+            g: updatedData.g,
+            postId: updatedData.postId,
+        };
+    } catch (err) {
+        if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
+            throw new InternalServerError("An unexpected error occurred while deleting the image for the listing.");
         }
         throw err;
     }

@@ -28,7 +28,9 @@ const upload = multer({ storage: storage });
  *     description: Endpoints for managing users.
  */
 
+// Swagger documentation: -------> Start Listings Endpoints
 
+// Swagger documentation: Get all active and upcoming listings: GET /api/listings
 /**
  * @swagger
  * /:
@@ -72,11 +74,22 @@ const upload = multer({ storage: storage });
  *               items:
  *                 $ref: '#/components/schemas/publicListing'
  *       400:
- *         description: Bad Request: No location provided. Missing or invalid input in request.
+ *         description: No location provided.
+ *       400:
+ *         description: Invalid zipcode or location.
+ *       400:
+ *         description: Latitude, longitude, and radius must be valid numbers.
+ *       400:
+ *         description: Radius must be greater than zero.
+ *       404:
+ *         description: No listings found matching the criteria."
  *       401:
- *         description: Unauthorized: User not authorized
+ *         description: User not authorized.
+ *       500:
+ *         description: An unexpected error occurred while fetching listings.
  */
 
+// Swagger documentation: Get one listing by postId: GET /api/listings/:postId
 /**
  * @swagger
  * /api/listings/{postId}:
@@ -113,11 +126,16 @@ const upload = multer({ storage: storage });
  *       400:
  *         description: Listing no longer available.
  *       404:
- *         description: Listing not found.
+ *         description: Listing with ID "[postId]" not found.
  *       401:
  *         description: User not authorized.
+ *       500:
+ *         description: An unexpected error occurred while fetching the listing.
+ *       500:
+ *         description: Listing with postId "[postId]" could not be retrieved.
  */
 
+// Swagger documentation: Create a listing: POST /api/listings
 /**
  * @swagger
  * /api/listings
@@ -192,8 +210,13 @@ const upload = multer({ storage: storage });
  *         description: Missing required fields: [Missing fields]
  *       401:
  *         description: User not authorized.
+ *       500:
+ *         description: An unexpected error occurred while posting the listing.
+ *       500:
+ *         description: Failed to confirm creation of listing with ID "${postId}".
  */
 
+// Swagger documentation: Update an existing listing: PUT /api/listings/:postId
 /**
  * @swagger
  * /api/listings/{postId}:
@@ -241,13 +264,20 @@ const upload = multer({ storage: storage });
  *       400:
  *         description: No fields provided to update.
  *       404:
- *         description: Listing not found.
+ *         description: Listing with ID "[postId]" not found.
  *       401:
  *         description: User not authorized.
  *       401:
  *         description: User not permitted to change this listing.
+ *       500:
+ *         description: An unexpected error occurred while updating the listing.
+ *       500:
+ *         description: Failed to confirm update for listing ID "[postId]".
+ *       500:
+ *         description: Failed to retrieve data for listing ID "[postId]".
  */
 
+// Swagger documentation: Delete a listing: DEL /api/listings/:postId
 /**
  * @swagger
  * /api/listings/{postId}:
@@ -298,8 +328,15 @@ const upload = multer({ storage: storage });
  *         description: User not authorized.
  *       401:
  *         description: User not permitted to update this listing.
+ *       500:
+ *         description: An unexpected error occurred while deleting the listing.
+ *       500:
+ *         description: Failed to confirm update for listing ID "[postId]".
+ *       500:
+ *         description: Listing data could not be retrieved.
  */
 
+// Swagger documentation: Add an image to an existing listing: POST /api/listings/:postId/images
 /**
  * @swagger
  * /api/listings/{postId}/images:
@@ -350,68 +387,20 @@ const upload = multer({ storage: storage });
  *       400:
  *         description: No image file provided.
  *       404:
- *         description: Listing not found.
+ *         description: Listing with ID "[postId]" not found.
  *       401:
  *         description: User not authorized.
  *       401:
  *         description: User not permitted to update this listing.
+ *       500:
+ *         description: An unexpected error occurred while adding an image to the listing.
+ *       500:
+ *         description: Failed to confirm image update for listing ID "[postId]".
+ *       500:
+ *         description: Failed to retrieve data for listing ID "[postId]".
  */
 
-/**
- * @swagger
- * /api/listings/{postId}/images:
- *    delete:
- *     summary: Removes an image from a listing
- *     tags:
- *       - Listings
- *     parameters:
- *       - name: Authorization
- *         in: header
- *         required: true
- *         schema:
- *           type: string
- *         example: "Bearer eyJhbGciOi..."
- *         description: Bearer token for authentication
- *       - name: postId
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: Unique identifier of the listing
- *       - name: uri
- *         in: query
- *         required: true
- *         schema:
- *           type: string
- *         description: Public URI of the image to delete
- *     responses:
- *       200:
- *         description: Image removed from listing.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   example: "Image removed successfully"
- *                 listing:
- *                   $ref: '#/components/schemas/publicListing'
- *       400:
- *         description: No vaild image URI provided.
- *       400:
- *         description: No postId provided.
- *       404:
- *         description: Listing with ID [postId] not found.
- *       404:
- *         description: No images found for listing ID "[postId]"
- *       404:
- *         description: Image URI "[uri]" not found in listing ID "[postId]"
- *       401:
- *         description: User not authorized.
- *       401:
- *         description: User not permitted to delete this listing.
- */
-
+// Swagger documentation: Update a caption to an existing listing: PUT /api/listings/:postId/images
 /**
  * @swagger
  * /api/listings/{postId}/images:
@@ -473,8 +462,79 @@ const upload = multer({ storage: storage });
  *       401:
  *         description: User not authorized.
  *       401:
- *         description: User not permitted to delete this listing.
+ *         description: User not permitted to update this listing.
+ *       500:
+ *         description: An unexpected error occurred while updating the caption for the listing.
+ *       500:
+ *         description: Failed to confirm caption update for listing ID "[postId]".
+ *       500:
+ *         description: Failed to retrieve data for listing ID "[postId]".
  */
+
+// Swagger documentation: Delete an image of an existing listing: DEL /api/listings/:postId/images
+/**
+ * @swagger
+ * /api/listings/{postId}/images:
+ *    delete:
+ *     summary: Removes an image from a listing
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - name: Authorization
+ *         in: header
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "Bearer eyJhbGciOi..."
+ *         description: Bearer token for authentication
+ *       - name: postId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique identifier of the listing
+ *       - name: uri
+ *         in: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Public URI of the image to delete
+ *     responses:
+ *       200:
+ *         description: Image removed from listing.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   example: "Image removed successfully"
+ *                 listing:
+ *                   $ref: '#/components/schemas/publicListing'
+ *       400:
+ *         description: No vaild image URI provided.
+ *       400:
+ *         description: No postId provided.
+ *       404:
+ *         description: Listing with ID [postId] not found.
+ *       404:
+ *         description: No images found for listing ID "[postId]"
+ *       404:
+ *         description: Image URI "[uri]" not found in listing ID "[postId]"
+ *       401:
+ *         description: User not authorized.
+ *       401:
+ *         description: User not permitted to update this listing.
+ *       500:
+ *         description: An unexpected error occurred while deleting the image for the listing.
+ *       500:
+ *         description: Failed to confirm image removal for listing ID "[postId]".
+ *       500:
+ *         description: Failed to retrieve data for listing ID "[postId]".
+ */
+
+
+
 
 // gets all listings within a radius
 router.get("/", authenticateUser, (req: Request, res: Response, next: NextFunction) => {
