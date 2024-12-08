@@ -54,9 +54,9 @@ export const removeFolderInFirebase = async (folderPath: string): Promise<void> 
     try {
         const [files] = await storage.bucket().getFiles({ prefix: folderPath });
 
-        if (!files || files.length === 0) {
-            throw new NotFoundError(`No files found in folder: ${folderPath}`);
-        }
+        // if (!files || files.length === 0) {
+        //     throw new NotFoundError(`No files found in folder: ${folderPath}`);
+        // }
 
         const deletePromises = files.map((file) => file.delete());
         await Promise.all(deletePromises);
