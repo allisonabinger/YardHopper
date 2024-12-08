@@ -151,8 +151,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 230,
-    height: 282,
+    width: 250,
+    height: 300,
     marginBottom: 60,
     padding: 30,
   },
@@ -195,4 +195,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
