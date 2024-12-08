@@ -112,9 +112,14 @@ export default function HomeScreen() {
   }
 };
 
-  useEffect(() => {
-    fetchListings();
-  }, [savedListings]);
+useEffect(() => {
+  // Fetch both listings and saved listings on initial load
+  const initializeData = async () => {
+    await Promise.all([fetchListings(), fetchSavedListings()]);
+  };
+
+  initializeData();
+}, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
