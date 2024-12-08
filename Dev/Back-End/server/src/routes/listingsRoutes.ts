@@ -24,8 +24,6 @@ const upload = multer({ storage: storage });
  * tags:
  *   - name: Listings
  *     description: Endpoints for managing listings.
- *   - name: Users
- *     description: Endpoints for managing users.
  */
 
 // Swagger documentation: -------> Start Listings Endpoints
