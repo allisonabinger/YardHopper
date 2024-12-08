@@ -32,40 +32,61 @@ export const fetchListings = async (req: Request, res: Response, next: NextFunct
         let latitude: number | undefined;
         let longitude: number | undefined;
 
-        if (!lat && !long) {
-            // if no lat or long provided in request, try to use zipcode instead
-            if (!zipcode) {
-                throw new BadRequestError("No location provided.");
-            }
+        if (!lat && !long && !zipcode) {
+            throw new BadRequestError("No location provided. Please provide either lat/long or a zipcode.");
+        }
 
-            // convert zipcode to an integer
+        if ((lat && !long) || (!lat && long)) {
+            throw new BadRequestError("Both latitude and longitude must be provided together.");
+        }
+
+        if (lat && long) {
+            latitude = parseFloat(lat as string);
+            longitude = parseFloat(long as string);
+        } else if (zipcode) {
             const zip = parseInt(zipcode as string);
-            // get lat and long from geoapify using zipcode
+            if (typeof zip !== "number") {
+                throw new BadRequestError("Zipcode must be a number.");
+            }
             const coordinates = await generateCoordinatesByZipcode(zip);
+
             if (coordinates) {
                 ({ latitude, longitude } = coordinates);
             } else {
                 throw new BadRequestError("Invalid zipcode or location.");
             }
         } else {
-            // if lat and long provided, convert them to integers and use them
-            latitude = parseFloat(lat as string);
-            longitude = parseFloat(long as string);
+            throw new BadRequestError("No location provided.");
         }
-        // declare search radius
-        const searchRadius = radius ? parseInt(radius as string) : 10;
 
-        // handle categories as json structure or as string
+        let searchRadius = 10;
+
+        if (radius) {
+            const parsedRadius = parseInt(radius as string, 10);
+            if (isNaN(parsedRadius) || parsedRadius <= 0 || parsedRadius > 100) {
+                throw new BadRequestError("Radius must be a valid number between 0 and 100.");
+            }
+            searchRadius = parsedRadius;
+        }
+
         let parsedCategories: string[] = [];
         if (categories) {
             try {
-                parsedCategories = (categories as string).split(",").map((cat) => cat.trim());
+                const rawCategories = (categories as string).split(",").map((cat) => cat.trim());
+                parsedCategories = rawCategories.filter((cat) => {
+                    const isNonNumeric = isNaN(Number(cat));
+                    const isNonEmptyString = typeof cat === "string" && cat.length > 0;
+                    return isNonNumeric && isNonEmptyString;
+                });
+        
+                if (parsedCategories.length !== rawCategories.length) {
+                    throw new BadRequestError("All categories must be valid, non-numeric strings.");
+                }
             } catch (error) {
-                throw new BadRequestError("Invalid categories format.");
+                throw new BadRequestError("Invalid categories format. Categories must be a string.");
             }
         }
 
-        // call query function in services with formatted filters
         const listings = await getListings({
             lat: latitude,
             long: longitude,
