@@ -769,6 +769,9 @@ Holds the middleware configurations needed for authentication and error handling
 `errorHandler.ts`
 - Responds to the client's request with the approprate status code and message. If the error is one of the defined `AppErrors` imported from `errors`, then it will respond accordingly. If the errr is not, then it responds with an `Unknown Error` message with the details. 
 
+`jsonValidation`
+- Ensures the JSON data sent in the request doesn't have syntax errors that would cause an Internal Server Error. It exports `jsonValidation` which is used as middleware in `app.js`
+
 
 #### Seed - seed/
 Used to seeding the database. Contains lots of formatting for previous versions of data, and was updated frequently with new requests for posting documents. Should not be used to seed database, but housed for future implementations. Also hold images/ used in the project. 
@@ -831,6 +834,9 @@ USER - Provided by user input via front-end interaction
   }
 ]
 ```
+
+## Validation
+Lots of functions within the server will type check the user input before sending it to the database, auth, or third party API. It will also ensure the JSON data doesn't have syntax errors as well so it will not log an unknown error. 
 
 ## Security
 
