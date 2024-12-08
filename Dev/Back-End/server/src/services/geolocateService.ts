@@ -44,11 +44,7 @@ export async function generateCoordinatesByAddress(
         state
     )}&country=United%20States%20of%20America&lang=en&limit=5&format=json&apiKey=${apiKey}`;
 
-    // console.log(url)
     try {
-        if (typeof street !== "string" || typeof city !== "string" || typeof state !== "string" || typeof zip !== "number") {
-            throw new BadRequestError("Street, City, and State must be strings. Zip code must be a number.");
-        }
         const response = await axios.get(url);
         if (!response) {
             throw new InternalServerError("Error retrieving coordinates from address - no response from Geoapify.");
@@ -76,9 +72,6 @@ export async function generateCoordinatesByZipcode(
 ): Promise<{ latitude: number; longitude: number } | null> {
     const url = `https://api.geoapify.com/v1/geocode/search?text=${zipcode}&type=postcode&filter=countrycode:us&apiKey=${apiKey}`;
     try {
-        if (typeof zipcode !== "number") {
-            throw new BadRequestError("Street, City, and State must be strings. Zip code must be a number.");
-        }
         const response = await axios.get(url);
         if (!response) {
             throw new InternalServerError("Error retrieving coordinates from zipcode - no response from Geoapify.");
