@@ -142,16 +142,18 @@ useEffect(() => {
   };
 
   const handleToggleLike = (listing: ListingItem) => {
-    const isAlreadyLiked = savedListings.some((savedListing) => savedListing.postId === listing.postId);
+    const isAlreadyLiked = savedListings.listings.some(
+      (savedListing) => savedListing.postId === listing.postId
+    );
     if (isAlreadyLiked) {
       removeSavedListing(listing.postId);
     } else {
-      addSavedListing(listing.postId); // Pass the entire listing directly
+      addSavedListing(listing.postId); // Pass the postId to save the listing
     }
   };
 
   const renderItem = ({ item }: { item: ListingItem }) => {
-    const isLiked = savedListings.some(
+    const isLiked = savedListings.listings.some(
       (savedListing) => savedListing.postId === item.postId
     );
 
