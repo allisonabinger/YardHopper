@@ -52,7 +52,7 @@ export default function HomeScreen() {
   const [isLiked, setIsLiked] = useState(false);
 
   // Access SavedPostsContext
-  const { savedListings, addSavedListing, removeSavedListing } = useSavedListings();
+  const { savedListings, addSavedListing, removeSavedListing, fetchSavedListings } = useSavedListings();
 
   const router = useRouter();
 
@@ -114,11 +114,11 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchListings();
-  }, []);
+  }, [savedListings]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchListings();
+    await Promise.all([fetchListings({ isRefresh: true }), fetchSavedListings()]);
     setRefreshing(false);
   };
 
@@ -146,7 +146,9 @@ export default function HomeScreen() {
   };
 
   const renderItem = ({ item }: { item: ListingItem }) => {
-    const isLiked = savedListings.some((listing) => listing.postId === item.postId);
+    const isLiked = savedListings.some(
+      (savedListing) => savedListing.postId === item.postId
+    );
 
     return (
       <Card

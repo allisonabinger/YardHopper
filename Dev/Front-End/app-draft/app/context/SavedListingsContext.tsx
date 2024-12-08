@@ -33,6 +33,7 @@ interface SavedListingsContextType {
   error: string | null;
   addSavedListing: (postId: string) => Promise<void>;
   removeSavedListing: (postId: string) => Promise<void>;
+  fetchSavedListings: () => Promise<void>,
 }
 
 interface SavedListingsProviderProps {
@@ -135,6 +136,7 @@ export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ ch
         error,
         addSavedListing,
         removeSavedListing,
+        fetchSavedListings,
       }}
     >
       {children}
