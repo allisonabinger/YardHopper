@@ -29,7 +29,7 @@ All endpoints require the user to be signed in. The API needs to receive the `Au
 ### Get all active and upcoming listings: GET /api/listings 
 The `GET /api/listings` endpoint will need accept coordinates or zipcode in order to find listings in the area. As of now, database has listings in Tulsa, Jenks, and Sand Springs. **The request must have a latitude and longitude or a zipcode query in order to find listings.** This is because a user will need to allow location services and send their location with the listing, or they must provide their zipcode. They can always extend the radius regardless.
 
-The endpoint can also accept a radius to search by. The default search radius is 15 miles. It will also accept searching by categories, but not subcategories
+The endpoint can also accept a radius to search by. The default search radius is 10 miles. It will also accept searching by categories, but not subcategories
 
 **Request Header**
 `Authorization: Bearer ${idToken}`

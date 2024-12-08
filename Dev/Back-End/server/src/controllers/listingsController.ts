@@ -78,7 +78,7 @@ export const fetchListings = async (req: Request, res: Response, next: NextFunct
                     const isNonEmptyString = typeof cat === "string" && cat.length > 0;
                     return isNonNumeric && isNonEmptyString;
                 });
-        
+
                 if (parsedCategories.length !== rawCategories.length) {
                     throw new BadRequestError("All categories must be valid, non-numeric strings.");
                 }
@@ -142,13 +142,56 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
             endTime,
             categories,
         };
-
         const missingFields = Object.entries(requiredFields)
-            .filter(([key, value]) => !value) // Check for missing fields
-            .map(([key]) => key); // Collect field names
+            .filter(([key, value]) => !value)
+            .map(([key]) => key);
 
         if (missingFields.length > 0) {
             throw new BadRequestError(`Missing required fields: ${missingFields.join(", ")}.`);
+        }
+        const allFields = {
+            title,
+            description,
+            address,
+            dates,
+            startTime,
+            endTime,
+            categories,
+            subcategories,
+        };
+
+        const expectedTypes: Record<string, string> = {
+            title: "string",
+            description: "string",
+            address: "object",
+            dates: "array",
+            startTime: "string",
+            endTime: "string",
+            categories: "array",
+            subcategories: "object",
+        };
+
+        const errors: string[] = [];
+        Object.entries(allFields).forEach(([key, value]) => {
+            const expectedType = expectedTypes[key];
+
+            if (expectedType === "array" && !Array.isArray(value)) {
+                errors.push(`Field [${key}] must be an array.`);
+            } else if (expectedType === "object" && (typeof value !== "object" || Array.isArray(value))) {
+                errors.push(`Field [${key}] must be an object.`);
+            } else if (expectedType !== "array" && expectedType !== "object" && typeof value !== expectedType) {
+                errors.push(`Field [${key}] must be of type [${expectedType}].`);
+            }
+        });
+        
+        const { street, city, state, zip } = address || {};
+        if (!street || typeof street !== "string") errors.push(`Street address is required and must be a string.`);
+        if (!city || typeof city !== "string") errors.push(`City is required and must be a string.`);
+        if (!state || typeof state !== "string") errors.push(`State is required and must be a string.`);
+        if (!zip || typeof zip !== "number") errors.push(`Zip code is required and must be a number.`);
+
+        if (errors.length > 0) {
+            throw new BadRequestError(errors.join(", "));
         }
 
         // generate timestamp for generatedAt (format = YYYY-MM-DDTHH:mm:ss.sssZ )
@@ -199,7 +242,8 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
 
         const newListing = await postListing(listingData);
         return res.status(201).json({
-            message: "Listing created successfully", postId: newListing.postId,
+            message: "Listing created successfully",
+            postId: newListing.postId,
         });
     } catch (err) {
         next(err);
@@ -224,6 +268,37 @@ export const updateListing = async (req: Request, res: Response, next: NextFunct
 
         if (Object.keys(updatedFields).length === 0) {
             throw new BadRequestError("No fields provided to update.");
+        }
+        const allowedFields: Record<string, string> = {
+            title: "string",
+            description: "string",
+            address: "object",
+            dates: "array",
+            startTime: "string",
+            endTime: "string",
+            categories: "array",
+            subcategories: "object",
+            status: "string",
+        };
+        const filteredFields: Record<string, any> = {};
+        for (const [key, value] of Object.entries(updatedFields)) {
+            if (!(key in allowedFields)) {
+                throw new BadRequestError(`Field [${key}] is not a valid field, or it cannot be updated.`);
+            }
+            const expectedType = allowedFields[key];
+            if (expectedType === "array" && !Array.isArray(value)) {
+                throw new BadRequestError(`Field [${key}] must be an array.`);
+            } else if (expectedType === "object" && (typeof value !== "object" || Array.isArray(value))) {
+                throw new BadRequestError(`Field [${key}] must be an object.`);
+            } else if (expectedType !== "array" && expectedType !== "object" && typeof value !== expectedType) {
+                throw new BadRequestError(`Field [${key}] must be of type [${expectedType}].`);
+            }
+
+            filteredFields[key] = value;
+        }
+
+        if (Object.keys(filteredFields).length === 0) {
+            throw new BadRequestError("No valid fields provided for update.");
         }
 
         const updatedListing = await updateListingInDB(postId, hashUid, updatedFields);

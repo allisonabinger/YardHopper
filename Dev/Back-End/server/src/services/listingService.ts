@@ -6,12 +6,7 @@ import * as admin from "firebase-admin";
 import { Listing } from "../models/listingModel";
 import { error } from "console";
 import { removeFolderInFirebase } from "./imageService";
-import {
-    BadRequestError,
-    InternalServerError,
-    NotFoundError,
-    UnauthorizedError,
-} from "../middlewares/errors";
+import { BadRequestError, InternalServerError, NotFoundError, UnauthorizedError } from "../middlewares/errors";
 
 const geoFirestore = new GeoFirestore(db);
 
@@ -29,10 +24,6 @@ export const getListings = async ({
     try {
         if (typeof lat !== "number" || typeof long !== "number" || typeof radius !== "number") {
             throw new BadRequestError("Latitude, longitude, and radius must be valid numbers.");
-        }
-
-        if (radius <= 0) {
-            throw new BadRequestError("Radius must be greater than zero.");
         }
 
         const geoCollection = geoFirestore.collection("listings");
@@ -189,6 +180,13 @@ export const updateListingInDB = async (postId: string, hashUid: string, updated
 
         if (listingData.userId !== hashUid) {
             throw new UnauthorizedError("User not permitted to change this listing");
+        }
+
+        if (
+            listingData.status === "archived" &&
+            (!updatedFields.hasOwnProperty("status") || !["active", "upcoming"].includes(updatedFields.status))
+        ) {
+            throw new UnauthorizedError("Cannot update an archived listing. Please unarchive before updating.");
         }
 
         await listingRef.update(updatedFields);
