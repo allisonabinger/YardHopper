@@ -1,48 +1,46 @@
+import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { auth } from "@/firebaseConfig";
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   User,
   UserCredential,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   sendPasswordResetEmail,
-  deleteUser as firebaseDeleteUser
 } from "firebase/auth";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 type Profile = {
   first: string;
   last: string;
   email: string;
-  street: string;
-  city: string;
-  state: string;
-  zipcode: number;
-  createdAt: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
+  createdAt?: string;
 };
 
 type AuthContextType = {
+  user: User | null;
+  profile: Profile | null;
   register: (email: string, password: string) => Promise<UserCredential>;
   logout: () => Promise<void>;
   login: (email: string, password: string) => Promise<UserCredential>;
   resetPassword: (email: string) => Promise<void>;
-  getIdToken: () => Promise<string | null>;
+  getValidIdToken: () => Promise<string | null>;
   deleteUser: () => Promise<void>;
-  user?: User | null;
-  profile?: Profile | null;
+  refreshProfile: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType>({
-  register: async () => Promise.reject("Not implemented"),
-  logout: async () => Promise.reject("Not implemented"),
-  login: async () => Promise.reject("Not implemented"),
-  resetPassword: async () => Promise.reject("Not implemented"),
-  getIdToken: async () => Promise.reject("Not implemented"),
-  deleteUser: async () => Promise.reject("Not implemented"),
-  user: null,
-  profile: null,
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => useContext<AuthContextType>(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 async function fetchUserProfile(token: string): Promise<Profile | null> {
   try {
@@ -55,66 +53,55 @@ async function fetchUserProfile(token: string): Promise<Profile | null> {
     });
 
     if (!response.ok) {
-      console.error("Failed to fetch user profile:", response.status, response.statusText);
-      return null;
+      if (response.status === 404) return null; // No profile found
+      throw new Error(`Failed to fetch profile: ${response.status}`);
     }
 
-    const profile: Profile = await response.json();
-    return profile;
+    return response.json();
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return null;
   }
 }
 
-function register(email: string, password: string): Promise<UserCredential> {
-  return createUserWithEmailAndPassword(auth, email, password);
-}
-
-function logout(): Promise<void> {
-  return auth.signOut();
-}
-
-function login(email: string, password: string): Promise<UserCredential> {
-  return signInWithEmailAndPassword(auth, email, password);
-}
-
-function resetPassword(email: string): Promise<void> {
-  return sendPasswordResetEmail(auth, email);
-}
-
-async function getIdToken(): Promise<string | null> {
+async function getValidIdToken(): Promise<string | null> {
   const currentUser = auth.currentUser;
-  if (!currentUser) {
-    console.warn("No authenticated user found");
+  if (!currentUser) return null;
+
+  try {
+    return await currentUser.getIdToken(true); // Force token refresh
+  } catch (error) {
+    console.error("Error refreshing ID token:", error);
     return null;
   }
-  return currentUser.getIdToken();
-}
-
-async function deleteUser(): Promise<void> {
-  const currentUser = auth.currentUser;
-  if (!currentUser) {
-    throw new Error("No authenticated user found to delete.");
-  }
-  await firebaseDeleteUser(currentUser);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [profile, setProfile] = useState<Profile | null>(null);
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      setUser(user);
+  async function refreshProfile() {
+    if (user) {
+      try {
+        console.log("Refreshing profile for user:", user.email); // Debug
+        const token = await getValidIdToken();
+        if (token) {
+          const updatedProfile = await fetchUserProfile(token);
+          console.log("Updated Profile:", updatedProfile); // Debug
+          setProfile(updatedProfile);
+        }
+      } catch (error) {
+        console.error("Error refreshing profile:", error);
+      }
+    }
+  }
 
-      if (user) {
-        console.log("User signed in:", user);
-        const token = await user.getIdToken();
-        const fetchedProfile = await fetchUserProfile(token);
-        setProfile(fetchedProfile);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        await refreshProfile();
       } else {
-        console.log("User signed out");
         setProfile(null);
       }
     });
@@ -122,8 +109,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
+  async function register(email: string, password: string): Promise<UserCredential> {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    setUser(userCredential.user); // Update state with the new user
+    return userCredential;
+  }
+
+  async function login(email: string, password: string): Promise<UserCredential> {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    setUser(userCredential.user); // Update state with the logged-in user
+    return userCredential;
+  }
+
+  async function logout() {
+    setUser(null);
+    setProfile(null);
+    return auth.signOut();
+  }
+
+  async function deleteUser(): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("No authenticated user to delete.");
+
+    try {
+      const token = await getValidIdToken(); // Ensure a fresh token is used
+      if (!token) throw new Error("Failed to retrieve a valid token.");
+
+      // Delete user profile from backend
+      const response = await fetch("https://yardhopperapi.onrender.com/api/users/me", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete user profile.");
+      }
+
+      // Delete the user from Firebase Auth
+      await currentUser.delete();
+    } catch (error) {
+      // console.error("Error during user deletion:", error);
+      // throw error; // Propagate error to be handled by the caller
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, profile, register, logout, login, resetPassword, getIdToken, deleteUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        register,
+        login,
+        logout,
+        resetPassword: (email: string) => sendPasswordResetEmail(auth, email),
+        getValidIdToken,
+        deleteUser,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
