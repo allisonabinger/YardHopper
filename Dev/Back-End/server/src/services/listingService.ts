@@ -6,89 +6,99 @@ import * as admin from "firebase-admin";
 import { Listing } from "../models/listingModel";
 import { error } from "console";
 import { removeFolderInFirebase } from "./imageService";
-// import { generateCoordinates, generateGeo } from "./geolocateService";
+import { BadRequestError, InternalServerError, NotFoundError, UnauthorizedError } from "../middlewares/errors";
 
 const geoFirestore = new GeoFirestore(db);
 
 export const getListings = async ({
-      lat,
-      long,
-      radius,
-      categories,
+    lat,
+    long,
+    radius,
+    categories,
 }: {
-      lat: number;
-      long: number;
-      radius: number;
-      categories?: string[];
+    lat: number;
+    long: number;
+    radius: number;
+    categories?: string[];
 }) => {
-      try {
-            const geoCollection = geoFirestore.collection("listings");
+    try {
+        if (typeof lat !== "number" || typeof long !== "number" || typeof radius !== "number") {
+            throw new BadRequestError("Latitude, longitude, and radius must be valid numbers.");
+        }
 
-            // geofirestore uses km
-            const radiusInKm = radius * 1.60934;
-            let query = geoCollection.near({
-                  center: new admin.firestore.GeoPoint(lat, long),
-                  radius: radiusInKm,
-            });
-            // only get active and upcoming sales
-            query = query.where("status", "in", ["active", "upcoming"]);
+        const geoCollection = geoFirestore.collection("listings");
 
-            // updated for flattened categories
-            if (categories && categories.length > 0) {
-                  query = query.where(
-                        "categories",
-                        "array-contains-any",
-                        categories
-                  );
-            }
-            // access database
-            const snapshot = await query.get();
+        // geofirestore uses km
+        const radiusInKm = radius * 1.60934;
+        let query = geoCollection.near({
+            center: new admin.firestore.GeoPoint(lat, long),
+            radius: radiusInKm,
+        });
+        // only get active and upcoming sales
+        query = query.where("status", "in", ["active", "upcoming"]);
 
-            // only get public fields
-            const listings = snapshot.docs.map((doc) => {
-                  const data = doc.data();
-                  return {
-                        title: data.title,
-                        description: data.description,
-                        address: data.address,
-                        dates: data.dates,
-                        startTime: data.startTime,
-                        endTime: data.endTime,
-                        images: data.images,
-                        categories: data.categories,
-                        status: data.status,
-                        g: data.g,
-                        postId: data.postId
-                  };
-            });
+        // updated for flattened categories
+        if (categories && categories.length > 0) {
+            query = query.where("categories", "array-contains-any", categories);
+        }
+        // access database
+        const snapshot = await query.get();
+        if (snapshot.empty) {
+            throw new NotFoundError("No listings found matching the criteria.");
+        }
 
-            if (!listings) {
-                  console.log("No listings from getListings");
-            }
-            return listings;
-      } catch (err) {
-            console.error("Error occurred during getListings: ", err);
-      }
+        // only get public fields
+        const listings = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+                title: data.title,
+                description: data.description,
+                address: data.address,
+                dates: data.dates,
+                startTime: data.startTime,
+                endTime: data.endTime,
+                images: data.images,
+                categories: data.categories,
+                subcategories: data.subcategories,
+                status: data.status,
+                g: data.g,
+                postId: data.postId,
+            };
+        });
+        return listings;
+    } catch (err) {
+        if (!(err instanceof BadRequestError || err instanceof NotFoundError)) {
+            throw new InternalServerError("An unexpected error occurred while fetching listings.");
+        }
+        throw err;
+    }
 };
 
-export const getListing = async (
-    postId: string,
-) => {
+export const getListing = async (postId: string, hashUid: string) => {
     try {
-          const listingRef = db.collection("listings").doc(postId);
-          const listingDoc = await listingRef.get();
+        if (!postId) {
+            throw new NotFoundError("No postId provided.");
+        }
+        const listingRef = db.collection("listings").doc(postId);
+        const listingDoc = await listingRef.get();
 
-          if (!listingDoc.exists) {
-            // console.log("listing not found: ", postId);
-            throw new Error("Listing not found.");
-      }
+        if (!listingDoc.exists) {
+            throw new NotFoundError(`Listing with postId "${postId}" not found.`);
+        }
 
-          const data = listingDoc.data();
+        const data = listingDoc.data();
 
-          if (!data) {
-            throw new Error('listing not found')
-          }
-          return {
+        if (!data) {
+            throw new InternalServerError(`Listing with postId "${postId}" could not be retrieved.`);
+        }
+
+        if (data.status !== "active" && data.status !== "upcoming") {
+            if (data.userId !== hashUid) {
+                throw new NotFoundError("Listing is no longer available.");
+            }
+        }
+
+        return {
             title: data.title,
             description: data.description,
             address: data.address,
@@ -99,254 +109,249 @@ export const getListing = async (
             categories: data.categories,
             status: data.status,
             g: data.g,
-            postId: data.postId
-      };
-
+            postId: data.postId,
+        };
     } catch (err) {
-          console.error("Error finding listing in Firestore: ", err);
-          throw error;
+        if (!(err instanceof NotFoundError || err instanceof InternalServerError)) {
+            throw new InternalServerError("An unexpected error occurred while fetching the listing.");
+        }
+        throw err;
     }
 };
 
-export const postListing = async (
-      listingData: Omit<Listing, "images" | "postId">
-) => {
-      try {
-            const preparedListingData = {
-                  ...listingData,
-                  images: null,
-            };
+export const postListing = async (listingData: Omit<Listing, "images" | "postId">) => {
+    try {
+        if (!listingData.title || !listingData.description || !listingData.address) {
+            throw new BadRequestError("Missing required fields: title, description, or address.");
+        }
+        if (!listingData.userId) {
+            throw new BadRequestError("User ID is required to create a listing.");
+        }
 
-            const listingRef = await db
-                  .collection("listings")
-                  .add(preparedListingData);
+        const preparedListingData = {
+            ...listingData,
+            images: null,
+        };
 
-            const postId = listingRef.id;
+        const listingRef = await db.collection("listings").add(preparedListingData);
 
-            await listingRef.update({
-                  postId,
-            });
-            return { postId }; 
+        const postId = listingRef.id;
 
-            // console.log(
-            //       `Listing ${listingData.title} posted with ID: ${postId}`
-            // );
-      } catch (err) {
-            console.log("Error: ", err);
-            throw new Error("Error posting listing to DB");
-      }
+        await listingRef.update({
+            postId,
+        });
+
+        const newDoc = await listingRef.get();
+        const newData = newDoc.data();
+
+        if (!newData) {
+            throw new InternalServerError(`Failed to confirm creation of listing with ID "${postId}".`);
+        }
+        return { postId };
+
+        // console.log(
+        //       `Listing ${listingData.title} posted with ID: ${postId}`
+        // );
+    } catch (err) {
+        if (!(err instanceof BadRequestError || err instanceof InternalServerError)) {
+            throw new InternalServerError("An unexpected error occurred while posting the listing.");
+        }
+        throw err;
+    }
 };
 
-export const updateListingInDB = async (
-      postId: string,
-      updatedFields: Record<string, any>
-) => {
-      try {
-            if (Object.keys(updatedFields).length === 0) {
-                  throw new Error("No fields to update.");
-            }
-            const listingRef = db.collection("listings").doc(postId);
-            // console.log("Updating firestore doc: ", listingRef.path);
+export const updateListingInDB = async (postId: string, hashUid: string, updatedFields: Record<string, any>) => {
+    try {
+        if (Object.keys(updatedFields).length === 0) {
+            throw new BadRequestError("No fields to update.");
+        }
+        const listingRef = db.collection("listings").doc(postId);
+        // console.log("Updating firestore doc: ", listingRef.path);
 
-            await listingRef.update(updatedFields);
+        const existingDoc = await listingRef.get();
+        if (!existingDoc.exists) {
+            throw new NotFoundError("Listing not found.");
+        }
 
-            const updatedDoc = await listingRef.get();
-            const data = updatedDoc.data();
+        const listingData = existingDoc.data();
+        if (!listingData) {
+            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
+        }
 
-            if (!data) {
-              throw new Error('listing not found');
-              return null;
-            }
-            return {
-              title: data.title,
-              description: data.description,
-              address: data.address,
-              dates: data.dates,
-              startTime: data.startTime,
-              endTime: data.endTime,
-              images: data.images,
-              categories: data.categories,
-              status: data.status,
-              g: data.g,
-              postId: data.postId
+        if (listingData.userId !== hashUid) {
+            throw new UnauthorizedError("User not permitted to change this listing");
+        }
+
+        if (
+            listingData.status === "archived" &&
+            (!updatedFields.hasOwnProperty("status") || !["active", "upcoming"].includes(updatedFields.status))
+        ) {
+            throw new UnauthorizedError("Cannot update an archived listing. Please unarchive before updating.");
+        }
+
+        await listingRef.update(updatedFields);
+
+        const updatedDoc = await listingRef.get();
+        const updatedData = updatedDoc.data();
+
+        if (!updatedData) {
+            throw new InternalServerError(`Failed to confirm update for listing ID "${postId}".`);
+        }
+        return {
+            title: updatedData.title,
+            description: updatedData.description,
+            address: updatedData.address,
+            dates: updatedData.dates,
+            startTime: updatedData.startTime,
+            endTime: updatedData.endTime,
+            images: updatedData.images,
+            categories: updatedData.categories,
+            status: updatedData.status,
+            g: updatedData.g,
+            postId: updatedData.postId,
         };
-      } catch (err) {
-            console.error("Error updating listing in Firestore: ", err);
-            throw error;
-      }
+    } catch (err) {
+        if (
+            !(
+                err instanceof BadRequestError ||
+                err instanceof InternalServerError ||
+                err instanceof NotFoundError ||
+                err instanceof UnauthorizedError
+            )
+        ) {
+            throw new InternalServerError("An unexpected error occurred while updating the listing.");
+        }
+        throw err;
+    }
+};
+
+export const removeListingInDB = async (postId: string, hashUid: string) => {
+    try {
+        const listingRef = db.collection("listings").doc(postId);
+        // console.log("Updating firestore doc: ", listingRef.path);
+
+        const existingDoc = await listingRef.get();
+        if (!existingDoc.exists) {
+            throw new NotFoundError(`Listing with ID "${postId}" not found.`);
+        }
+
+        const listingData = existingDoc.data();
+        if (!listingData) {
+            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
+        }
+
+        if (listingData.userId !== hashUid) {
+            throw new UnauthorizedError("User not permitted to delete this listing.");
+        }
+
+        const storagePath = `listings/${postId}`;
+        await removeFolderInFirebase(storagePath);
+
+        // Delete the document
+        await listingRef.delete();
+        return {
+            title: listingData.title,
+            postId: listingData.postId,
+        };
+        // console.log(`Listing with ID ${postId} deleted.`);
+        // return listingData;
+    } catch (err) {
+        if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
+            throw new InternalServerError("An unexpected error occurred while deleting the listing.");
+        }
+        throw err;
+    }
 };
 
 export const addImageToListing = async (
-      postId: string,
-      imageURI: string,
-      caption: string
+    postId: string,
+    hashUid: string,
+    imageURI: string,
+    caption: string
 ): Promise<any> => {
-      try {
+    try {
         // console.log("Adding image to listing", { postId, imageURI, caption });
 
-            const listingRef = db.collection("listings").doc(postId);
+        const listingRef = db.collection("listings").doc(postId);
 
-            const listingDoc = await listingRef.get();
-
-            if (!listingDoc.exists) {
-                  console.log("listing not found: ", postId);
-                  throw new Error("Listing not found.");
-            }
-            // console.log("Existing listing data:", listingDoc);
-            const listingData = listingDoc.data();
-            const currentImages = listingData?.images || [];
-
-            const updatedImages = [
-                  ...currentImages,
-                  { uri: imageURI, caption: caption || "" },
-            ];
-            // console.log("Updated images array:", updatedImages);
-            await listingRef.update({ images: updatedImages });
-
-            const updatedDoc = await listingRef.get();
-            const data = updatedDoc.data();
-
-            if (!data) {
-              throw new Error('listing not found');
-              return null;
-            }
-            return {
-              title: data.title,
-              description: data.description,
-              address: data.address,
-              dates: data.dates,
-              startTime: data.startTime,
-              endTime: data.endTime,
-              images: data.images,
-              categories: data.categories,
-              status: data.status,
-              g: data.g,
-              postId: data.postId
-        };
-      } catch (err) {
-            console.error("Error updating listing in firestore with new image");
-            throw new Error("Failed to add image to listing");
-      }
-};
-
-export const removeListingInDB = async (
-      postId: string
-) => {
-      try {
-            const listingRef = db.collection("listings").doc(postId);
-
-            // Get the listing to verify it exists
-            const listingDoc = await listingRef.get();
-
-            if (!listingDoc.exists) {
-                // console.log(`Listing with ID ${postId} does not exist.`);
-                return null;
-            }
-            const listingData = listingDoc.data() as Listing;
-
-            const storagePath = `listings/${postId}`;
-            await removeFolderInFirebase(storagePath);
-
-            // Delete the document
-            await listingRef.delete();
-            return {
-                title: listingData.title,
-                postId: listingData.postId
-          };
-            // console.log(`Listing with ID ${postId} deleted.`);
-            // return listingData;
-      } catch (err) {
-            console.error("Error occurred during removeListingInDB: ", err);
-            throw new Error("Error deleting listing from database");
-      }
-};
-
-// removes image reference in Firestore (uri and caption)
-export const removeImageInDB = async (
-      postId: string,
-      uri: string,
-): Promise<void> => {
-      try {
-        // console.log(`Uri: ${uri}`)
-            const listingRef = db.collection("listings").doc(postId);
-
-            const listingDoc = await listingRef.get();
-
-            if (!listingDoc.exists) {
-                  throw new Error(`Cannot find listing with ID: ${postId}`);
-            }
-
-            const listingData = listingDoc.data();
-            // console.log("Listing Data:", JSON.stringify(listingData, null, 2));
-
-            if (!listingData) {
-                  throw new Error(`Cannot find listing: ${postId}`);
-            }
-            if (!Array.isArray(listingData.images)) {
-                throw new Error(`Listing with ID ${postId} has no images`);
-          }
-          const currentImages = listingData?.images
-        //   console.log("Current images:", JSON.stringify(currentImages, null, 2));
-
-          const updatedImages = currentImages.filter((image: { uri: string }) => {
-            const decodedImageURI = decodeURIComponent(image.uri.trim());
-            const decodedTargetURI = decodeURIComponent(uri.trim());
-            // console.log(`Comparing: "${decodedImageURI}" === "${decodedTargetURI}"`);
-            return decodedImageURI !== decodedTargetURI;
-        });
-
-        //   console.log("Updated images:", JSON.stringify(updatedImages, null, 2));
-
-          const uriExists = updatedImages.some(
-            (image: { uri: string }) =>
-                decodeURIComponent(image.uri.trim()) === decodeURIComponent(uri.trim())
-        );
-
-        if (uriExists) {
-            console.error("URI was not removed from images.");
-            throw new Error(`Failed to remove URI: ${uri}`);
+        const existingDoc = await listingRef.get();
+        if (!existingDoc.exists) {
+            throw new NotFoundError(`Listing with ID "${postId}" not found.`);
         }
 
-            await listingRef.update({ images: updatedImages });
-            // console.log("Firestore update completed successfully: ", listingData);
-      } catch (err) {
-            console.error(
-                  `Error removing image ${uri} reference from database.`,
-                  err
-            );
-            throw new Error(
-                  `Error removing image ${uri} reference from database.`
-            );
-      }
+        const listingData = existingDoc.data();
+        if (!listingData) {
+            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
+        }
+        if (listingData.userId !== hashUid) {
+            throw new UnauthorizedError("User not permitted to update this listing.");
+        }
+
+        // console.log("Existing listing data:", listingDoc);
+        const currentImages = listingData?.images || [];
+
+        const updatedImages = [...currentImages, { uri: imageURI, caption: caption || "" }];
+        // console.log("Updated images array:", updatedImages);
+        await listingRef.update({ images: updatedImages });
+
+        const updatedDoc = await listingRef.get();
+        const updatedData = updatedDoc.data();
+
+        if (!updatedData) {
+            throw new InternalServerError(`Failed to confirm image update for listing ID "${postId}".`);
+        }
+        return {
+            title: updatedData.title,
+            description: updatedData.description,
+            address: updatedData.address,
+            dates: updatedData.dates,
+            startTime: updatedData.startTime,
+            endTime: updatedData.endTime,
+            images: updatedData.images,
+            categories: updatedData.categories,
+            status: updatedData.status,
+            g: updatedData.g,
+            postId: updatedData.postId,
+        };
+    } catch (err) {
+        if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
+            throw new InternalServerError("An unexpected error occurred while adding an image to the listing.");
+        }
+        throw err;
+    }
 };
 
 export const changeCaptionInDB = async (
     postId: string,
+    hashUid: string,
     uri: string,
     caption: string
 ): Promise<any> => {
     try {
         const listingRef = db.collection("listings").doc(postId);
-        const listingDoc = await listingRef.get();
 
-        if (!listingDoc.exists) {
-            throw new Error(`Cannot find listing with ID: ${postId}`);
+        const existingDoc = await listingRef.get();
+        if (!existingDoc.exists) {
+            throw new NotFoundError(`Listing with ID "${postId}" not found.`);
         }
 
-        const listingData = listingDoc.data();
+        const listingData = existingDoc.data();
         if (!listingData) {
-            throw new Error(`Cannot retrieve data for listing: ${postId}`);
+            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
+        }
+
+        if (listingData.userId !== hashUid) {
+            throw new UnauthorizedError("User not permitted to update this listing.");
         }
 
         if (!Array.isArray(listingData.images)) {
-            throw new Error(`Listing with ID ${postId} has no images`);
+            throw new NotFoundError(`No images found for listing ID "${postId}".`);
         }
 
         const currentImages = listingData.images;
         const updatedImages = currentImages.map((image: { uri: string; caption: string }) => {
             if (decodeURIComponent(image.uri.trim()) === decodeURIComponent(uri.trim())) {
-                // console.log(`Updating caption for URI: ${image.uri}`);
-                return { ...image, caption: caption };
+                return { ...image, caption };
             }
             return image;
         });
@@ -357,48 +362,100 @@ export const changeCaptionInDB = async (
         );
 
         if (!uriExists) {
-            throw new Error(`Image URI not found in listing: ${postId}`);
+            throw new NotFoundError(`Image URI "${uri}" not found in listing ID "${postId}".`);
         }
 
         await listingRef.update({ images: updatedImages });
 
         const updatedDoc = await listingRef.get();
-        const data = updatedDoc.data();
+        const updatedData = updatedDoc.data();
 
-        if (!data) {
-          throw new Error('listing not found');
-          return null;
+        if (!updatedData) {
+            throw new InternalServerError(`Failed to confirm caption update for listing ID "${postId}".`);
         }
         return {
-          title: data.title,
-          description: data.description,
-          address: data.address,
-          dates: data.dates,
-          startTime: data.startTime,
-          endTime: data.endTime,
-          images: data.images,
-          categories: data.categories,
-          status: data.status,
-          g: data.g,
-          postId: data.postId
-    };
+            title: updatedData.title,
+            description: updatedData.description,
+            address: updatedData.address,
+            dates: updatedData.dates,
+            startTime: updatedData.startTime,
+            endTime: updatedData.endTime,
+            images: updatedData.images,
+            categories: updatedData.categories,
+            status: updatedData.status,
+            g: updatedData.g,
+            postId: updatedData.postId,
+        };
     } catch (err) {
-        console.error(`Error updating caption for image ${uri} in listing ${postId}.`, err);
-        throw new Error(`Error updating caption for image ${uri} in listing ${postId}.`);
+        if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
+            throw new InternalServerError("An unexpected error occurred while updating the caption for the listing.");
+        }
+        throw err;
     }
-}
+};
 
-// Function to calculate the distance between to points using coordinates!
-// const haversineDistance = (lat1: number, long1: number, lat2: number, long2: number): number => {
-//     const R = 6371; // earth's radius in km!
-//     const rad = Math.PI / 180
-//     const dLat = (lat2 - lat1) * rad;
-//     const dLong = (long2 - long1) * rad;
-//     const a =
-//         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-//         Math.cos(lat1 * rad) * Math.cos(lat2 * rad) *
-//         Math.sin(dLong / 2) * Math.sin(dLong / 2);
-//     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-//     const distance = R * c;
-//     return distance;
-// }
+export const removeImageInDB = async (postId: string, hashUid: string, uri: string) => {
+    try {
+        // console.log(`Uri: ${uri}`)
+        const listingRef = db.collection("listings").doc(postId);
+
+        const existingDoc = await listingRef.get();
+        if (!existingDoc.exists) {
+            throw new NotFoundError(`Listing with ID "${postId}" not found.`);
+        }
+
+        const listingData = existingDoc.data();
+        if (!listingData) {
+            throw new InternalServerError(`Failed to retrieve data for listing ID "${postId}".`);
+        }
+
+        if (listingData.userId !== hashUid) {
+            throw new UnauthorizedError("User not permitted to update this listing.");
+        }
+
+        if (!Array.isArray(listingData.images)) {
+            throw new NotFoundError(`No images found for listing ID "${postId}".`);
+        }
+
+        const currentImages = listingData.images;
+        const updatedImages = currentImages.filter(
+            (image: { uri: string }) => decodeURIComponent(image.uri.trim()) !== decodeURIComponent(uri.trim())
+        );
+
+        if (currentImages.length === updatedImages.length) {
+            throw new NotFoundError(`Image URI "${uri}" not found in listing ID "${postId}".`);
+        }
+
+        //   console.log("Updated images:", JSON.stringify(updatedImages, null, 2));
+
+        const uriExists = updatedImages.some(
+            (image: { uri: string }) => decodeURIComponent(image.uri.trim()) === decodeURIComponent(uri.trim())
+        );
+        await listingRef.update({ images: updatedImages });
+
+        const updatedDoc = await listingRef.get();
+        const updatedData = updatedDoc.data();
+
+        if (!updatedData) {
+            throw new InternalServerError(`Failed to confirm image removal for listing ID "${postId}".`);
+        }
+        return {
+            title: updatedData.title,
+            description: updatedData.description,
+            address: updatedData.address,
+            dates: updatedData.dates,
+            startTime: updatedData.startTime,
+            endTime: updatedData.endTime,
+            images: updatedData.images,
+            categories: updatedData.categories,
+            status: updatedData.status,
+            g: updatedData.g,
+            postId: updatedData.postId,
+        };
+    } catch (err) {
+        if (!(err instanceof InternalServerError || err instanceof NotFoundError || err instanceof UnauthorizedError)) {
+            throw new InternalServerError("An unexpected error occurred while deleting the image for the listing.");
+        }
+        throw err;
+    }
+};

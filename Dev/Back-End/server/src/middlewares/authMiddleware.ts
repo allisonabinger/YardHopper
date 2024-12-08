@@ -1,29 +1,34 @@
 // Authentication Middleware for users
+// Validates request, Extracts uid and email from decoded token, and generates hashUid to attach to req.user
 
-import {auth} from "../config/firebase"
-import { Request, Response, NextFunction } from "express";
-import { hashUid } from "../controllers/usersController"; 
+import { auth } from "../config/firebase";
+import { Request, Response, NextFunction, RequestHandler } from "express";
+import { createHash } from "crypto";
+import { ForbiddenError, UnauthorizedError } from "./errors";
+
+export const hashUid = (uid: string): string => {
+    return createHash("sha256").update(uid).digest("hex");
+};
 
 export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.split(" ")[1];
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
-        return res.status(401).json({ error: "No token provided" });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return next(new UnauthorizedError("Unauthorized: Missing token."));
     }
+
+    const token = authHeader.split(" ")[1];
 
     try {
-        // verify firebase auth token
         const decodedToken = await auth.verifyIdToken(token);
-        const hashedUid = hashUid(decodedToken.uid);
+        const uid = decodedToken.uid;
+        const hashedUid = hashUid(uid);
+        const user = { hashUid: hashedUid, uid: uid };
 
-        req.user = {
-            uid: decodedToken.uid,
-            hashedUid: hashUid(decodedToken.uid),
-          };
-
+        res.locals.user = user;
         next();
-    } catch (err) {
-        console.error("Auth failed: ", err);
-        return res.status(401).json({ error: "Invalid or expired token" });
+    } catch (error) {
+        //   console.error("Authentication error:", error);
+        return next(new ForbiddenError("Invalid or expired token."));
     }
-}
+};
