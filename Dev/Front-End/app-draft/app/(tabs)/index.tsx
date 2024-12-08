@@ -93,7 +93,7 @@ export default function HomeScreen() {
     const data = await response.json();
 
     // Update listings state
-
+    console.log(JSON.stringify(data, null, 2));
     setListings((prevListings) => {
       const newListings = isRefresh ? data.listings : [...prevListings, ...data.listings];
       return newListings.filter(

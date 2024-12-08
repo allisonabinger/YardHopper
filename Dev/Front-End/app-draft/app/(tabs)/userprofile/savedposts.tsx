@@ -19,9 +19,9 @@ type ListingItem = {
   title: string;
   description: string;
   address: {
-    zip: number;
     city: string;
     street: string;
+    zip: number;
     state: string;
   };
   dates: string[];
@@ -47,14 +47,17 @@ export default function SavedScreen() {
 
   const router = useRouter();
 
-  // Fetch saved listings on component load
   useEffect(() => {
-    fetchSavedListings();
-  }, []);
+  fetchSavedListings().then(() => {
+    // console.log(JSON.stringify(savedListings, null, 2));
+    // Log the data after it is fetched
+  });
+}, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchSavedListings();
+    // console.log("Fetched saved listings:", savedListings);
     setRefreshing(false);
   };
 
