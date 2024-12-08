@@ -29,7 +29,7 @@ All endpoints require the user to be signed in. The API needs to receive the `Au
 ### Get all active and upcoming listings: GET /api/listings 
 The `GET /api/listings` endpoint will need accept coordinates or zipcode in order to find listings in the area. As of now, database has listings in Tulsa, Jenks, and Sand Springs. **The request must have a latitude and longitude or a zipcode query in order to find listings.** This is because a user will need to allow location services and send their location with the listing, or they must provide their zipcode. They can always extend the radius regardless.
 
-The endpoint can also accept a radius to search by. The default search radius is 15 miles. It will also accept searching by categories, but not subcategories
+The endpoint can also accept a radius to search by. The default search radius is 10 miles. It will also accept searching by categories, but not subcategories
 
 **Request Header**
 `Authorization: Bearer ${idToken}`
@@ -210,6 +210,7 @@ Here is an example of user submitted listing data that is sufficient to post to 
 The API will respond with the postId of the newly created listing:
 ```
 {
+    "message": "Listing created with new postId",
     "postId": "KwLTqIjazVDMMPkS3ldZ"
 }
 ```
@@ -420,7 +421,7 @@ The API responds with a success message of the newly updated listing, which shou
 ## Users Endpoints
 
 ### Get a user's profile: GET /api/users/me
-This endpoint is for verfiying a user and displaying their profile. A user's uid is extracted from the `Authorization` header and the uid is used to gather their account in Firebase Auth. An encryption service is used to find their user profile stored in the Firestore Database.
+This endpoint is for verfiying a user and displaying their profile. A user's uid is extracted from the `Authorization` header and the uid is used to gather their account in Firebase Auth. An encryption service is used to find their user profile stored in the Firestore Database. 
 
 **Request Endpoint Example**
 GET https://yardhopperapi.onrender.com/api/users/me
@@ -447,10 +448,12 @@ The API will return data regarding the user's profile. Here is an example respon
 ---
 
 ### Create a new user profile: POST /api/users/create
-This endpoint is designed to create a new user profile in the Firestore Database with user information. It does not create a user account in Firebase Auth, so the account will be created in the client app. The requests accepts user details in the body, connects the `email` and `createdAt` fields stored in FirebaseAuth with the uid, and creates a user document with their profile details. 
+This endpoint is designed to create a new user profile in the Firestore Database with user information. It does not create a user account in Firebase Auth, so the account will be created in the client app. 
 
-The required fields in the **body** are `first`, `last`, and `zipcode`.
-Option fields are the address of the user, including `street` (street address), `city`, and `state`.
+The endpoint will accept user inputted information in the `body` of the request.
+
+Fields **required** in the body are `first`, `last`, and `zipcode`. Optional fields are address fields, such as `street`, `city`, and `state`. The user's `email` will be gathered from their account made through Firebase, as well as the account's `generatedAt` timestamp.
+
 
 **Request Endpoint Example**
 POST https://yardhopperapi.onrender.com/api/users/create
@@ -458,24 +461,36 @@ POST https://yardhopperapi.onrender.com/api/users/create
 **Request Header**
 `Authorization: Bearer ${idToken}`
 
-**Request Body -- MUST BE JSON**
+**Request Body -- JSON**
+FORMAT:
 ```
-{
-    "first": "Jenny",
+  {
+    "first": string,
+    "last": string,
+    "street": string,
+    "city": string,
+    "state": string,
+    "zipcode": number,
+  }
+```
+Example Request: 
+```
+  {
+    "first": "John",
     "last": "Doe",
     "street": "15 N Cheyenne Ave",
     "city": "Tulsa",
     "state": "OK",
     "zipcode": 74103,
-}
-```
 
+  }
+```
 **Server Response**
 The response returned from the API will message and the newly created profile.
 ```
 {
     "message": "User profile created successfully",
-    "data": {
+    "user": {
         "userId": "1a67f57e385d82320e1f8c1985932f535e04f708bc63c5e7e0401fc7393f1b57",
         "first": "Yard",
         "last": "Hopper",
@@ -534,7 +549,7 @@ The response returned from the API will be a successful updated message, as well
 ```
 {
     "message": "User profile updated successfully",
-    "data": {
+    "user": {
         "first": "Georgia",
         "last": "Doe",
         "email": "user2@yahoo.com",
@@ -638,7 +653,11 @@ POST https://yardhopperapi.onrender.com/api/users/savedListings
 The server will respond with a message upon successful addition:
 ```
 {
-    "message": "Listing saved successfully"
+    "message": "Listing 6VpUpFaeAHvA9Ew9zAkj added to user's saved listings", 
+    "savedListings": [
+        "6VpUpFaeAHvA9Ew9zAkj",
+        "KwLTqIjazVDMMPkS3ldZ"
+    ]
 }
 ```
 
@@ -671,7 +690,9 @@ The server will respond with a message upon successful deletion:
 ---
 
 ## API Core Structure
-The API aligns with the **Separation of Concerns**, which makes it more modular, testable, and maintainable. With this principle, the functionality is broken up so that one file or function is not handling too much at a time.
+The API aligns with **Separation of Concerns**, which makes it more modular, testable, and maintainable. With this principle, the functionality is broken up so that one file or function is not handling too much at a time.
+
+Requests come through the an open port provided by the **server**, which will use the **routes** provided as endpoints. A request will be sent through the authentication **middleware**, then sent to the appropriate **controller**. The **controller** will verify the authentication, handle any request **query** or **body** sent from the client, and then call the appropriate **service** function. The **services** handle database and storage logic, and return the any data back to the **controller**, which will then send the response back to the client. Any errors caught will call on the appropriate error class created by the error handler **middleware**, which will send the appropriate status code and message as a response.
 
 ### File Structure
 
@@ -737,13 +758,20 @@ Contains interfaces and types used for consistency across the project.
 - Contains the most up to date interface of `Listing`, which is used across the project.
 
 #### Middleware - middlewares/
-Holds the middleware configurations needed for authentication and error handling (**not yet implemented**)
+Holds the middleware configurations needed for authentication and error handling.
 
 `authMiddleware.ts`
-- (**not yet implemented**)
+- Parses the authentication header form the request and verifies the ID token provided by the client auth. Contains the `authenticateUser` and `hashUid` functions used across the server.
+
+`errors`
+- Constructs the `AppError` class to define the specific errors and statuses used across the server. Contains the following errors: `BadRequestError` (status 400), `UnauthorizedError` (status 401), `ForbiddenError` (status 403) [currently unused], `NotFoundError` (status 404), and `InternalServerError` (status 500).
 
 `errorHandler.ts`
-- (**not yet implemented**)
+- Responds to the client's request with the approprate status code and message. If the error is one of the defined `AppErrors` imported from `errors`, then it will respond accordingly. If the errr is not, then it responds with an `Unknown Error` message with the details. 
+
+`jsonValidation`
+- Ensures the JSON data sent in the request doesn't have syntax errors that would cause an Internal Server Error. It exports `jsonValidation` which is used as middleware in `app.js`
+
 
 #### Seed - seed/
 Used to seeding the database. Contains lots of formatting for previous versions of data, and was updated frequently with new requests for posting documents. Should not be used to seed database, but housed for future implementations. Also hold images/ used in the project. 
@@ -757,10 +785,10 @@ Holds the configurations for the swaggerUI documentation.
 
 
 ### Framework
-Node.js, Express, Firebase, Firestore, Swagger
+Node.js, Express, Firebase, Firestore, Swagger, Multer, Crypto, Firebase, Firestore, geoFirestore.
 
 ### Firestore
-Firestore will manage our listings and user data. `server.js` will utilize the Firebase Admin SDK to interact with Firebase Storage and the Firestore Database
+Firestore will manage our listings and user data. `config/firebase.ts` will utilize the Firebase Admin SDK to interact with Firebase Storage and the Firestore Database
 
 ## Data Management
 We are using a NoSQL structured schema for our data management using Firestore Database storage as our main database.
@@ -807,10 +835,15 @@ USER - Provided by user input via front-end interaction
 ]
 ```
 
+## Validation
+Lots of functions within the server will type check the user input before sending it to the database, auth, or third party API. It will also ensure the JSON data doesn't have syntax errors as well so it will not log an unknown error. 
+
 ## Security
 
 ### Authentication
-Firebase Authentication is used to authenticte users, as well as Google OAuth for users to be able to sign in with their google account. Each request to the API must be from an authenticated user. Authentication is handled in the app with firebase authentication, and user information is encrypted before requests are sent and handled within the server to ensure no interception of sensitive information occurs. 
+Each request to the API must be from an authenticated user. Authentication is handled in the app with Firebase authentication, and user information is encrypted before requests are sent and handled within the server to ensure no interception of sensitive information occurs. 
+
+When a user signs into their account on the app, they are assigned a temporary ID Token for their session. That IDToken is passed as a header in each request and then carefully computer to match any user profile settings or listing management for that user. 
 
 ### Encryption
 Certain protected information is encrypted before being sent through HTTP requests and other data transfers. The backend API can validate tokens sent from client to ensure private data is not public traffic.
@@ -818,11 +851,7 @@ Certain protected information is encrypted before being sent through HTTP reques
 ### Privacy
 Users will not have their information public to others, so there is not identifying data that is listed on sales. The response from the API will only include public fields that will be necessary to display the listing and filter the posts by user input.
 
-Users will be able to archive their posts, and once a post has been archived, the image will be deleted from the database to perserve storage and ensure privacy. 
-
-
-## Optimization
-
+Users will be able to archive their posts, and once a post has been archived, the image will be deleted from the database to perserve storage and ensure privacy. Users can also update their information and delete their account, which will delete any listing they have made or image they have uploaded from our database and blob storage.
 
 ## Auto-Cleanup
 There is currently one cloud function service that will check for any listings that should be archived. At midnight each day, it looks at the listings for their active dates and compares it to the current date. It will then update the `status` of the sale accordingly to ensure no expired sales are shown, and upcoming sales are switched to `active` when the day arrives. 

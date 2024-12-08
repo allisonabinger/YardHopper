@@ -32,40 +32,61 @@ export const fetchListings = async (req: Request, res: Response, next: NextFunct
         let latitude: number | undefined;
         let longitude: number | undefined;
 
-        if (!lat && !long) {
-            // if no lat or long provided in request, try to use zipcode instead
-            if (!zipcode) {
-                throw new BadRequestError("No location provided.");
-            }
+        if (!lat && !long && !zipcode) {
+            throw new BadRequestError("No location provided. Please provide either lat/long or a zipcode.");
+        }
 
-            // convert zipcode to an integer
+        if ((lat && !long) || (!lat && long)) {
+            throw new BadRequestError("Both latitude and longitude must be provided together.");
+        }
+
+        if (lat && long) {
+            latitude = parseFloat(lat as string);
+            longitude = parseFloat(long as string);
+        } else if (zipcode) {
             const zip = parseInt(zipcode as string);
-            // get lat and long from geoapify using zipcode
+            if (typeof zip !== "number") {
+                throw new BadRequestError("Zipcode must be a number.");
+            }
             const coordinates = await generateCoordinatesByZipcode(zip);
+
             if (coordinates) {
                 ({ latitude, longitude } = coordinates);
             } else {
                 throw new BadRequestError("Invalid zipcode or location.");
             }
         } else {
-            // if lat and long provided, convert them to integers and use them
-            latitude = parseFloat(lat as string);
-            longitude = parseFloat(long as string);
+            throw new BadRequestError("No location provided.");
         }
-        // declare search radius
-        const searchRadius = radius ? parseInt(radius as string) : 10;
 
-        // handle categories as json structure or as string
+        let searchRadius = 10;
+
+        if (radius) {
+            const parsedRadius = parseInt(radius as string, 10);
+            if (isNaN(parsedRadius) || parsedRadius <= 0 || parsedRadius > 100) {
+                throw new BadRequestError("Radius must be a valid number between 0 and 100.");
+            }
+            searchRadius = parsedRadius;
+        }
+
         let parsedCategories: string[] = [];
         if (categories) {
             try {
-                parsedCategories = (categories as string).split(",").map((cat) => cat.trim());
+                const rawCategories = (categories as string).split(",").map((cat) => cat.trim());
+                parsedCategories = rawCategories.filter((cat) => {
+                    const isNonNumeric = isNaN(Number(cat));
+                    const isNonEmptyString = typeof cat === "string" && cat.length > 0;
+                    return isNonNumeric && isNonEmptyString;
+                });
+
+                if (parsedCategories.length !== rawCategories.length) {
+                    throw new BadRequestError("All categories must be valid, non-numeric strings.");
+                }
             } catch (error) {
-                throw new BadRequestError("Invalid categories format.");
+                throw new BadRequestError("Invalid categories format. Categories must be a string.");
             }
         }
 
-        // call query function in services with formatted filters
         const listings = await getListings({
             lat: latitude,
             long: longitude,
@@ -94,7 +115,7 @@ export const fetchSingleListing = async (req: Request, res: Response, next: Next
             throw new BadRequestError("No postId provided.");
         }
         // call query function in services with formatted filters
-        const listing = await getListing(postId);
+        const listing = await getListing(postId, hashUid);
 
         return res.status(200).json({ listing });
     } catch (err) {
@@ -121,13 +142,56 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
             endTime,
             categories,
         };
-
         const missingFields = Object.entries(requiredFields)
-            .filter(([key, value]) => !value) // Check for missing fields
-            .map(([key]) => key); // Collect field names
+            .filter(([key, value]) => !value)
+            .map(([key]) => key);
 
         if (missingFields.length > 0) {
             throw new BadRequestError(`Missing required fields: ${missingFields.join(", ")}.`);
+        }
+        const allFields = {
+            title,
+            description,
+            address,
+            dates,
+            startTime,
+            endTime,
+            categories,
+            subcategories,
+        };
+
+        const expectedTypes: Record<string, string> = {
+            title: "string",
+            description: "string",
+            address: "object",
+            dates: "array",
+            startTime: "string",
+            endTime: "string",
+            categories: "array",
+            subcategories: "object",
+        };
+
+        const errors: string[] = [];
+        Object.entries(allFields).forEach(([key, value]) => {
+            const expectedType = expectedTypes[key];
+
+            if (expectedType === "array" && !Array.isArray(value)) {
+                errors.push(`Field [${key}] must be an array.`);
+            } else if (expectedType === "object" && (typeof value !== "object" || Array.isArray(value))) {
+                errors.push(`Field [${key}] must be an object.`);
+            } else if (expectedType !== "array" && expectedType !== "object" && typeof value !== expectedType) {
+                errors.push(`Field [${key}] must be of type [${expectedType}].`);
+            }
+        });
+        
+        const { street, city, state, zip } = address || {};
+        if (!street || typeof street !== "string") errors.push(`Street address is required and must be a string.`);
+        if (!city || typeof city !== "string") errors.push(`City is required and must be a string.`);
+        if (!state || typeof state !== "string") errors.push(`State is required and must be a string.`);
+        if (!zip || typeof zip !== "number") errors.push(`Zip code is required and must be a number.`);
+
+        if (errors.length > 0) {
+            throw new BadRequestError(errors.join(", "));
         }
 
         // generate timestamp for generatedAt (format = YYYY-MM-DDTHH:mm:ss.sssZ )
@@ -178,7 +242,8 @@ export const createListing = async (req: Request, res: Response, next: NextFunct
 
         const newListing = await postListing(listingData);
         return res.status(201).json({
-            "Listing created with new postId": newListing.postId,
+            message: "Listing created successfully",
+            postId: newListing.postId,
         });
     } catch (err) {
         next(err);
@@ -203,6 +268,37 @@ export const updateListing = async (req: Request, res: Response, next: NextFunct
 
         if (Object.keys(updatedFields).length === 0) {
             throw new BadRequestError("No fields provided to update.");
+        }
+        const allowedFields: Record<string, string> = {
+            title: "string",
+            description: "string",
+            address: "object",
+            dates: "array",
+            startTime: "string",
+            endTime: "string",
+            categories: "array",
+            subcategories: "object",
+            status: "string",
+        };
+        const filteredFields: Record<string, any> = {};
+        for (const [key, value] of Object.entries(updatedFields)) {
+            if (!(key in allowedFields)) {
+                throw new BadRequestError(`Field [${key}] is not a valid field, or it cannot be updated.`);
+            }
+            const expectedType = allowedFields[key];
+            if (expectedType === "array" && !Array.isArray(value)) {
+                throw new BadRequestError(`Field [${key}] must be an array.`);
+            } else if (expectedType === "object" && (typeof value !== "object" || Array.isArray(value))) {
+                throw new BadRequestError(`Field [${key}] must be an object.`);
+            } else if (expectedType !== "array" && expectedType !== "object" && typeof value !== expectedType) {
+                throw new BadRequestError(`Field [${key}] must be of type [${expectedType}].`);
+            }
+
+            filteredFields[key] = value;
+        }
+
+        if (Object.keys(filteredFields).length === 0) {
+            throw new BadRequestError("No valid fields provided for update.");
         }
 
         const updatedListing = await updateListingInDB(postId, hashUid, updatedFields);
@@ -271,7 +367,7 @@ export const removeImage = async (req: Request, res: Response, next: NextFunctio
         const updatedListing = await removeImageInDB(postId, hashUid, uri);
         res.status(200).json({
             message: "Image removed successfully.",
-            updatedListing: updatedListing,
+            listing: updatedListing,
         });
 
         // removes image in firestore

@@ -6,6 +6,9 @@ import routes from "./routes";
 import * as swaggerUI from "swagger-ui-express";
 import * as swaggerDocument from "./swagger/swagger.json";
 import { errorHandler } from "./middlewares/errorHandler";
+import bodyParser from "body-parser";
+import { jsonValidation } from "./middlewares/jsonValidation";
+
 
 
 
@@ -19,6 +22,7 @@ const corsOptions = {
 }
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(jsonValidation)
 
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument))
 
