@@ -48,11 +48,10 @@ export default function SavedScreen() {
   const router = useRouter();
 
   useEffect(() => {
-  fetchSavedListings().then(() => {
-    // console.log(JSON.stringify(savedListings, null, 2));
-    // Log the data after it is fetched
-  });
-}, []);
+    fetchSavedListings().then(() => {
+      console.log("Saved Listings:", JSON.stringify(savedListings.listings, null, 2)); // Log the listings array
+    });
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -73,30 +72,32 @@ export default function SavedScreen() {
 
 
   const handleToggleLike = (listing: ListingItem) => {
-    const isAlreadyLiked = savedListings.some((savedListing) => savedListing.postId === listing.postId);
+    const isAlreadyLiked = savedListings.listings.some(
+      (savedListing) => savedListing.postId === listing.postId
+    );
     if (isAlreadyLiked) {
       removeSavedListing(listing.postId);
     }
   };
 
   const renderItem = ({ item }: { item: ListingItem }) => (
-    <Card
-      images={item.images?.map((img) => ({ uri: img.uri })) || []}
-      postId={item.postId}
-      title={item.title}
-      description={item.description}
-      address={`${item.address.street}, ${item.address.city}`}
-      date={item.dates[0]}
-      categories={item.categories}
-      isLiked={true} // All items in this screen are saved
-      onToggleLike={() => handleToggleLike(item)}
-      route={() =>
-        router.push({
-          pathname: "../../listing/[id]",
-          params: { id: item.postId },
-        })
-      }
-    />
+  <Card
+    images={item.images?.map((img) => ({ uri: img.uri })) || []}
+    postId={item.postId}
+    title={item.title || "No title"}
+    description={item.description || "No description"}
+    address={`${item.address?.street || "Unknown street"}, ${item.address?.city || "Unknown city"}`}
+    date={item.dates?.[0] || "No date available"}
+    categories={item.categories || []}
+    isLiked={true} // All items in this screen are saved
+    onToggleLike={() => handleToggleLike(item)}
+    route={() =>
+      router.push({
+        pathname: "../../listing/[id]",
+        params: { id: item.postId },
+      })
+    }
+  />
   );
 
   return (
@@ -123,7 +124,7 @@ export default function SavedScreen() {
 
       {viewMode === "list" ? (
         <FlatList
-          data={savedListings}
+          data={savedListings.listings}
           renderItem={renderItem}
           keyExtractor={(item) => item.postId}
           contentContainerStyle={styles.listContent}
@@ -140,13 +141,13 @@ export default function SavedScreen() {
         <MapView
           style={styles.map}
           initialRegion={{
-            latitude: savedListings[0]?.g.geopoint._latitude || 37.7749,
-            longitude: savedListings[0]?.g.geopoint._longitude || -122.4194,
+            latitude: savedListings.listings[0]?.g.geopoint._latitude || 37.7749,
+            longitude: savedListings.listings[0]?.g.geopoint._longitude || -122.4194,
             latitudeDelta: 0.1,
             longitudeDelta: 0.1,
           }}
         >
-          {savedListings.map((item) => (
+          {savedListings.listings.map((item) => (
             <Marker
               key={item.postId}
               coordinate={{
