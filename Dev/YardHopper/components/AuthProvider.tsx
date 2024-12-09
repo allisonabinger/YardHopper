@@ -48,17 +48,12 @@ export function AuthProvider({children}: {children: ReactNode}){
   const [user, setUser] = useState(auth.currentUser);
 
   useEffect(() => {
-    // create subscription when component mounts
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if(user) {
-        setUser(user);
-      } else {
-        setUser(null);
-      }
+      console.log("Auth state changed:", user);
+      setUser(user);
     });
-    // unsubscribe when component unmounts
-    return () => unsubscribe();
-  }, [])
+    return unsubscribe;
+  }, []);
   return (
     <AuthContext.Provider value={{user, register, logout, login, resetPassword }}>
       {children}
