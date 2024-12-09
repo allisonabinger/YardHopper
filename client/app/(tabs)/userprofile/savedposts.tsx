@@ -168,6 +168,8 @@ export default function SavedScreen() {
         onClose={closeModal}
         animation={new Animated.Value(1)}
         onCardPress={(postId) => console.log("Card pressed:", postId)}
+        isLiked={true}
+        onLikeToggle={() => selectedListing && handleToggleLike(selectedListing)}
       />
     </View>
   );
