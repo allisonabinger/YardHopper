@@ -75,7 +75,7 @@ const Card: React.FC<CardProps> = ({
             ))
           ) : (
             <Image
-              source={{ uri: "https://via.placeholder.com/150" }}
+              source={{ uri: "https://via.placeholder.com/300x200.png?text=Coming+Soon!" }}
               style={styles.image}
               resizeMode="cover"
             />
