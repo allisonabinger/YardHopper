@@ -13,4 +13,3 @@ firebase.json
 **/fetchUsers.ts
 **/user-data.json
 
-helpers/*
