@@ -1,16 +1,28 @@
-import React, { useLayoutEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { Link, router } from 'expo-router';
-import LogoutComponent from '@/components/LogoutComponent';
-import { useAuth } from '@/components/AuthProvider';
-import { getAuth, deleteUser } from 'firebase/auth';
+import React, { useLayoutEffect, useEffect } from "react";
+import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import { Link, router } from "expo-router";
+import LogoutComponent from "@/components/LogoutComponent";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
-  const { profile, getIdToken, deleteUser, logout } = useAuth();
-  const firstName = profile?.first || 'User';
+  const { profile, getValidIdToken, deleteUser, logout, refreshProfile } = useAuth();
+  const firstName = profile?.first || "User";
+  console.log("First Name:", firstName);
+
+  // Refresh profile when the component mounts
+  useEffect(() => {
+    const refresh = async () => {
+      try {
+        await refreshProfile();
+      } catch (error) {
+        console.error("Error refreshing profile:", error);
+      }
+    };
+    refresh();
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -23,65 +35,34 @@ export default function SettingsScreen() {
           onPress={() => navigation.goBack()}
         />
       ),
-      headerTitle: '',
+      headerTitle: "",
     });
   }, [navigation]);
 
   const handleDeleteAccount = async () => {
     Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone.',
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
       [
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: async () => {
             try {
-              const firebaseAuth = getAuth();
-              const { currentUser } = firebaseAuth;
-
-              if (!currentUser) {
-                Alert.alert('Error', 'User is not authenticated.');
-                return;
-              }
-
-              // Call the DELETE endpoint for your backend
-              const idToken = await getIdToken(); // Get the user's ID token
-              const response = await fetch('https://yardhopperapi.onrender.com/api/users/me', {
-                method: 'DELETE', // Correct HTTP method
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${idToken}`,
-                },
-              });
-
-              if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to delete account.');
-              }
-
-              // Sign out the user from Firebase Auth
-              await deleteUser();
-              await logout();
-              Alert.alert('Success', 'Account successfully deleted.');
-              router.push('/login'); // Redirect to the login screen
-            } catch (error: unknown) {
-              if (error instanceof Error) {
-                Alert.alert('Error', error.message || 'Failed to delete account. Please try again.');
-              } else {
-                console.error('Unexpected error:', error);
-                Alert.alert('Error', 'An unexpected error occurred. Please try again.');
-              }
+              await deleteUser(); // Use the updated deleteUser from AuthProvider
+              Alert.alert("Success", "Your account has been deleted.");
+              router.replace("/login");
+            } catch (error: any) {
+              console.error("Error during account deletion:", error.message);
+              Alert.alert("Error", error.message || "Failed to delete account.");
             }
           },
         },
       ]
     );
   };
+
 
   return (
     <View style={styles.container}>
@@ -135,29 +116,29 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   header: {
-    height: '35%',
-    backgroundColor: '#159636',
-    flexDirection: 'row',
-    alignItems: 'center',
+    height: "35%",
+    backgroundColor: "#159636",
+    flexDirection: "row",
+    alignItems: "center",
     paddingBottom: 120,
-    position: 'absolute',
-    width: '100%',
+    position: "absolute",
+    width: "100%",
     paddingLeft: 35,
   },
   headerTitle: {
     fontSize: 36,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
     marginLeft: 10,
   },
   profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
     marginBottom: 20,
   },
   greetingIcon: {
@@ -165,41 +146,41 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#159636',
+    fontWeight: "700",
+    color: "#159636",
   },
   card: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 30,
     marginTop: 150,
     marginHorizontal: 35,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
     elevation: 4,
   },
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   menuText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     marginLeft: 15,
     flex: 1,
   },
   chevron: {
-    marginLeft: 'auto',
+    marginLeft: "auto",
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 10,
   },
   deleteAccountText: {
-    color: '#FF0000',
+    color: "#FF0000",
   },
 });

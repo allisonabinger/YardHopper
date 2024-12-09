@@ -75,7 +75,7 @@ const Card: React.FC<CardProps> = ({
             ))
           ) : (
             <Image
-              source={{ uri: "https://via.placeholder.com/150" }}
+              source={{ uri: "https://via.placeholder.com/300x200.png?text=Coming+Soon!" }}
               style={styles.image}
               resizeMode="cover"
             />
@@ -83,11 +83,7 @@ const Card: React.FC<CardProps> = ({
         </ScrollView>
         <TouchableOpacity
           style={styles.likeButton}
-          onPress={() => {
-            if (onToggleLike) {
-              onToggleLike(postId); // Pass the `postId` correctly
-            }
-          }}
+          onPress={() => onToggleLike?.(postId)}
         >
           <Ionicons
             name={isLiked ? "heart" : "heart-outline"}

@@ -28,11 +28,12 @@ interface SavedListing extends ListingItem {
 }
 
 interface SavedListingsContextType {
-  savedListings: SavedListing[];
+  savedListings: { listings: SavedListing[] };
   loading: boolean;
   error: string | null;
   addSavedListing: (postId: string) => Promise<void>;
   removeSavedListing: (postId: string) => Promise<void>;
+  fetchSavedListings: () => Promise<void>,
 }
 
 interface SavedListingsProviderProps {
@@ -44,17 +45,17 @@ const SavedListingsContext = createContext<SavedListingsContextType | undefined>
 
 // Context Provider component
 export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ children }) => {
-  const [savedListings, setSavedListings] = useState<SavedListing[]>([]);
+  const [savedListings, setSavedListings] = useState<{ listings: SavedListing[] }>({ listings: [] });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { getIdToken, user } = useAuth();
+  const { getValidIdToken, user } = useAuth();
 
 
   // Fetch saved listings from the backend
   const fetchSavedListings = async () => {
     try {
       setLoading(true);
-      const idToken = await getIdToken();
+      const idToken = await getValidIdToken();
       const response = await fetch('https://yardhopperapi.onrender.com/api/users/savedListings', {
         method: 'GET',
         headers: {
@@ -67,10 +68,20 @@ export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ ch
       }
 
       const data = await response.json();
-      setSavedListings(data.savedListings || []);
+
+      // Transform saved listings to match HomeFeed format
+      const transformedListings = data.savedListings.map((item: ListingItem) => ({
+        ...item,
+        address: item.address || { street: 'Unknown', city: 'Unknown', zip: 0, state: 'Unknown' },
+        dates: item.dates || ['Unknown date'],
+        images: item.images || [{ uri: '', caption: 'No image available' }],
+      }));
+
+      // Wrap the listings in a "listings" array
+      setSavedListings({ listings: transformedListings });
     } catch (err: any) {
       setError(err.message || 'Failed to fetch saved listings');
-      setSavedListings([]);
+      setSavedListings({ listings: [] }); // Ensure consistent format even on failure
     } finally {
       setLoading(false);
     }
@@ -78,7 +89,7 @@ export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ ch
 
   const addSavedListing = async (postId: string) => {
     try {
-      const idToken = await getIdToken();
+      const idToken = await getValidIdToken();
       const response = await fetch('https://yardhopperapi.onrender.com/api/users/savedListings', {
         method: 'POST',
         headers: {
@@ -92,8 +103,9 @@ export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ ch
         throw new Error(`Error: ${response.statusText}`);
       }
 
-      // Optionally, update the state if needed based on the server response
-      setSavedListings((prev) => [...prev, { postId } as SavedListing]);
+      setSavedListings((prev) => ({
+        listings: [...prev.listings, { postId } as SavedListing],
+      }));
     } catch (err: any) {
       console.error('Failed to save listing:', err.message);
     }
@@ -101,7 +113,7 @@ export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ ch
 
   const removeSavedListing = async (postId: string) => {
     try {
-      const idToken = await getIdToken();
+      const idToken = await getValidIdToken();
       const response = await fetch('https://yardhopperapi.onrender.com/api/users/savedListings', {
         method: 'DELETE',
         headers: {
@@ -115,16 +127,25 @@ export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ ch
         throw new Error(`Error: ${response.statusText}`);
       }
 
-      setSavedListings((prev) =>
-        prev.filter((listing) => listing.postId !== postId)
-      );
+      setSavedListings((prev) => ({
+        listings: prev.listings.filter((listing) => listing.postId !== postId),
+      }));
     } catch (err: any) {
       console.error('Failed to remove listing:', err.message);
     }
   };
   // Fetch saved listings on initial load
+  const transformSavedListings = (listings: SavedListing[]): { listings: SavedListing[] } => ({
+    listings: listings.map((item) => ({
+      ...item,
+      address: item.address || { street: 'Unknown', city: 'Unknown', zip: 0, state: 'Unknown' },
+      dates: item.dates || ['Unknown date'],
+      images: item.images || [{ uri: '', caption: 'No image available' }],
+    })),
+  });
+
   useEffect(() => {
-    fetchSavedListings();
+    fetchSavedListings(); // Already transforms and sets savedListings
   }, []);
 
   return (
@@ -135,6 +156,7 @@ export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ ch
         error,
         addSavedListing,
         removeSavedListing,
+        fetchSavedListings,
       }}
     >
       {children}

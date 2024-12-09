@@ -17,7 +17,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, updateProfile } from "firebase/auth";
 
 export default function UpdateUserSettingsPage() {
-  const { user, getIdToken } = useAuth();
+  const { user, getValidIdToken, refreshProfile } = useAuth();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,7 +68,7 @@ export default function UpdateUserSettingsPage() {
 
       if (Object.keys(updateData).length > 0) {
         // Get the ID token
-        const idToken = await getIdToken();
+        const idToken = await getValidIdToken();
         if (!idToken) {
           throw new Error("Unable to retrieve ID token.");
         }
@@ -90,11 +90,12 @@ export default function UpdateUserSettingsPage() {
 
         const data = await response.json();
         console.log("Profile updated successfully:", data);
+        await refreshProfile();
         Alert.alert("Success", "Account settings updated successfully!");
+        // Navigate back to user profile
+        router.push("/(tabs)/userprofile");
       }
 
-      // Navigate back to user profile
-      router.push("/(tabs)/userprofile");
     } catch (error: any) {
       console.error("Error updating settings:", error.message);
       Alert.alert("Error", error.message || "Failed to update account settings. Please try again.");
@@ -103,55 +104,55 @@ export default function UpdateUserSettingsPage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!user) {
-      Alert.alert("Error", "User is not authenticated.");
-      return;
-    }
+  // const handleDeleteAccount = async () => {
+  //   if (!user) {
+  //     Alert.alert("Error", "User is not authenticated.");
+  //     return;
+  //   }
 
-    const auth = getAuth();
+  //   const auth = getAuth();
 
-    try {
-      setLoading(true);
+  //   try {
+  //     setLoading(true);
 
-      // Get the ID token
-      const idToken = await getIdToken();
-      if (!idToken) {
-        throw new Error("Unable to retrieve ID token.");
-      }
+  //     // Get the ID token
+  //     const idToken = await getIdToken();
+  //     if (!idToken) {
+  //       throw new Error("Unable to retrieve ID token.");
+  //     }
 
-      // Call the DELETE endpoint
-      const response = await fetch("https://yardhopperapi.onrender.com/api/users/me", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-      });
+  //     // Call the DELETE endpoint
+  //     const response = await fetch("https://yardhopperapi.onrender.com/api/users/me", {
+  //       method: "DELETE",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${idToken}`,
+  //       },
+  //     });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete account");
-      }
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.message || "Failed to delete account");
+  //     }
 
-      const data = await response.json();
-      console.log("Account deleted successfully:", data);
+  //     const data = await response.json();
+  //     console.log("Account deleted successfully:", data);
 
-      // Delete the user from Firebase Auth
-      if (auth.currentUser) {
-        await auth.currentUser.delete();
-      }
+  //     // Delete the user from Firebase Auth
+  //     if (auth.currentUser) {
+  //       await auth.currentUser.delete();
+  //     }
 
-      Alert.alert("Success", "Account successfully deleted.");
-      // Navigate to a landing or login page
-      router.replace("/login");
-    } catch (error: any) {
-      console.error("Error deleting account:", error.message);
-      Alert.alert("Error", error.message || "Failed to delete account. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     Alert.alert("Success", "Account successfully deleted.");
+  //     // Navigate to a landing or login page
+  //     router.replace("/login");
+  //   } catch (error: any) {
+  //     console.error("Error deleting account:", error.message);
+  //     Alert.alert("Error", error.message || "Failed to delete account. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -284,13 +285,13 @@ export default function UpdateUserSettingsPage() {
               <Text style={styles.buttonText}>Save</Text>
             </Pressable>
 
-            <Pressable
+            {/* <Pressable
               onPress={handleDeleteAccount}
               style={[styles.deleteButton, loading && { opacity: 0.7 }]}
               disabled={loading}
             >
               <Text style={styles.deleteButtonText}>Delete Account</Text>
-            </Pressable>
+            </Pressable> */}
 
             <Pressable
               onPress={() => router.push("/(tabs)/userprofile")}
@@ -307,22 +308,22 @@ export default function UpdateUserSettingsPage() {
 }
 
 const styles = StyleSheet.create({
-  deleteButton: {
-    backgroundColor: "#FF4D4F",
-    borderRadius: 30,
-    padding: 15,
-    alignItems: "center",
-    marginTop: 20,
-    width: "50%",
-    marginRight: "auto",
-    marginLeft: "auto",
-  },
-  deleteButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
+  // deleteButton: {
+  //   backgroundColor: "#FF4D4F",
+  //   borderRadius: 30,
+  //   padding: 15,
+  //   alignItems: "center",
+  //   marginTop: 20,
+  //   width: "50%",
+  //   marginRight: "auto",
+  //   marginLeft: "auto",
+  // },
+  // deleteButtonText: {
+  //   color: "#FFFFFF",
+  //   fontSize: 16,
+  //   fontWeight: "bold",
+  //   textAlign: "center",
+  // },
   safeArea: {
     flex: 1,
     backgroundColor: "#FFFFFF",

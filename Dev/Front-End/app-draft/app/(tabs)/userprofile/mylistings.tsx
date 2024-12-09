@@ -46,7 +46,7 @@ export default function MyListings() {
   const [page, setPage] = useState(1);
   const [listings, setListings] = useState<ListingItem[]>([]);
 
-  const { getIdToken, user } = useAuth();
+  const { getValidIdToken, user } = useAuth();
   const router = useRouter();
 
 
@@ -57,7 +57,7 @@ export default function MyListings() {
 
     try {
 
-      const idToken = await getIdToken();
+      const idToken = await getValidIdToken();
       if (!idToken) {
         console.error("Unable to retrieve ID token. User might not be authenticated.");
         return;
@@ -125,7 +125,7 @@ export default function MyListings() {
         postId={item.postId}
         title={item.title}
         description={item.description}
-        image={item.images[0]?.uri || "https://example.com/default-image.jpg"}
+        images={Array.isArray(item.images) ? item.images : [{ uri: "https://via.placeholder.com/150" }]} // Ensure an array
         address={`${item.address.street}, ${item.address.city}`}
         date={item.dates[0]}
         categories={item.categories || []}
