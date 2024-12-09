@@ -151,6 +151,12 @@ useEffect(() => {
       addSavedListing(listing.postId); // Pass the postId to save the listing
     }
   };
+  
+  const isSelectedLiked = selectedListing
+  ? savedListings.listings.some(
+      (savedListing) => savedListing.postId === selectedListing.postId
+    )
+  : false;
 
   const renderItem = ({ item }: { item: ListingItem }) => {
     const isLiked = savedListings.listings.some(
@@ -253,6 +259,7 @@ useEffect(() => {
         item={selectedListing}
         onClose={closeModal}
         animation={new Animated.Value(1)}
+        isLiked={isSelectedLiked}
         onLikeToggle={() => selectedListing && handleToggleLike(selectedListing)}
         onCardPress={(postId) => console.log("Card pressed:", postId)}
       />

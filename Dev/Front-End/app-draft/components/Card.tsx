@@ -83,11 +83,7 @@ const Card: React.FC<CardProps> = ({
         </ScrollView>
         <TouchableOpacity
           style={styles.likeButton}
-          onPress={() => {
-            if (onToggleLike) {
-              onToggleLike(postId); // Pass the `postId` correctly
-            }
-          }}
+          onPress={() => onToggleLike?.(postId)}
         >
           <Ionicons
             name={isLiked ? "heart" : "heart-outline"}

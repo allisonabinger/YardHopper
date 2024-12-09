@@ -15,6 +15,7 @@ interface PopupCardModalProps {
   item: any | null;
   onClose: () => void;
   animation: Animated.Value;
+  isLiked: boolean;
   onLikeToggle?: (postId: string) => void;
   onCardPress?: (postId: string) => void;}
 
@@ -25,6 +26,8 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
   item,
   onClose,
   animation,
+  isLiked,
+  onLikeToggle,
 }) => {
   const router = useRouter();
 
@@ -64,9 +67,11 @@ const PopupCardModal: React.FC<PopupCardModalProps> = ({
             title={item.title}
             description={item.description}
             images={Array.isArray(item.images) ? item.images : [{ uri: "https://via.placeholder.com/150" }]}
-            date={item.dates?.[0] || "No date available"} 
+            date={item.dates?.[0] || "No date available"}
             address={`${item.address.street}, ${item.address.city}`}
             route={handleCardPress}
+            isLiked={isLiked}
+            onToggleLike={onLikeToggle}
             isExpanded={false}
             disableToggle
           />
