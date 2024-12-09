@@ -225,27 +225,27 @@ useEffect(() => {
         />
       ) : (
         <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: listings[0]?.g.geopoint._latitude || 37.7749,
-            longitude: listings[0]?.g.geopoint._longitude || -122.4194,
-            latitudeDelta: 0.1,
-            longitudeDelta: 0.1,
-          }}
-        >
-          {listings.map((item: { postId: any; g: any; title: any; address: any; description?: string; dates?: string[]; images?: { uri: string; caption: string; }[]; categories?: string[]; }) => (
-            <Marker
-              key={item.postId}
-              coordinate={{
-                latitude: item.g.geopoint._latitude,
-                longitude: item.g.geopoint._longitude,
-              }}
-              title={item.title}
-              description={`${item.address.street}, ${item.address.city}`}
-              onPress={() => openModal(item)}
-            />
-          ))}
-        </MapView>
+        style={styles.map}
+        initialRegion={{
+          latitude: listings[0]?.g.geopoint._latitude || 37.7749,
+          longitude: listings[0]?.g.geopoint._longitude || -122.4194,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        }}
+      >
+        {listings.map((item) => (
+          <Marker
+            key={item.postId}
+            coordinate={{
+              latitude: item.g.geopoint._latitude,
+              longitude: item.g.geopoint._longitude,
+            }}
+            title={item.title}
+            description={`${item.address.street}, ${item.address.city}`}
+            onPress={() => openModal(item)} // Open the modal with selected item
+          />
+        ))}
+      </MapView>
       )}
 
       <PopupCardModal
