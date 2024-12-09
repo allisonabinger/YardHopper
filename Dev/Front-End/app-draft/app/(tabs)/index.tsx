@@ -52,7 +52,7 @@ export default function HomeScreen() {
   const [isLiked, setIsLiked] = useState(false);
 
   // Access SavedPostsContext
-  const { savedListings, addSavedListing, removeSavedListing } = useSavedListings();
+  const { savedListings, addSavedListing, removeSavedListing, fetchSavedListings } = useSavedListings();
 
   const router = useRouter();
 
@@ -93,7 +93,7 @@ export default function HomeScreen() {
     const data = await response.json();
 
     // Update listings state
-
+    console.log(JSON.stringify(data, null, 2));
     setListings((prevListings) => {
       const newListings = isRefresh ? data.listings : [...prevListings, ...data.listings];
       return newListings.filter(
@@ -112,13 +112,18 @@ export default function HomeScreen() {
   }
 };
 
-  useEffect(() => {
-    fetchListings();
-  }, []);
+useEffect(() => {
+  // Fetch both listings and saved listings on initial load
+  const initializeData = async () => {
+    await Promise.all([fetchListings(), fetchSavedListings()]);
+  };
+
+  initializeData();
+}, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchListings();
+    await Promise.all([fetchListings({ isRefresh: true }), fetchSavedListings()]);
     setRefreshing(false);
   };
 
@@ -137,16 +142,26 @@ export default function HomeScreen() {
   };
 
   const handleToggleLike = (listing: ListingItem) => {
-    const isAlreadyLiked = savedListings.some((savedListing) => savedListing.postId === listing.postId);
+    const isAlreadyLiked = savedListings.listings.some(
+      (savedListing) => savedListing.postId === listing.postId
+    );
     if (isAlreadyLiked) {
       removeSavedListing(listing.postId);
     } else {
-      addSavedListing(listing.postId); // Pass the entire listing directly
+      addSavedListing(listing.postId); // Pass the postId to save the listing
     }
   };
+  
+  const isSelectedLiked = selectedListing
+  ? savedListings.listings.some(
+      (savedListing) => savedListing.postId === selectedListing.postId
+    )
+  : false;
 
   const renderItem = ({ item }: { item: ListingItem }) => {
-    const isLiked = savedListings.some((listing) => listing.postId === item.postId);
+    const isLiked = savedListings.listings.some(
+      (savedListing) => savedListing.postId === item.postId
+    );
 
     return (
       <Card
@@ -216,27 +231,27 @@ export default function HomeScreen() {
         />
       ) : (
         <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: listings[0]?.g.geopoint._latitude || 37.7749,
-            longitude: listings[0]?.g.geopoint._longitude || -122.4194,
-            latitudeDelta: 0.1,
-            longitudeDelta: 0.1,
-          }}
-        >
-          {listings.map((item: { postId: any; g: any; title: any; address: any; description?: string; dates?: string[]; images?: { uri: string; caption: string; }[]; categories?: string[]; }) => (
-            <Marker
-              key={item.postId}
-              coordinate={{
-                latitude: item.g.geopoint._latitude,
-                longitude: item.g.geopoint._longitude,
-              }}
-              title={item.title}
-              description={`${item.address.street}, ${item.address.city}`}
-              onPress={() => openModal(item)}
-            />
-          ))}
-        </MapView>
+        style={styles.map}
+        initialRegion={{
+          latitude: listings[0]?.g.geopoint._latitude || 37.7749,
+          longitude: listings[0]?.g.geopoint._longitude || -122.4194,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        }}
+      >
+        {listings.map((item) => (
+          <Marker
+            key={item.postId}
+            coordinate={{
+              latitude: item.g.geopoint._latitude,
+              longitude: item.g.geopoint._longitude,
+            }}
+            title={item.title}
+            description={`${item.address.street}, ${item.address.city}`}
+            onPress={() => openModal(item)} // Open the modal with selected item
+          />
+        ))}
+      </MapView>
       )}
 
       <PopupCardModal
@@ -244,6 +259,7 @@ export default function HomeScreen() {
         item={selectedListing}
         onClose={closeModal}
         animation={new Animated.Value(1)}
+        isLiked={isSelectedLiked}
         onLikeToggle={() => selectedListing && handleToggleLike(selectedListing)}
         onCardPress={(postId) => console.log("Card pressed:", postId)}
       />

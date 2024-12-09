@@ -19,5 +19,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "app/add-listing-details-2.tsx"
-, "components/.Pagination.tsx"  ]
+, "components/.Pagination.tsx", "app/.dashboard.tsx"  ]
 }
