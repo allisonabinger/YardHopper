@@ -13,6 +13,8 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
+import { useSavedListings } from "@/app/context/SavedListingsContext";
+
 
 type ListingItem = {
   title: string;
@@ -34,10 +36,14 @@ export default function ListingDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
 
+  const { savedListings, addSavedListing, removeSavedListing } = useSavedListings();
+
   const [listing, setListing] = useState<ListingItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
+
+  const isLiked = !!savedListings.listings.find((item) => item.postId === id);
 
   useEffect(() => {
     if (!id) return;
@@ -120,8 +126,17 @@ export default function ListingDetail() {
     return new Intl.DateTimeFormat("en-US", options).format(date);
   };
 
-  const toggleLike = () => {
-    setLiked(!liked);
+  // const toggleLike = () => {
+  //   setLiked(!liked);
+  // };
+  const handleToggleLike = async () => {
+    if (!id) return;
+
+    if (isLiked) {
+      await removeSavedListing(id);
+    } else {
+      await addSavedListing(id);
+    }
   };
 
   return (
@@ -140,11 +155,11 @@ export default function ListingDetail() {
             ))}
         </ScrollView>
 
-        <TouchableOpacity style={styles.likeButton} onPress={toggleLike}>
+        <TouchableOpacity style={styles.likeButton} onPress={handleToggleLike}>
           <Ionicons
-            name={liked ? "heart" : "heart-outline"}
+            name={isLiked ? "heart" : "heart-outline"}
             size={28}
-            color={liked ? "#159636" : "gray"}
+            color={isLiked ? "#159636" : "gray"}
           />
         </TouchableOpacity>
 
