@@ -1,4 +1,4 @@
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -6,9 +6,10 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { AuthProvider } from '@/components/AuthProvider';
-import { ListingProvider } from '@/app/context/ListingContext'
+import { ListingProvider } from '@/app/context/ListingContext';
 import { SavedListingsProvider } from '@/app/context/SavedListingsContext';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme } from 'react-native'; // Use React Native's color scheme hook
+import { Colors } from '@/constants/Colors'; // Your color constants
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -29,11 +30,36 @@ export default function RootLayout() {
     return null;
   }
 
+  // Define custom themes for light and dark modes
+  const MyLightTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: Colors.light.background,
+      text: Colors.light.text,
+      primary: Colors.light.tint,
+      card: Colors.light.inputBackground,
+      border: Colors.light.inputBorder,
+    },
+  };
+
+  const MyDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: Colors.dark.background,
+      text: Colors.dark.text,
+      primary: Colors.dark.tint,
+      card: Colors.dark.inputBackground,
+      border: Colors.dark.inputBorder,
+    },
+  };
+
   return (
     <AuthProvider>
       <ListingProvider>
         <SavedListingsProvider>
-          <ThemeProvider value={DefaultTheme}>
+          <ThemeProvider value={colorScheme === 'dark' ? MyDarkTheme : MyLightTheme}>
             <Stack>
               <Stack.Screen name="login" options={{ headerShown: false }} />
               <Stack.Screen name="register" options={{ headerShown: false }} />
@@ -47,8 +73,8 @@ export default function RootLayout() {
               <Stack.Screen name="/" options={{ headerShown: false }} />
               <Stack.Screen name="register-location" options={{ headerShown: false }} />
             </Stack>
+            <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
           </ThemeProvider>
-          <StatusBar style="auto" />
         </SavedListingsProvider>
       </ListingProvider>
     </AuthProvider>
