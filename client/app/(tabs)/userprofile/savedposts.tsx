@@ -13,7 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import PopupCardModal from "@/components/PopupCardModal";
 import Card from "@/components/Card";
 import { useRouter } from "expo-router";
-import { useSavedListings } from "../../context/SavedListingsContext";
+import { useSavedListings } from "../../../contexts/SavedListingsContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type ListingItem = {
   title: string;
@@ -49,7 +50,7 @@ export default function SavedScreen() {
 
   useEffect(() => {
     fetchSavedListings().then(() => {
-      console.log("Saved Listings:", JSON.stringify(savedListings.listings, null, 2)); // Log the listings array
+      console.log("Saved Listings:", JSON.stringify(savedListings.listings, null, 2));
     });
   }, []);
 
@@ -89,7 +90,7 @@ export default function SavedScreen() {
     address={`${item.address?.street || "Unknown street"}, ${item.address?.city || "Unknown city"}`}
     date={item.dates?.[0] || "No date available"}
     categories={item.categories || []}
-    isLiked={true} // All items in this screen are saved
+    isLiked={true}
     onToggleLike={() => handleToggleLike(item)}
     route={() =>
       router.push({
@@ -101,7 +102,7 @@ export default function SavedScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Saved Listings</Text>
       </View>
@@ -117,7 +118,7 @@ export default function SavedScreen() {
             color="#159636"
             style={{
               transform: [
-                { rotate: viewMode === "list" ? "180deg" : "0deg" } // Start upside down and rotate to normal
+                { rotate: viewMode === "list" ? "180deg" : "0deg" }
               ],
             }}
           />
@@ -153,7 +154,7 @@ export default function SavedScreen() {
           }}
         >
         {savedListings.listings
-          .filter((item) => item.g?.geopoint) // Filter out items without geopoint
+          .filter((item) => item.g?.geopoint)
           .map((item) => (
             <Marker
               key={item.postId}
@@ -178,11 +179,16 @@ export default function SavedScreen() {
         isLiked={true}
         onLikeToggle={() => selectedListing && handleToggleLike(selectedListing)}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    paddingBottom: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
