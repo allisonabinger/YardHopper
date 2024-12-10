@@ -24,7 +24,7 @@ export default function LogoutComponent({ style }: LogoutComponentProps) {
   return (
     <Pressable onPress={handleLogout} style={[styles.logoutButton, style]}>
       <Ionicons name="log-out-outline" size={24} color="#333" style={styles.icon} />
-      <Text style={styles.logoutText}>Log out</Text>
+      <Text style={styles.logoutText}>Log Out</Text>
     </Pressable>
   );
 }
@@ -43,4 +43,3 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
-

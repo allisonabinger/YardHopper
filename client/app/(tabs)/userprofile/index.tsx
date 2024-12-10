@@ -81,7 +81,7 @@ export default function SettingsScreen() {
         <Link href="/userprofile/savedposts" asChild>
           <Pressable style={styles.menuItem}>
             <Ionicons name="bookmark-outline" size={24} color="#333" />
-            <Text style={styles.menuText}>Saved posts</Text>
+            <Text style={styles.menuText}>Saved Listings</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
           </Pressable>
         </Link>
@@ -89,7 +89,7 @@ export default function SettingsScreen() {
         <Link href="/(tabs)/userprofile/mylistings" asChild>
           <Pressable style={styles.menuItem}>
             <Ionicons name="eye-outline" size={24} color="#333" />
-            <Text style={styles.menuText}>View your listings</Text>
+            <Text style={styles.menuText}>View Your Listings</Text>
             <Ionicons name="chevron-forward" size={24} color="#666" style={styles.chevron} />
           </Pressable>
         </Link>
