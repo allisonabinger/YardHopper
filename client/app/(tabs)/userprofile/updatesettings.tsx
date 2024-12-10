@@ -15,6 +15,8 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/components/AuthProvider";
 import { EmailAuthProvider, getAuth, reauthenticateWithCredential, updatePassword } from "firebase/auth";
+import { useColorScheme } from 'react-native';
+
 
 export default function UpdateUserSettingsPage() {
   const { user, getValidIdToken, refreshProfile } = useAuth();
@@ -31,6 +33,8 @@ export default function UpdateUserSettingsPage() {
     zip: "",
   });
   const [loading, setLoading] = useState(false);
+  const colorScheme = useColorScheme();
+  const placeholderColor = colorScheme === 'dark' ? '#AAAAAA' : '#888888';
 
   // Fetch user profile data on component mount
   useEffect(() => {
@@ -165,6 +169,7 @@ export default function UpdateUserSettingsPage() {
                 style={styles.input}
                 value={firstName}
                 onChangeText={setFirstName}
+                placeholderTextColor={placeholderColor}
               />
             </View>
             <View style={styles.inputContainer}>
@@ -173,6 +178,7 @@ export default function UpdateUserSettingsPage() {
                 style={styles.input}
                 value={lastName}
                 onChangeText={setLastName}
+                placeholderTextColor={placeholderColor}
               />
             </View>
             <View style={styles.inputContainer}>
@@ -183,6 +189,7 @@ export default function UpdateUserSettingsPage() {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                placeholderTextColor={placeholderColor}
               />
             </View>
             <View style={styles.addressSection}>
@@ -191,6 +198,7 @@ export default function UpdateUserSettingsPage() {
                 <TextInput
                   style={styles.input}
                   placeholder="Street Address"
+                  placeholderTextColor={placeholderColor}
                   value={address.street}
                   onChangeText={(text) =>
                     setAddress((prev) => ({ ...prev, street: text }))
@@ -201,6 +209,7 @@ export default function UpdateUserSettingsPage() {
                 <TextInput
                   style={styles.input}
                   placeholder="City"
+                  placeholderTextColor={placeholderColor}
                   value={address.city}
                   onChangeText={(text) =>
                     setAddress((prev) => ({ ...prev, city: text }))
@@ -211,6 +220,7 @@ export default function UpdateUserSettingsPage() {
                 <TextInput
                   style={styles.input}
                   placeholder="State"
+                  placeholderTextColor={placeholderColor}
                   value={address.state}
                   onChangeText={(text) =>
                     setAddress((prev) => ({ ...prev, state: text }))
@@ -221,6 +231,7 @@ export default function UpdateUserSettingsPage() {
                 <TextInput
                   style={styles.input}
                   placeholder="ZIP Code"
+                  placeholderTextColor={placeholderColor}
                   value={address.zip}
                   onChangeText={(text) =>
                     setAddress((prev) => ({ ...prev, zip: text }))
