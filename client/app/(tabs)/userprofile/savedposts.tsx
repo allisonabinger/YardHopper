@@ -51,7 +51,7 @@ export default function SavedScreen() {
     fetchSavedListings().then(() => {
       console.log("Saved Listings:", JSON.stringify(savedListings.listings, null, 2)); // Log the listings array
     });
-  }, [savedListings]);
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);

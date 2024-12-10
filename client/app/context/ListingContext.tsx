@@ -25,7 +25,6 @@ interface ListingData {
   subcategories: Record<string, string[]>;
   userId: string;
   images: ImageData[]; // Array of image objects
-  postId?: string; // Added this for referencing posts
 }
 
 // Define the context value type
@@ -33,7 +32,6 @@ interface ListingContextType {
   listingData: ListingData;
   updateListingData: (newData: Partial<ListingData>) => void;
   addImage: (imageData: ImageData) => void;
-  updateListing: (postId: string, updatedFields: Partial<ListingData>, token: string) => Promise<void>;
 }
 
 // Create the context with a default value
@@ -76,8 +74,8 @@ export const ListingProvider: React.FC<ListingProviderProps> = ({ children }) =>
       state: "",
     },
     dates: [],
-    startTime: new Date(),
-    endTime: new Date(),
+    startTime: "",
+    endTime: "",
     categories: [],
     subcategories: {},
     userId: "",
@@ -105,52 +103,8 @@ export const ListingProvider: React.FC<ListingProviderProps> = ({ children }) =>
     }));
   };
 
-  // Update a listing using `fetch`
-  const updateListing = async (
-    postId: string,
-    updatedFields: Partial<ListingData>,
-    token: string
-  ): Promise<void> => {
-    try {
-      const response = await fetch(
-        `https://yardhopperapi.onrender.com/api/listings/${postId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(updatedFields),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to update listing");
-      }
-
-      const data = await response.json();
-
-      // Update local state
-      setListingData((prevData) => {
-        if (prevData.postId === postId) {
-          return { ...prevData, ...data.listing };
-        }
-        return prevData;
-      });
-
-      console.log("Listing updated successfully:", data);
-    } catch (error) {
-      console.error("Error updating listing:", error);
-      throw error;
-    }
-  };
-
-
   return (
-    <ListingContext.Provider
-      value={{ listingData, updateListingData, addImage, updateListing }}
-    >
+    <ListingContext.Provider value={{ listingData, updateListingData, addImage }}>
       {children}
     </ListingContext.Provider>
   );
