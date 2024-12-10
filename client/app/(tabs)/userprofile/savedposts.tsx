@@ -147,7 +147,9 @@ export default function SavedScreen() {
             longitudeDelta: 0.1,
           }}
         >
-          {savedListings.listings.map((item) => (
+        {savedListings.listings
+          .filter((item) => item.g?.geopoint) // Filter out items without geopoint
+          .map((item) => (
             <Marker
               key={item.postId}
               coordinate={{
@@ -155,7 +157,7 @@ export default function SavedScreen() {
                 longitude: item.g.geopoint._longitude,
               }}
               title={item.title}
-              description={`${item.address.street}, ${item.address.city}`}
+              description={`${item.address?.street || "Unknown"}, ${item.address?.city || "Unknown"}`}
               onPress={() => openModal(item)}
             />
           ))}

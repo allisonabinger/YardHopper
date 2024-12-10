@@ -4,19 +4,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar } from 'react-native-calendars';
-
-// Mock data (replace with actual data fetching in a real app)
-const mockSale = {
-  id: '1',
-  title: 'Yard Sale 1',
-  description: 'Furniture, clothes, and more!',
-  image: require('@/assets/images/sale1.png'),
-  startDate: new Date().toISOString().split('T')[0],
-  endDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-  startTime: new Date(),
-  endTime: new Date(Date.now() + 3600000),
-  categories: ['Furniture', 'Clothing'],
-};
+import { useListingContext } from "@/app/context/ListingContext";
+import { useAuth } from '@/components/AuthProvider';
 
 const allCategories = [
   "Decor & Art", "Clothing", "Shoes & Accessories", "Pet", "Tools/Parts",
@@ -27,33 +16,36 @@ const allCategories = [
 export default function SaleDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [sale, setSale] = useState(mockSale);
+  const { listingData, updateListingData, updateListing } = useListingContext();
+  const sale = listingData;
+  const { getValidIdToken, user } = useAuth();
+
+
   const [startDate, setStartDate] = useState(sale.startDate);
   const [endDate, setEndDate] = useState(sale.endDate);
   const [startTime, setStartTime] = useState(sale.startTime);
   const [endTime, setEndTime] = useState(sale.endTime);
-  const [selectedCategories, setSelectedCategories] = useState(new Set(sale.categories));
+  const [selectedCategories, setSelectedCategories] = useState(new Set(sale.categories || []));
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [currentPicker, setCurrentPicker] = useState<"start" | "end" | null>(null);
+  // const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  // const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
   const handleUpdateSale = () => {
-    const updatedSale = {
-      ...sale,
+    const updatedData = {
+      title: sale.title,
+      description: sale.description,
       startDate,
       endDate,
-      startTime,
-      endTime,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
       categories: Array.from(selectedCategories),
     };
-    console.log('Updating sale:', updatedSale);
-    // In a real app, you would send this data to your backend
-  };
 
-  const handleDeleteSale = () => {
-    console.log('Deleting sale:', id);
-    // In a real app, you would send a delete request to your backend
-    router.back();
+    updateListingData(updatedData); // Update global context
+    console.log("Updated sale data:", updatedData);
+    Alert.alert("Success", "Listing updated successfully!");
+    router.back(); // Navigate back
   };
 
   const handleDayPress = (day) => {
@@ -70,6 +62,13 @@ export default function SaleDetail() {
         Alert.alert("Invalid Date", "End date must be after the start date.");
       }
     }
+  };
+
+
+  const handleDeleteSale = () => {
+    console.log('Deleting sale:', id);
+    // In a real app, you would send a delete request to your backend
+    router.back();
   };
 
   const getDatesInRange = (start, end) => {
@@ -91,7 +90,7 @@ export default function SaleDetail() {
   };
 
   const toggleCategory = (category) => {
-    setSelectedCategories(prev => {
+    setSelectedCategories((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(category)) {
         newSet.delete(category);
@@ -124,8 +123,6 @@ const toggleTemporaryCategory = (category) => {
     return updatedSet;
   });
 };
-
-const [currentPicker, setCurrentPicker] = useState(null); // 'start' or 'end'
 
 return (
   <ScrollView style={styles.container}>
@@ -200,7 +197,7 @@ return (
               onPress={() => setCurrentPicker("start")}
             >
               <Text>
-                {startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                startTime
               </Text>
             </TouchableOpacity>
           </View>
@@ -213,7 +210,7 @@ return (
               onPress={() => setCurrentPicker("end")}
             >
               <Text>
-                {endTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                endTime
               </Text>
             </TouchableOpacity>
           </View>
@@ -434,7 +431,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 24, 
+    marginBottom: 24,
   },
   label: {
     fontSize: 16,
