@@ -103,9 +103,10 @@ export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ ch
         throw new Error(`Error: ${response.statusText}`);
       }
 
-      setSavedListings((prev) => ({
-        listings: [...prev.listings, { postId } as SavedListing],
-      }));
+      // setSavedListings((prev) => ({
+      //   listings: [...prev.listings, { postId } as SavedListing],
+      // }));
+      fetchSavedListings();
     } catch (err: any) {
       console.error('Failed to save listing:', err.message);
     }
@@ -127,9 +128,10 @@ export const SavedListingsProvider: React.FC<SavedListingsProviderProps> = ({ ch
         throw new Error(`Error: ${response.statusText}`);
       }
 
-      setSavedListings((prev) => ({
-        listings: prev.listings.filter((listing) => listing.postId !== postId),
-      }));
+      // setSavedListings((prev) => ({
+      //   listings: prev.listings.filter((listing) => listing.postId !== postId),
+      // }));
+      fetchSavedListings();
     } catch (err: any) {
       console.error('Failed to remove listing:', err.message);
     }
