@@ -42,7 +42,7 @@ export default function SaleDetail() {
       categories: Array.from(selectedCategories),
     };
 
-    updateListingData(updatedData); // Update global context
+    updateListing(postId, updatedData, token); // Update global context
     console.log("Updated sale data:", updatedData);
     Alert.alert("Success", "Listing updated successfully!");
     router.back(); // Navigate back
