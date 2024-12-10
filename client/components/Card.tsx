@@ -71,24 +71,24 @@ const Card: React.FC<CardProps> = ({
       {/* Image Carousel Section */}
       <View style={styles.imageContainer}>
         <ScrollView horizontal pagingEnabled style={styles.imageCarousel}>
-          {images.length > 0 ? (
-            images.map((img, idx) => (
-              <Image
-                key={idx}
-                source={{ uri: img.uri }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            ))
-          ) : (
+        {images.length > 0 && images.some((img) => img.uri) ? (
+          images.map((img, idx) => (
             <Image
-              source={{
-                uri: "https://via.placeholder.com/300x200.png?text=Coming+Soon!",
-              }}
+              key={idx}
+              source={{ uri: img.uri }}
               style={styles.image}
               resizeMode="cover"
             />
-          )}
+          ))
+        ) : (
+          <Image
+            source={{
+              uri: "https://via.placeholder.com/300x200.png?text=Coming+Soon!",
+            }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        )}
         </ScrollView>
         <TouchableOpacity
           style={styles.likeButton}

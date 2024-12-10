@@ -90,7 +90,7 @@ export default function SavedScreen() {
     address={`${item.address?.street || "Unknown street"}, ${item.address?.city || "Unknown city"}`}
     date={item.dates?.[0] || "No date available"}
     categories={item.categories || []}
-    isLiked={true} 
+    isLiked={true}
     onToggleLike={() => handleToggleLike(item)}
     route={() =>
       router.push({
@@ -118,7 +118,7 @@ export default function SavedScreen() {
             color="#159636"
             style={{
               transform: [
-                { rotate: viewMode === "list" ? "180deg" : "0deg" } // Start upside down and rotate to normal
+                { rotate: viewMode === "list" ? "180deg" : "0deg" }
               ],
             }}
           />
