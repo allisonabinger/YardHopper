@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Animated,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import FilterModal from "@/components/FilterModal";
@@ -59,8 +60,8 @@ export default function HomeScreen() {
  // Fetch listings data from API
   const fetchListings = async ({
   isRefresh = false,
-  lat = 36.1555,
-  long = -95.9950,
+  lat = 36.156089,
+  long = -95.994973,
   radius = 25,
   selectedCategories = [],
 }: {
@@ -148,7 +149,7 @@ useEffect(() => {
     if (isAlreadyLiked) {
       removeSavedListing(listing.postId);
     } else {
-      addSavedListing(listing.postId); // Pass the postId to save the listing
+      addSavedListing(listing.postId);
     }
   };
 
@@ -253,7 +254,7 @@ useEffect(() => {
             }}
             title={item.title}
             description={`${item.address.street}, ${item.address.city}`}
-            onPress={() => openModal(item)} // Open the modal with selected item
+            onPress={() => openModal(item)}
           />
         ))}
       </MapView>
