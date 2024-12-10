@@ -15,20 +15,20 @@ const dynamicIconSize = width * 0.07;
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
 
-  const [currentRouteIndex, setCurrentRouteIndex] = useState<number | null>(null);
+  // const [currentRouteIndex, setCurrentRouteIndex] = useState<number | null>(null);
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('state', () => {
+  //     const state = navigation.getState();
+  //     console.log("Updated Navigation State:", JSON.stringify(state, null, 2));
+  //     const currentIndex = state?.routes?.[state.index]?.state?.index ?? null;
+  //     setCurrentRouteIndex(currentIndex);
+  //     console.log("Current Route Index (from Listener):", currentRouteIndex);
+  //   });
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('state', () => {
-      const state = navigation.getState();
-      const currentIndex = state?.index ?? null;
-      setCurrentRouteIndex(currentIndex);
-      console.log("Current Route Index (from Listener):", currentIndex);
-    });
-
-    return unsubscribe;
-  }, [navigation]);
+  //   return unsubscribe;
+  // }, [navigation]);
 
   return (
     <Tabs
@@ -78,10 +78,10 @@ export default function TabLayout() {
         name="userprofile/index"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons
               size={dynamicIconSize}
-              name={currentRouteIndex === 2 ? 'person' : 'person-outline'}
+              name={focused ? 'person' : 'person-outline'}
               color={"#159636"}
             />
           ),
