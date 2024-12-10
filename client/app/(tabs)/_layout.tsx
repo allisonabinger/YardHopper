@@ -17,18 +17,17 @@ export default function TabLayout() {
 
   const navigation = useNavigation();
 
-  const [currentRouteIndex, setCurrentRouteIndex] = useState<number | null>(null)
+  const [currentRouteIndex, setCurrentRouteIndex] = useState<number | null>(null);
+
   useEffect(() => {
-    // Get current parent navigation state
-    const currentIndex = navigation.getParent()?.getState()?.index ?? null;
-    setCurrentRouteIndex(currentIndex);
+    const unsubscribe = navigation.addListener('state', () => {
+      const state = navigation.getState();
+      const currentIndex = state?.index ?? null;
+      setCurrentRouteIndex(currentIndex);
+      console.log("Current Route Index (from Listener):", currentIndex);
+    });
 
-    console.log("Current Route Index (inside useEffect):", currentIndex);
-
-    // Example: Run side effects based on route index
-    if (currentIndex === 2) {
-      console.log("User is viewing the Profile tab.");
-    }
+    return unsubscribe;
   }, [navigation]);
 
   return (
