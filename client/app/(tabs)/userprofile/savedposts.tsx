@@ -115,6 +115,11 @@ export default function SavedScreen() {
             name={viewMode === "list" ? "toggle-outline" : "toggle"}
             size={28}
             color="#159636"
+            style={{
+              transform: [
+                { rotate: viewMode === "list" ? "180deg" : "0deg" } // Start upside down and rotate to normal
+              ],
+            }}
           />
           <Text style={styles.toggleText}>
             {viewMode === "list" ? "Map View" : "List View"}
