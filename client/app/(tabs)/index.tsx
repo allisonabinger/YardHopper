@@ -94,7 +94,7 @@ export default function HomeScreen() {
     const data = await response.json();
 
     // Update listings state
-    console.log(JSON.stringify(data, null, 2));
+    // console.log(JSON.stringify(data, null, 2));
     setListings((prevListings) => {
       const newListings = isRefresh ? data.listings : [...prevListings, ...data.listings];
       return newListings.filter(
@@ -215,6 +215,11 @@ useEffect(() => {
             name={viewMode === "list" ? "toggle-outline" : "toggle"}
             size={28}
             color="#159636"
+            style={{
+              transform: [
+                { rotate: viewMode === "list" ? "180deg" : "0deg" } // Start upside down and rotate to normal
+              ],
+            }}
           />
           <Text style={styles.toggleText}>
             {viewMode === "list" ? "Map View" : "List View"}

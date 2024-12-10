@@ -1,5 +1,5 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs, useNavigation } from 'expo-router';
+import React, { useState, useEffect } from 'react';
 import { Platform, Dimensions } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -14,6 +14,21 @@ const dynamicIconSize = width * 0.07;
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+
+  const navigation = useNavigation();
+
+  const [currentRouteIndex, setCurrentRouteIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('state', () => {
+      const state = navigation.getState();
+      const currentIndex = state?.index ?? null;
+      setCurrentRouteIndex(currentIndex);
+      console.log("Current Route Index (from Listener):", currentIndex);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   return (
     <Tabs
@@ -63,10 +78,10 @@ export default function TabLayout() {
         name="userprofile/index"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color }) => (
             <Ionicons
               size={dynamicIconSize}
-              name={focused ? 'person' : 'person-outline'}
+              name={currentRouteIndex === 2 ? 'person' : 'person-outline'}
               color={"#159636"}
             />
           ),
@@ -75,10 +90,8 @@ export default function TabLayout() {
       <Tabs.Screen name="userprofile/updatesettings" options={{ href: null }} />
       <Tabs.Screen name="userprofile/mylistings" options={{ href: null }} />
       <Tabs.Screen name="userprofile/savedposts" options={{ href: null }} />
-      {/* <Tabs.Screen name="userprofile/ProgressTracker" options={{ href: null }} /> */}
       <Tabs.Screen name="userprofile/(sale)/[id]" options={{ href: null }} />
-      <Tabs.Screen name="app/register-location" options={{ href: null }} />
-      <Tabs.Screen name="app/login" options={{ href: null }} />
+      {/* <Tabs.Screen name="userprofile/ProgressTracker" options={{ href: null }} /> */}
     </Tabs>
   );
 }
