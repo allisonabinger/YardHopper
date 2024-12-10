@@ -115,6 +115,11 @@ export default function SavedScreen() {
             name={viewMode === "list" ? "toggle-outline" : "toggle"}
             size={28}
             color="#159636"
+            style={{
+              transform: [
+                { rotate: viewMode === "list" ? "180deg" : "0deg" } // Start upside down and rotate to normal
+              ],
+            }}
           />
           <Text style={styles.toggleText}>
             {viewMode === "list" ? "Map View" : "List View"}
@@ -147,7 +152,9 @@ export default function SavedScreen() {
             longitudeDelta: 0.1,
           }}
         >
-          {savedListings.listings.map((item) => (
+        {savedListings.listings
+          .filter((item) => item.g?.geopoint) // Filter out items without geopoint
+          .map((item) => (
             <Marker
               key={item.postId}
               coordinate={{
@@ -155,7 +162,7 @@ export default function SavedScreen() {
                 longitude: item.g.geopoint._longitude,
               }}
               title={item.title}
-              description={`${item.address.street}, ${item.address.city}`}
+              description={`${item.address?.street || "Unknown"}, ${item.address?.city || "Unknown"}`}
               onPress={() => openModal(item)}
             />
           ))}
@@ -168,6 +175,8 @@ export default function SavedScreen() {
         onClose={closeModal}
         animation={new Animated.Value(1)}
         onCardPress={(postId) => console.log("Card pressed:", postId)}
+        isLiked={true}
+        onLikeToggle={() => selectedListing && handleToggleLike(selectedListing)}
       />
     </View>
   );
