@@ -14,7 +14,7 @@ import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
 import Card from "@/components/Card";
 import { useRouter } from "expo-router";
-import { useSavedListings} from "../context/SavedListingsContext";
+import { useSavedListings} from "../../contexts/SavedListingsContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type ListingItem = {

@@ -6,8 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { AuthProvider } from '@/components/AuthProvider';
-import { ListingProvider } from '@/app/context/ListingContext';
-import { SavedListingsProvider } from '@/app/context/SavedListingsContext';
+import { ListingProvider } from '@/contexts/ListingContext';
+import { SavedListingsProvider } from '@/contexts/SavedListingsContext';
 import { useColorScheme } from 'react-native'; // Use React Native's color scheme hook
 import { Colors } from '@/constants/Colors'; // Your color constants
 

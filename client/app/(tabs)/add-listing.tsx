@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Easing } from "react-native";
 import PageLayout from "../PageLayout";
-import { useListingContext } from "../context/ListingContext";
+import { useListingContext } from "../../contexts/ListingContext";
 import { useAuth } from "@/components/AuthProvider";
 
 const categories = [

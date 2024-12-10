@@ -11,7 +11,7 @@ import * as FileSystem from 'expo-file-system';
 import { useImagePicker } from "@/hooks/useImagePicker";
 import PageLayout from "./PageLayout";
 import { useRouter } from "expo-router";
-import { useListingContext } from "./context/ListingContext";
+import { useListingContext } from "../contexts/ListingContext";
 
 const ImageUploadScreen = () => {
   const { image, openImagePicker, reset, mimeType } = useImagePicker();
