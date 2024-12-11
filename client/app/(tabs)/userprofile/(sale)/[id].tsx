@@ -205,7 +205,7 @@ export default function SaleDetail() {
       // If update was successful, show success message
       const responseData = await response.json(); // Get the response data
 
-      console.log("Updated Sale:", responseData);
+    //   console.log("Updated Sale:", responseData);
       Alert.alert("Success", "Sale updated successfully");
 
       // Redirect or update UI
@@ -449,7 +449,7 @@ export default function SaleDetail() {
   //   };
 
   const handleDeletePhoto = async (imageUri) => {
-    console.log("Deleting photo with URI:", imageUri);
+    // console.log("Deleting photo with URI:", imageUri);
     try {
       setLoading(true);
       const response = await fetch(
@@ -716,8 +716,7 @@ export default function SaleDetail() {
               ...(startDate && {
                 [startDate]: {
                   selected: true,
-                  startingDay: false,
-                  endingDay: true,
+                  startingDay: true,
                   color: "#159636",
                   textColor: "white",
                 },
@@ -725,8 +724,7 @@ export default function SaleDetail() {
               ...(endDate && {
                 [endDate]: {
                   selected: true,
-                  endingDay: false,
-                  startingDay: true,
+                  endingDay: true,
                   color: "#159636",
                   textColor: "white",
                 },
