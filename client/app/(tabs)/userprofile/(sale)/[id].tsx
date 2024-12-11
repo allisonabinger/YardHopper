@@ -97,8 +97,8 @@ export default function SaleDetail() {
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   //   const [listing, setListing] = useState<ListingItem | null>(null);
-  const [startDate, setStartDate] = useState(sale?.dates?.[0]);
-  const [endDate, setEndDate] = useState(sale?.dates?.[sale.dates.length - 1]);
+  // const [startDate, setStartDate] = useState(sale?.dates?.[0]);
+  // const [endDate, setEndDate] = useState(sale?.dates?.[sale.dates.length - 1]);
 
   const fetchSale = async () => {
     try {
@@ -274,53 +274,51 @@ export default function SaleDetail() {
     );
   };
   const handleDayPress = (day) => {
-    if (!startDate || (startDate && endDate)) {
-      // If there's no start date or if both start and end are set, update startDate
-      setStartDate(day.dateString);
-      setEndDate(null); // Reset endDate when a new startDate is selected
-    } else if (startDate && !endDate) {
-      const start = new Date(startDate);
+    if (!sale.dates || sale.dates.length === 0) {
+      // Initialize dates array if it's empty
+      setSale({ ...sale, dates: [day.dateString] });
+    } else if (sale.dates.length === 1) {
+      // When start date is selected, choose the end date
+      const start = new Date(sale.dates[0]);
       const end = new Date(day.dateString);
 
       if (end >= start) {
-        // If the end date is after or equal to the start date, set endDate
-        setEndDate(day.dateString);
-        updateSaleDates();
+        const updatedDates = getDatesInRange(sale.dates[0], day.dateString);
+        setSale({ ...sale, dates: updatedDates });
+        updateSaleDates(updatedDates); // Update your sale.dates
       } else {
         // Show an alert if the selected end date is before the start date
         Alert.alert("Invalid Date", "End date must be after the start date.");
       }
+    } else {
+      // Reset dates if more than two dates are selected
+      setSale({ ...sale, dates: [day.dateString] });
     }
   };
 
-  const updateSaleDates = () => {
-    if (startDate && endDate) {
-      // Get the selected dates as an array of date strings
-      const updatedDates = getDatesInRange(startDate, endDate);
-      setSale((prevSale) => ({
-        ...prevSale,
-        dates: updatedDates, // Update sale.dates with the new date range
-      }));
-    }
+  const updateSaleDates = (updatedDates) => {
+    setSale((prevSale) => ({
+      ...prevSale,
+      dates: updatedDates,
+    }));
   };
 
   const getDatesInRange = (start, end) => {
-    const dates = {};
+    const dates = [];
     let currentDate = new Date(start);
     const lastDate = new Date(end);
 
     while (currentDate <= lastDate) {
       const dateString = currentDate.toISOString().split("T")[0];
-      dates[dateString] = {
-        selected: true,
-        color: "#159636",
-        textColor: "white",
-      };
+      dates.push(dateString);
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
     return dates;
   };
+
+  const startDate = sale?.dates?.[0];
+  const endDate = sale?.dates?.[sale.dates.length - 1];
 
   const toggleCategory = (category) => {
     setSale((prevSale) => {
@@ -626,7 +624,10 @@ export default function SaleDetail() {
             onDayPress={handleDayPress}
             markedDates={{
               ...(startDate && endDate
-                ? getDatesInRange(startDate, endDate) // Get the dates between start and end dates
+                ? getDatesInRange(startDate, endDate).reduce((acc, date) => {
+                    acc[date] = { selected: true, color: "#159636", textColor: "white" };
+                    return acc;
+                  }, {})
                 : {}),
               ...(startDate && {
                 [startDate]: {
