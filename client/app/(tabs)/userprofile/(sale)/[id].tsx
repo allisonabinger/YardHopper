@@ -345,10 +345,10 @@ export default function SaleDetail() {
     });
   };
 
-  // const handleChangePhoto = async (oldImageUri) => {
-  //   await handleDeletePhoto(oldImageUri);
-  //   await handleAddPhoto();
-  // };
+  const handleChangePhoto = async (oldImageUri) => {
+    await handleDeletePhoto(oldImageUri);
+    await handleAddPhoto();
+  };
   const handleDeletePhoto = async (imageUri) => {
     console.log("Deleting photo with URI:", imageUri);
     try {
@@ -368,14 +368,16 @@ export default function SaleDetail() {
 
       if (!response.ok) throw new Error("Failed to delete photo");
       const updatedImages = await response.json();
-      setSale((prev) => {
-        if (!prev) return null;
 
-        return {
-          ...prev,
-          images: updatedImages,
-        };
-      });
+      await fetchSale();
+      // setSale((prev) => {
+      //   if (!prev) return null;
+
+      //   return {
+      //     ...prev,
+      //     images: updatedImages,
+      //   };
+      // });
 
       Alert.alert("Success", "Photo deleted successfully!");
     } catch (error) {
@@ -386,11 +388,9 @@ export default function SaleDetail() {
   const handleAddPhoto = async () => {
 
     try {
-      await openImagePicker();
-
       if (!image) {
-          Alert.alert("No image selected", "Please select an image to add.");
-          return;
+        Alert.alert("No image selected", "Please select an image to add.");
+        return;
       }
 
       const fileInfo = await FileSystem.getInfoAsync(image);
@@ -417,14 +417,16 @@ export default function SaleDetail() {
 
         if (!response.ok) throw new Error("Failed to upload image");
         const updatedImages = await response.json();
-        setSale((prev) => {
-          if (!prev) return null;
 
-          return {
-            ...prev,
-            images: updatedImages,
-          };
-        });
+        await fetchSale();
+        // setSale((prev) => {
+        //   if (!prev) return null;
+
+        //   return {
+        //     ...prev,
+        //     images: updatedImages,
+        //   };
+        // });
 
         Alert.alert("Success", "Photo added successfully!");
         reset();
@@ -472,46 +474,58 @@ export default function SaleDetail() {
           <View key={index} style={styles.imageContainer}>
             <Image
               source={{
-                uri: img.uri || "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
+                uri: sale.images[0].uri || image, // Use the image from the sale data or from the picker preview
               }}
               style={styles.image}
               resizeMode="cover"
             />
             <TouchableOpacity
               style={styles.imageButton}
-              onPress={() => handleDeletePhoto(img.uri)}
+              onPress={() => handleDeletePhoto(sale.images[0].uri)} // You can handle deletion here
             >
               <Text style={styles.buttonText}>Delete Photo</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.imageButton}
+              onPress={openImagePicker} // Opens the image picker to select a new photo
+            >
+              <Text style={styles.buttonText}>Select New Photo</Text>
+            </TouchableOpacity>
           </View>
         ))
-      ) : (
+      ) : image ? (
+        // If there's no image in the sale but one is selected from the picker
         <View style={styles.imagePlaceholderContainer}>
           <Image
             source={{
-              uri: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
+              uri:
+                image
+            }}
+            style={styles.placeholderImage}
+            resizeMode="cover"
+          />
+          <Text style={styles.noImagesText}>Previewing selected photo.</Text>
+          <TouchableOpacity style={styles.imageButton} onPress={handleAddPhoto}>
+            <Text style={styles.buttonText}>Add Photo</Text>
+          </TouchableOpacity>
+        </View>
+      ): (
+        // If there's no image and no preview from the picker
+        <View style={styles.imagePlaceholderContainer}>
+          <Image
+            source={{
+              uri:
+                "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png", // Placeholder image
             }}
             style={styles.placeholderImage}
             resizeMode="cover"
           />
           <Text style={styles.noImagesText}>No images available for this listing.</Text>
+          <TouchableOpacity style={styles.imageButton} onPress={openImagePicker}>
+            <Text style={styles.buttonText}>Select Photo</Text>
+          </TouchableOpacity>
         </View>
       )}
-      <TouchableOpacity style={styles.imageButton} onPress={handleAddPhoto}>
-        <Text style={styles.buttonText}>Add Photo</Text>
-      </TouchableOpacity>
-
-        {/* Title */}
-        <Text style={styles.inputLabel}>
-          Update Title
-        </Text>
-        <TextInput
-          style={styles.input}
-          value={sale.title}
-          onChangeText={(text) => handleInputChange("title", text)
-          }
-          placeholder="Sale Title"
-        />
         {/* Description */}
         <Text style={styles.inputLabel}>Update Description</Text>
         <TextInput
