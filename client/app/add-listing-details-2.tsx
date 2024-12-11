@@ -14,7 +14,7 @@ import { useRouter } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Calendar } from "react-native-calendars";
 import PageLayout from "./PageLayout";
-import { useListingContext } from "./context/ListingContext";
+import { useListingContext } from "../contexts/ListingContext";
 import { useEffect } from "react";
 
 export default function AddListingDetailsPage2() {
@@ -224,17 +224,17 @@ export default function AddListingDetailsPage2() {
                     onChange={(event, selectedTime) => {
                       if (selectedTime) {
                         const formattedTime = formatTime(selectedTime);
-                    
+
                         if (currentPicker === "start") {
                           setStartTime(selectedTime);
                           updateListingData({ startTime: formattedTime });
                         } else if (currentPicker === "end") {
                           const startMinutes = startTime.getMinutes();
                           const endMinutes = selectedTime.getMinutes();
-                    
+
                           // Check if the end time is within 10 minutes of the hour from the start time
                           const diff = Math.abs(startMinutes - endMinutes);
-                    
+
                           if (diff > 10 && diff < 50) {
                             Alert.alert(
                               "Invalid End Time",
@@ -242,7 +242,7 @@ export default function AddListingDetailsPage2() {
                             );
                             return;
                           }
-                    
+
                           const minEndTime = new Date(startTime.getTime() + 1 * 61 * 1000); // 10 minutes after start time
                           if (selectedTime >= minEndTime) {
                             setEndTime(selectedTime);
