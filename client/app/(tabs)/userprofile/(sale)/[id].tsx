@@ -438,7 +438,7 @@ export default function SaleDetail() {
 
       {/* Images */}
       <View style={styles.cardContainer}>
-        {sale.images.length > 0 ? (
+        {sale.images ? (
           <>
             <Image source={{ uri: sale.images[0]?.uri }} style={styles.image} />
             <TouchableOpacity style={styles.imageButton}>
@@ -458,7 +458,16 @@ export default function SaleDetail() {
           </>
         ) : (
             <>
-                <Text style={styles.buttonText} onPress={handleAddPhoto}>Add Photo</Text>
+              <Image
+                  source={{
+                    uri:
+                      image ||
+                      "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
+                  }}
+                  style={styles.imagePreview}
+                  resizeMode="cover"
+              />
+              <Text style={styles.buttonText} onPress={() => handleAddPhoto}>Add Photo</Text>
             </>
         )}
 
@@ -761,6 +770,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
     borderColor: "#E0E0E0",
+    borderWidth: 1,
+  },
+  imagePreview: {
+    width: 300,
+    height: 200,
+    marginBottom: 40,
+    borderRadius: 10,
+    borderColor: "#e0e0e0",
     borderWidth: 1,
   },
   textArea: {
