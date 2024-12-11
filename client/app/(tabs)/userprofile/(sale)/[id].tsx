@@ -76,16 +76,29 @@ export default function SaleDetail() {
   const { image, mimeType, openImagePicker, reset } = useImagePicker();
 
   const { getValidIdToken, user } = useAuth();
+  const [startTime, setStartTime] = useState(
+    sale?.startTime ? new Date(`1970-01-01T${sale?.startTime}:00`) : new Date()
+  );
+  const [endTime, setEndTime] = useState(
+    sale?.endTime
+      ? new Date(`1970-01-01T${sale?.endTime}:00`)
+      : new Date(new Date().getTime() + 60 * 60 * 1000)
+  );
+  const [currentPicker, setCurrentPicker] = useState<"start" | "end" | null>(
+    null
+  );
   //   const [updatedSale, setUpdatedSale] = useState<ListingItem | null>
   // //   const [startDate, setStartDate] = useState(sale.startDate);
   //   const [dates, setDates] = useState(sale.dates);
   //   const [startTime, setStartTime] = useState(sale.startTime);
   //   const [endTime, setEndTime] = useState(sale.endTime);
-  //   const [selectedCategories, setSelectedCategories] = useState(new Set(sale.categories));
-  //   const [showAddCategory, setShowAddCategory] = useState(false);
-  //   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  //   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    const [selectedCategories, setSelectedCategories] = useState(new Set(sale?.categories));
+    const [showAddCategory, setShowAddCategory] = useState(false);
+    const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+    const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   //   const [listing, setListing] = useState<ListingItem | null>(null);
+  const startDate = sale?.dates?.[0];
+  const endDate = sale?.dates?.[sale.dates.length - 1];
 
   const fetchSale = async () => {
     try {
@@ -100,23 +113,24 @@ export default function SaleDetail() {
       const data = await response.json();
 
       const saleData = Array.isArray(data) ? data[0] : data;
+      console.log(saleData.listing);
 
-      if (saleData) {
+      if (saleData.listing) {
         setSale({
-          title: saleData.title,
-          description: saleData.description,
+          title: saleData.listing.title,
+          description: saleData.listing.description,
           address: {
-            street: saleData.address.street,
-            city: saleData.address.city,
-            state: saleData.address.state,
-            zip: saleData.address.zip,
+            street: saleData.listing.address.street,
+            city: saleData.listing.address.city,
+            state: saleData.listing.address.state,
+            zip: saleData.listing.address.zip,
           },
-          dates: saleData.dates || [],
-          startTime: saleData.startTime || "",
-          endTime: saleData.endTime || "",
-          images: saleData.images || null, // Handle null images
-          categories: saleData.categories || [],
-          status: saleData.status,
+          dates: saleData.listing.dates || [],
+          startTime: saleData.listing.startTime || "",
+          endTime: saleData.listing.endTime || "",
+          images: saleData.listing.images || null, // Handle null images
+          categories: saleData.listing.categories || [],
+          status: saleData.listing.status,
         });
       } else {
         setSale(null);
@@ -184,7 +198,7 @@ export default function SaleDetail() {
   const handleInputChange = (field, value) => {
     setSale((prev) => {
       if (!prev) return null;
-  
+
       const keys = field.split("."); // Split field name for nested updates
       if (keys.length === 1) {
         // Top-level field update
@@ -196,12 +210,12 @@ export default function SaleDetail() {
         // Nested field update
         let updatedSale = { ...prev };
         let current = updatedSale;
-  
+
         for (let i = 0; i < keys.length - 1; i++) {
           current[keys[i]] = { ...current[keys[i]] }; // Clone nested objects
           current = current[keys[i]];
         }
-  
+
         current[keys[keys.length - 1]] = value; // Set the value at the last key
         return updatedSale;
       }
@@ -298,7 +312,8 @@ export default function SaleDetail() {
   };
 
   const [temporarySelectedCategories, setTemporarySelectedCategories] =
-    useState(new Set(sale.categories));
+    useState(new Set(sale?.categories || [])
+  );
 
   // Function to toggle category selection in the temporary state
   const toggleTemporaryCategory = (category) => {
@@ -312,8 +327,6 @@ export default function SaleDetail() {
       return updatedSet;
     });
   };
-
-  const [currentPicker, setCurrentPicker] = useState(null); // 'start' or 'end'
 
   const handleChangePhoto = async (oldImageUri) => {
     await handleDeletePhoto(oldImageUri);
@@ -345,6 +358,7 @@ export default function SaleDetail() {
       Alert.alert("Error", error.message || "Failed to delete photo.");
     }
   };
+
   const handleAddPhoto = async () => {
     try {
         await openImagePicker();
@@ -371,18 +385,18 @@ export default function SaleDetail() {
               body: formData,
             }
           );
-    
+
           if (!response.ok) throw new Error("Failed to upload image");
           const updatedImages = await response.json();
           setSale((prev) => {
             if (!prev) return null;
-          
+
             return {
               ...prev,
               images: updatedImages,
             };
           });
-    
+
           Alert.alert("Success", "Photo added successfully!");
           reset();
         } catch (error) {
@@ -527,10 +541,7 @@ export default function SaleDetail() {
                 onPress={() => setCurrentPicker("start")}
               >
                 <Text>
-                  {startTime.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {sale.startTime}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -543,10 +554,7 @@ export default function SaleDetail() {
                 onPress={() => setCurrentPicker("end")}
               >
                 <Text>
-                  {endTime.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {sale.endTime}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -567,7 +575,7 @@ export default function SaleDetail() {
                     : "Select End Time"}
                 </Text>
                 <DateTimePicker
-                  value={currentPicker === "start" ? startTime : endTime}
+                  value={currentPicker === "start" ? sale.startTime : sale.endTime}
                   mode="time"
                   is24Hour={true}
                   display="spinner"
@@ -604,7 +612,7 @@ export default function SaleDetail() {
         <View style={styles.categoriesContainer}>
           <Text style={styles.sectionTitle}>Categories</Text>
           <View style={styles.selectedCategories}>
-            {Array.from(selectedCategories).map((category) => (
+            {Array.from(sale.categories).map((category) => (
               <TouchableOpacity
                 key={category}
                 style={styles.categoryChip}
@@ -617,7 +625,7 @@ export default function SaleDetail() {
           </View>
           <TouchableOpacity
             style={styles.addCategoryButton}
-            onPress={() => setShowAddCategory(true)}
+            onPress={() =>  setShowAddCategory(true)}
           >
             <Text style={styles.addCategoryButtonText}>Add Category</Text>
           </TouchableOpacity>
