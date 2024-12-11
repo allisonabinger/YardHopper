@@ -92,10 +92,12 @@ export default function SaleDetail() {
   //   const [dates, setDates] = useState(sale.dates);
   //   const [startTime, setStartTime] = useState(sale.startTime);
   //   const [endTime, setEndTime] = useState(sale.endTime);
-    const [selectedCategories, setSelectedCategories] = useState(new Set(sale?.categories));
-    const [showAddCategory, setShowAddCategory] = useState(false);
-    const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-    const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState(
+    new Set(sale?.categories)
+  );
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   //   const [listing, setListing] = useState<ListingItem | null>(null);
   // const [startDate, setStartDate] = useState(sale?.dates?.[0]);
   // const [endDate, setEndDate] = useState(sale?.dates?.[sale.dates.length - 1]);
@@ -113,7 +115,7 @@ export default function SaleDetail() {
       const data = await response.json();
 
       const saleData = Array.isArray(data) ? data[0] : data;
-      console.log(saleData.listing);
+    //   console.log(saleData.listing);
 
       if (saleData.listing) {
         setSale({
@@ -155,22 +157,26 @@ export default function SaleDetail() {
   };
 
   useEffect(() => {
-    try {
-      if (loading) {
-        console.warn(
-          "Fetch already in progress, skipping duplicate request..."
-        );
-        return;
+    const fetchData = async () => {
+      try {
+        if (loading) {
+          console.warn(
+            "Fetch already in progress, skipping duplicate request..."
+          );
+          return;
+        }
+        setLoading(true);
+        await getToken();
+        await fetchSale();
+      } catch (error) {
+        Alert.alert("Error", (error as Error).message);
+      } finally {
+        setLoading(false);
       }
-      setLoading(true);
-      getToken();
-      fetchSale();
-    } catch (error) {
-      Alert.alert("Error", (error as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+    };
+
+    fetchData();
+  }, [id, router]);
 
   const handleUpdateSale = async () => {
     if (!sale) return;
@@ -191,26 +197,28 @@ export default function SaleDetail() {
       });
       // Check if response is OK
       if (!response.ok) {
-        const errorText = await response.text();  // Get detailed error message
+        const errorText = await response.text(); // Get detailed error message
         console.error("Server error:", errorText);
         throw new Error("Failed to update sale");
       }
 
       // If update was successful, show success message
-      const responseData = await response.json();  // Get the response data
+      const responseData = await response.json(); // Get the response data
 
       console.log("Updated Sale:", responseData);
       Alert.alert("Success", "Sale updated successfully");
 
       // Redirect or update UI
-      router.back();
-      } catch (error) {
+      router.push({
+        pathname: "../mylistings",
+      });
+    } catch (error) {
       // Handle errors
       Alert.alert("Error", (error as Error).message || "Failed to update sale");
-      } finally {
+    } finally {
       setLoading(false);
-      }
-    };
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setSale((prev) => {
@@ -274,14 +282,14 @@ export default function SaleDetail() {
     );
   };
 
-const handleDayPress = (day) => {
+  const handleDayPress = (day) => {
     const selectedDate = new Date(day.dateString);
-  
+
     if (!sale.dates || sale.dates.length === 0) {
       setSale({ ...sale, dates: [day.dateString] });
     } else if (sale.dates.length === 1) {
       const startDate = new Date(sale.dates[0]);
-  
+
       if (selectedDate >= startDate) {
         const updatedDates = getDatesInRange(sale.dates[0], day.dateString);
         setSale({ ...sale, dates: updatedDates });
@@ -292,7 +300,7 @@ const handleDayPress = (day) => {
     } else {
       const startDate = new Date(sale.dates[0]);
       const endDate = new Date(sale.dates[sale.dates.length - 1]);
-  
+
       if (selectedDate < startDate) {
         setSale({ ...sale, dates: [day.dateString] });
       } else if (selectedDate > endDate) {
@@ -391,9 +399,8 @@ const handleDayPress = (day) => {
     });
   };
 
-  const [temporarySelectedCategories, setTemporarySelectedCategories] = useState(
-    new Set(sale?.categories || [])
-  );
+  const [temporarySelectedCategories, setTemporarySelectedCategories] =
+    useState(new Set(sale?.categories || []));
 
   // Function to toggle category selection in the temporary state
   const toggleTemporaryCategory = (category) => {
@@ -419,34 +426,36 @@ const handleDayPress = (day) => {
     });
   };
 
-  const handleChangePhoto = async (oldImageUri) => {
-    Alert.alert(
-      "Replace Photo",
-      "Do you want to replace the your photo with a new picture?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Replace",
-          onPress: async () => {
-            await handleDeletePhoto(oldImageUri);
-            openImagePicker();
-            await handleAddPhoto();
-          },
-        },
-      ],
-      { cancelable: false }
-    );
-  };
+  //   const handleChangePhoto = async (oldImageUri) => {
+  //     Alert.alert(
+  //       "Replace Photo",
+  //       "Do you want to replace the your photo with a new picture?",
+  //       [
+  //         {
+  //           text: "Cancel",
+  //           style: "cancel",
+  //         },
+  //         {
+  //           text: "Replace",
+  //           onPress: async () => {
+  //             await handleDeletePhoto(oldImageUri);
+  //             openImagePicker();
+  //             await handleAddPhoto();
+  //           },
+  //         },
+  //       ],
+  //       { cancelable: false }
+  //     );
+  //   };
 
   const handleDeletePhoto = async (imageUri) => {
     console.log("Deleting photo with URI:", imageUri);
     try {
-
+      setLoading(true);
       const response = await fetch(
-        `https://yardhopperapi.onrender.com/api/listings/${id}/images?uri=${encodeURIComponent(imageUri)}`,
+        `https://yardhopperapi.onrender.com/api/listings/${id}/images?uri=${encodeURIComponent(
+          imageUri
+        )}`,
         {
           method: "DELETE",
           headers: {
@@ -456,31 +465,34 @@ const handleDayPress = (day) => {
           // body: JSON.stringify({uri: imageUri}),
         }
       );
-      console.log("API Response:", response.status, await response.text());
+      const responseBody = await response.json();
+      console.log("API Response:", response.status, responseBody);
+      if (!response.ok)
+        throw new Error(responseBody.message || "Failed to delete photo");
+      const updatedImages = responseBody;
 
-      if (!response.ok) throw new Error("Failed to delete photo");
-      const updatedImages = await response.json();
+      setSale((prev) => {
+        if (!prev) return null;
 
-      // await fetchSale();
-      // setSale((prev) => {
-      //   if (!prev) return null;
-
-      //   return {
-      //     ...prev,
-      //     images: updatedImages,
-      //   };
-      // });
+        return {
+          ...prev,
+          images: updatedImages,
+        };
+      });
 
       Alert.alert("Success", "Photo deleted successfully!");
     } catch (error) {
-      Alert.alert("Error in handling delete photoooo", (error as Error).message || "Failed to delete photo.");
+      Alert.alert(
+        "Error in handling delete photoooo",
+        (error as Error).message || "Failed to delete photo."
+      );
     } finally {
       await fetchSale();
+      setLoading(false);
     }
   };
 
   const handleAddPhoto = async () => {
-
     try {
       if (!image) {
         Alert.alert("No image selected", "Please select an image to add.");
@@ -499,36 +511,62 @@ const handleDayPress = (day) => {
         name: imageName,
       });
       const response = await fetch(
-          `https://yardhopperapi.onrender.com/api/listings/${id}/images`,
-          {
-            method: "POST",
-            headers: {
-              "Accept": "application/json",
-            },
-            body: formData,
-          }
-        );
+        `https://yardhopperapi.onrender.com/api/listings/${id}/images`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+          },
+          body: formData,
+        }
+      );
 
-        if (!response.ok) throw new Error("Failed to upload image");
-        const updatedImages = await response.json();
+      if (!response.ok) throw new Error("Failed to upload image");
+      const updatedImages = await response.json();
 
-        await fetchSale();
-        // setSale((prev) => {
-        //   if (!prev) return null;
+      await fetchSale();
+      // setSale((prev) => {
+      //   if (!prev) return null;
 
-        //   return {
-        //     ...prev,
-        //     images: updatedImages,
-        //   };
-        // });
+      //   return {
+      //     ...prev,
+      //     images: updatedImages,
+      //   };
+      // });
 
-        Alert.alert("Success", "Photo added successfully!");
-        reset();
-      } catch (error) {
-        Alert.alert("Error", (error as Error).message || "Failed to add photo.");
-      }
+      Alert.alert("Success", "Photo added successfully!");
+      reset();
+    } catch (error) {
+      Alert.alert("Error", (error as Error).message || "Failed to add photo.");
+    }
   };
 
+  const handlePageExit = () => {
+    Alert.alert(
+      "Unsaved Changes",
+      "Are you sure you want to exit? Your changes won't be saved!",
+      [
+        {
+          text: "Discard changes",
+          onPress: () => {
+            handleExitConfirmed();
+          },
+        },
+        {
+          text: "Stay on Page"
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  const handleExitConfirmed = () => {
+    setSale(null);
+    fetchSale();
+    router.push({
+      pathname: "../mylistings",
+    });
+  };
 
   if (loading) {
     return (
@@ -550,10 +588,7 @@ const handleDayPress = (day) => {
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={handlePageExit} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color="#000000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Update Listing</Text>
@@ -563,98 +598,104 @@ const handleDayPress = (day) => {
 
       {/* Images */}
       <View style={styles.cardContainer}>
-      {sale.images && sale.images.length > 0 ? (
-        sale.images.map((img, index) => (
-          <View key={index} style={styles.imageContainer}>
-            <Image
-              source={{
-                uri: sale.images[index].uri || image, // Use the image from the sale data or from the picker preview
-              }}
-              style={styles.image}
-              resizeMode="cover"
-            />
-            <TouchableOpacity
+        {sale && sale.images && sale.images.length > 0 ? (
+          sale.images.map((img, index) => (
+            <View key={index} style={styles.imageContainer}>
+              <Image
+                source={{
+                  uri: sale.images[index].uri || image, // Use the image from the sale data or from the picker preview
+                }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+              <TouchableOpacity
+                style={styles.imageButton}
+                onPress={() => handleDeletePhoto(sale.images[index].uri)} // You can handle deletion here
+              >
+                <Text style={styles.buttonText}>Delete Photo</Text>
+              </TouchableOpacity>
+              {/* <TouchableOpacity
               style={styles.imageButton}
-              onPress={() => handleDeletePhoto(sale.images[0].uri)} // You can handle deletion here
-            >
-              <Text style={styles.buttonText}>Delete Photo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.imageButton}
-              onPress={() => handleChangePhoto(sale.images[0].uri)}// Opens the image picker to select a new photo
+              onPress={() => handleChangePhoto(sale.images[index].uri)}// Opens the image picker to select a new photo
             >
               <Text style={styles.buttonText}>Select New Photo</Text>
+            </TouchableOpacity> */}
+            </View>
+          ))
+        ) : image ? (
+          // If there's no image in the sale but one is selected from the picker
+          <View style={styles.imagePlaceholderContainer}>
+            <Image
+              source={{
+                uri: image,
+              }}
+              style={styles.placeholderImage}
+              resizeMode="cover"
+            />
+            {/* <Text style={styles.noImagesText}>Photo isn't uploaded until you press `Upload Photo`</Text> */}
+            <TouchableOpacity
+              style={styles.imageButton}
+              onPress={handleAddPhoto}
+            >
+              <Text style={styles.buttonText}>
+                Add Selected Photo to Listing
+              </Text>
             </TouchableOpacity>
           </View>
-        ))
-      ) : image ? (
-        // If there's no image in the sale but one is selected from the picker
-        <View style={styles.imagePlaceholderContainer}>
-          <Image
-            source={{
-              uri:
-                image
-            }}
-            style={styles.placeholderImage}
-            resizeMode="cover"
-          />
-          <Text style={styles.noImagesText}>Previewing selected photo.</Text>
-          <TouchableOpacity style={styles.imageButton} onPress={handleAddPhoto}>
-            <Text style={styles.buttonText}>Add Photo</Text>
-          </TouchableOpacity>
-        </View>
-      ): (
-        // If there's no image and no preview from the picker
-        <View style={styles.imagePlaceholderContainer}>
-          <Image
-            source={{
-              uri:
-                "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png", // Placeholder image
-            }}
-            style={styles.placeholderImage}
-            resizeMode="cover"
-          />
-          <Text style={styles.noImagesText}>No images available for this listing.</Text>
-          <TouchableOpacity style={styles.imageButton} onPress={openImagePicker}>
-            <Text style={styles.buttonText}>Select Photo</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        ) : (
+          // If there's no image and no preview from the picker
+          <View style={styles.imagePlaceholderContainer}>
+            {/* <Image
+              source={{
+                uri: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png", // Placeholder image
+              }}
+              style={styles.placeholderImage}
+              resizeMode="cover"
+            /> */}
+            {/* <Text style={styles.buttonText}>Add Photo</Text> */}
+            <Text style={styles.noImagesText}>No images available for this listing.</Text>
+            <TouchableOpacity
+              style={styles.imageButton}
+              onPress={openImagePicker}
+            >
+              <Text style={styles.buttonText}>Add Photo</Text>
+            </TouchableOpacity>
+          </View>
+        )}
         {/* Description */}
         <Text style={styles.inputLabel}>Update Description</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
           value={sale.description}
-          onChangeText={(text) => handleInputChange("description", text)
-          }
+          onChangeText={(text) => handleInputChange("description", text)}
           placeholder="Sale Description"
           multiline
         />
 
         {/* Address */}
         <TextInput
-        style={styles.input}
-        value={sale?.address?.street || ""}
-        onChangeText={(text) => handleInputChange("address.street", text)}
-        placeholder="Street"
+          style={styles.input}
+          value={sale?.address?.street || ""}
+          onChangeText={(text) => handleInputChange("address.street", text)}
+          placeholder="Street"
         />
         <TextInput
-        style={styles.input}
-        value={sale?.address?.city || ""}
-        onChangeText={(text) => handleInputChange("address.city", text)}
-        placeholder="City"
+          style={styles.input}
+          value={sale?.address?.city || ""}
+          onChangeText={(text) => handleInputChange("address.city", text)}
+          placeholder="City"
         />
         <TextInput
-        style={styles.input}
-        value={sale?.address?.state || ""}
-        onChangeText={(text) => handleInputChange("address.state", text)}
-        placeholder="State"
+          style={styles.input}
+          value={sale?.address?.state || ""}
+          onChangeText={(text) => handleInputChange("address.state", text)}
+          placeholder="State"
         />
         <TextInput
-        style={styles.input}
-        value={sale?.address?.zip || ""}
-        onChangeText={(text) => handleInputChange("address.zip", text)}
-        placeholder="ZIP Code"
+          style={styles.input}
+          value={sale?.address?.zip || ""}
+          onChangeText={(text) => handleInputChange("address.zip", text)}
+          placeholder="ZIP Code"
         />
 
         {/* Calendar */}
@@ -664,7 +705,11 @@ const handleDayPress = (day) => {
             markedDates={{
               ...(startDate && endDate
                 ? getDatesInRange(startDate, endDate).reduce((acc, date) => {
-                    acc[date] = { selected: true, color: "#159636", textColor: "white" };
+                    acc[date] = {
+                      selected: true,
+                      color: "#159636",
+                      textColor: "white",
+                    };
                     return acc;
                   }, {})
                 : {}),
@@ -771,7 +816,7 @@ const handleDayPress = (day) => {
           </View>
           <TouchableOpacity
             style={styles.addCategoryButton}
-            onPress={() =>  setShowAddCategory(true)}
+            onPress={() => setShowAddCategory(true)}
           >
             <Text style={styles.addCategoryButtonText}>Add Category</Text>
           </TouchableOpacity>
@@ -896,7 +941,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignItems: "center",
     marginBottom: 20,
-    width: "50%",
+    marginTop: 20,
+    width: "80%",
     alignSelf: "center",
   },
   imageContainer: {
@@ -968,8 +1014,9 @@ const styles = StyleSheet.create({
   },
   noImagesText: {
     fontSize: 16,
-    color: "#888",
+    color: "#000",
     textAlign: "center",
+    marginBottom: 8,
   },
   label: {
     fontSize: 16,
