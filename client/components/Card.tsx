@@ -23,6 +23,7 @@ interface CardProps {
   onToggleLike?: (postId: string) => void;
   disableToggle?: boolean;
   route: () => void;
+  disableLikeButton?: boolean;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -36,6 +37,7 @@ const Card: React.FC<CardProps> = ({
   categories,
   onToggleLike,
   disableToggle = false,
+  disableLikeButton = false,
   route,
 }) => {
   const fadeAnimation = useRef(new Animated.Value(0)).current;
@@ -90,16 +92,18 @@ const Card: React.FC<CardProps> = ({
           />
         )}
         </ScrollView>
-        <TouchableOpacity
-          style={styles.likeButton}
-          onPress={() => onToggleLike?.(postId)}
-        >
-          <Ionicons
-            name={isLiked ? "heart" : "heart-outline"}
-            size={24}
-            color={isLiked ? "#159636" : "gray"}
-          />
-        </TouchableOpacity>
+        {!disableLikeButton && (
+          <TouchableOpacity
+            style={styles.likeButton}
+            onPress={() => onToggleLike?.(postId)}
+          >
+            <Ionicons
+              name={isLiked ? "heart" : "heart-outline"}
+              size={24}
+              color={isLiked ? "#159636" : "gray"}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Content Section */}
