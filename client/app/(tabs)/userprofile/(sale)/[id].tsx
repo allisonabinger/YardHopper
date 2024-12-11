@@ -174,6 +174,7 @@ export default function SaleDetail() {
 
   const handleUpdateSale = async () => {
     if (!sale) return;
+
     try {
       setLoading(true);
       const updatedSale = {
@@ -182,18 +183,34 @@ export default function SaleDetail() {
       let url = `https://yardhopperapi.onrender.com/api/listings/${id}`;
       const response = await fetch(url, {
         method: "PUT",
-        headers: { Authorization: `Bearer ${idToken}` },
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(updatedSale),
       });
-      if (!response.ok) throw new Error("Failed to update sale");
+      // Check if response is OK
+      if (!response.ok) {
+        const errorText = await response.text();  // Get detailed error message
+        console.error("Server error:", errorText);
+        throw new Error("Failed to update sale");
+      }
+
+      // If update was successful, show success message
+      const responseData = await response.json();  // Get the response data
+
+      console.log("Updated Sale:", responseData);
       Alert.alert("Success", "Sale updated successfully");
+
+      // Redirect or update UI
       router.back();
-    } catch (error) {
-      Alert.alert("Error", (error as Error).message);
-    } finally {
+      } catch (error) {
+      // Handle errors
+      Alert.alert("Error", (error as Error).message || "Failed to update sale");
+      } finally {
       setLoading(false);
-    }
-  };
+      }
+    };
 
   const handleInputChange = (field, value) => {
     setSale((prev) => {
