@@ -10,7 +10,7 @@ export default function SettingsScreen() {
   const navigation = useNavigation();
   const { profile, getValidIdToken, deleteUser, logout, refreshProfile } = useAuth();
   const firstName = profile?.first || "User";
-  console.log("First Name:", firstName);
+  // console.log("First Name:", firstName);
 
   // Refresh profile when the component mounts
   useEffect(() => {

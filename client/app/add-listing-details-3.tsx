@@ -35,14 +35,14 @@ const ImageUploadScreen = () => {
     }
 
     const responseData = await response.json();
-    console.log("Full Response JSON:", responseData);
+    // console.log("Full Response JSON:", responseData);
 
     // Extract the postId from the response
     const postIdKey = "Listing created with new postId";
     const postId = responseData[postIdKey];
 
     if (postId) {
-      console.log("Extracted postId:", postId);
+      console.log("Extracted postId successfully");
     } else {
       console.error("postId not found in response");
     }
@@ -55,7 +55,7 @@ const ImageUploadScreen = () => {
 
 
     try {
-      console.log("Selected image URI:", image);
+      // console.log("Selected image URI:", image);
 
       // Validate the image file
       const fileInfo = await FileSystem.getInfoAsync(image);
@@ -78,10 +78,10 @@ const ImageUploadScreen = () => {
       });
       formData.append("caption", "More Items");
 
-      console.log("FormData debug:", JSON.stringify(formData));
+      // console.log("FormData debug:", JSON.stringify(formData));
 
-      console.log("FormData prepared:", formData);
-      console.log("Post Id: ", postId)
+      // console.log("FormData prepared:", formData);
+      // console.log("Post Id: ", postId)
 
       // Make the upload request
       const uploadResponse = await fetch(

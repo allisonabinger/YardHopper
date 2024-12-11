@@ -85,11 +85,11 @@ export const ListingProvider: React.FC<ListingProviderProps> = ({ children }) =>
   const updateListingData = (newData: Partial<ListingData>) => {
     setListingData((prevData) => {
       const updatedData = { ...prevData, ...newData };
-      console.log("Updating listingData:", updatedData);
+      // console.log("Updating listingData:", updatedData);
       // If startDate and endDate are present, calculate the dates array
       if (newData.startDate && newData.endDate) {
         updatedData.dates = getDatesInRange(newData.startDate, newData.endDate);
-        console.log("Updating listingData:", updatedData);
+        // console.log("Updating listingData:", updatedData);
       }
 
       return updatedData;

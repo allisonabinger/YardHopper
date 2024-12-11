@@ -74,7 +74,7 @@ const handleLogIn = () => {
 
   async function login(email: string, password: string) {
     try {
-      console.log(`Logging in with ${email} and ${password}`);
+      // console.log(`Logging in with ${email} and ${password}`);
       await auth.login(email, password);
 
       // Save user credentials and enable biometrics for the next login
