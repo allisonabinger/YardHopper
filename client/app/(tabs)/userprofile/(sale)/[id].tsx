@@ -320,6 +320,36 @@ export default function SaleDetail() {
   const startDate = sale?.dates?.[0];
   const endDate = sale?.dates?.[sale.dates.length - 1];
 
+  const handleTimeChange = (event, selectedTime) => {
+    if (selectedTime) {
+      const selectedDate = new Date(selectedTime);
+      if (currentPicker === "start") {
+        setStartTime(selectedDate);
+        setSale((prevSale) => ({
+          ...prevSale,
+          startTime: formatTime(selectedDate),
+        }));
+      } else if (currentPicker === "end") {
+        if (selectedDate > startTime) {
+          setEndTime(selectedDate);
+          setSale((prevSale) => ({
+            ...prevSale,
+            endTime: formatTime(selectedDate),
+          }));
+        } else {
+          Alert.alert("Invalid Time", "End time must be after start time.");
+        }
+      }
+    }
+    setCurrentPicker(null); // Close the modal after selecting time
+  };
+
+  const formatTime = (date) => {
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
   const toggleCategory = (category) => {
     setSale((prevSale) => {
       if (!prevSale) return null; // Handle the case when sale is null
@@ -665,9 +695,7 @@ export default function SaleDetail() {
                 style={styles.timeButton}
                 onPress={() => setCurrentPicker("start")}
               >
-                <Text>
-                  {sale.startTime}
-                </Text>
+                <Text>{sale.startTime}</Text>
               </TouchableOpacity>
             </View>
 
@@ -678,9 +706,7 @@ export default function SaleDetail() {
                 style={styles.timeButton}
                 onPress={() => setCurrentPicker("end")}
               >
-                <Text>
-                  {sale.endTime}
-                </Text>
+                <Text>{sale.endTime}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -700,27 +726,11 @@ export default function SaleDetail() {
                     : "Select End Time"}
                 </Text>
                 <DateTimePicker
-                  value={currentPicker === "start" ? sale.startTime : sale.endTime}
+                  value={currentPicker === "start" ? startTime : endTime}
                   mode="time"
                   is24Hour={true}
                   display="spinner"
-                  onChange={(event, selectedTime) => {
-                    if (selectedTime) {
-                      if (currentPicker === "start") {
-                        setStartTime(selectedTime);
-                      } else if (currentPicker === "end") {
-                        if (selectedTime > startTime) {
-                          setEndTime(selectedTime);
-                        } else {
-                          Alert.alert(
-                            "Invalid Time",
-                            "End time must be after start time."
-                          );
-                        }
-                      }
-                    }
-                    setCurrentPicker(null); // Close the modal
-                  }}
+                  onChange={handleTimeChange}
                 />
                 <TouchableOpacity
                   style={styles.closeModalButton}
@@ -732,7 +742,6 @@ export default function SaleDetail() {
             </View>
           </Modal>
         </View>
-
         {/* Categories */}
         <View style={styles.categoriesContainer}>
           <Text style={styles.sectionTitle}>Categories</Text>
