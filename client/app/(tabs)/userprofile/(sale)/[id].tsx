@@ -97,8 +97,8 @@ export default function SaleDetail() {
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   //   const [listing, setListing] = useState<ListingItem | null>(null);
-  const startDate = sale?.dates?.[0];
-  const endDate = sale?.dates?.[sale.dates.length - 1];
+  // const [startDate, setStartDate] = useState(sale?.dates?.[0]);
+  // const [endDate, setEndDate] = useState(sale?.dates?.[sale.dates.length - 1]);
 
   const fetchSale = async () => {
     try {
@@ -273,63 +273,117 @@ export default function SaleDetail() {
       ]
     );
   };
-
   const handleDayPress = (day) => {
-    if (!startDate || (startDate && endDate)) {
-      setStartDate(day.dateString);
-      setEndDate(null);
-    } else if (startDate && !endDate) {
-      const start = new Date(startDate);
+    if (!sale.dates || sale.dates.length === 0) {
+      // Initialize dates array if it's empty
+      setSale({ ...sale, dates: [day.dateString] });
+    } else if (sale.dates.length === 1) {
+      // When start date is selected, choose the end date
+      const start = new Date(sale.dates[0]);
       const end = new Date(day.dateString);
 
       if (end >= start) {
-        setEndDate(day.dateString);
+        const updatedDates = getDatesInRange(sale.dates[0], day.dateString);
+        setSale({ ...sale, dates: updatedDates });
+        updateSaleDates(updatedDates); // Update your sale.dates
       } else {
+        // Show an alert if the selected end date is before the start date
         Alert.alert("Invalid Date", "End date must be after the start date.");
       }
+    } else {
+      // Reset dates if more than two dates are selected
+      setSale({ ...sale, dates: [day.dateString] });
     }
   };
 
+  const updateSaleDates = (updatedDates) => {
+    setSale((prevSale) => ({
+      ...prevSale,
+      dates: updatedDates,
+    }));
+  };
+
   const getDatesInRange = (start, end) => {
-    const dates = {};
+    const dates = [];
     let currentDate = new Date(start);
     const lastDate = new Date(end);
 
     while (currentDate <= lastDate) {
       const dateString = currentDate.toISOString().split("T")[0];
-      dates[dateString] = {
-        selected: true,
-        color: "#159636",
-        textColor: "white",
-      };
+      dates.push(dateString);
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
     return dates;
   };
 
-  const toggleCategory = (category) => {
-    setSelectedCategories((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(category)) {
-        newSet.delete(category);
-      } else {
-        newSet.add(category);
+  const startDate = sale?.dates?.[0];
+  const endDate = sale?.dates?.[sale.dates.length - 1];
+
+  const handleTimeChange = (event, selectedTime) => {
+    if (selectedTime) {
+      const selectedDate = new Date(selectedTime);
+      if (currentPicker === "start") {
+        setStartTime(selectedDate);
+        setSale((prevSale) => ({
+          ...prevSale,
+          startTime: formatTime(selectedDate),
+        }));
+      } else if (currentPicker === "end") {
+        if (selectedDate > startTime) {
+          setEndTime(selectedDate);
+          setSale((prevSale) => ({
+            ...prevSale,
+            endTime: formatTime(selectedDate),
+          }));
+        } else {
+          Alert.alert("Invalid Time", "End time must be after start time.");
+        }
       }
-      return newSet;
+    }
+    setCurrentPicker(null); // Close the modal after selecting time
+  };
+
+  const formatTime = (date) => {
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
+  const toggleCategory = (category) => {
+    setSale((prevSale) => {
+      if (!prevSale) return null; // Handle the case when sale is null
+
+      const updatedCategories = new Set(prevSale.categories || []);
+      if (updatedCategories.has(category)) {
+        updatedCategories.delete(category);
+      } else {
+        updatedCategories.add(category);
+      }
+
+      return {
+        ...prevSale,
+        categories: Array.from(updatedCategories),
+      };
     });
   };
 
   const removeCategory = (category) => {
-    setSelectedCategories((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(category);
-      return newSet;
+    setSale((prevSale) => {
+      if (!prevSale) return null; // Handle the case when sale is null
+
+      const updatedCategories = new Set(prevSale.categories || []);
+      updatedCategories.delete(category);
+
+      return {
+        ...prevSale,
+        categories: Array.from(updatedCategories),
+      };
     });
   };
 
-  const [temporarySelectedCategories, setTemporarySelectedCategories] =
-    useState(new Set(sale?.categories || [])
+  const [temporarySelectedCategories, setTemporarySelectedCategories] = useState(
+    new Set(sale?.categories || [])
   );
 
   // Function to toggle category selection in the temporary state
@@ -345,10 +399,21 @@ export default function SaleDetail() {
     });
   };
 
+  const applyTemporaryCategories = () => {
+    setSale((prevSale) => {
+      if (!prevSale) return null;
+
+      return {
+        ...prevSale,
+        categories: Array.from(temporarySelectedCategories),
+      };
+    });
+  };
+
   const handleChangePhoto = async (oldImageUri) => {
     Alert.alert(
       "Replace Photo",
-      "Do you want to replace the your photo with the one selected?",
+      "Do you want to replace the your photo with a new picture?",
       [
         {
           text: "Cancel",
@@ -399,7 +464,7 @@ export default function SaleDetail() {
 
       Alert.alert("Success", "Photo deleted successfully!");
     } catch (error) {
-      Alert.alert("Error", (error as Error).message || "Failed to delete photo.");
+      Alert.alert("Error in handling delete photoooo", (error as Error).message || "Failed to delete photo.");
     } finally {
       await fetchSale();
     }
@@ -589,20 +654,27 @@ export default function SaleDetail() {
             onDayPress={handleDayPress}
             markedDates={{
               ...(startDate && endDate
-                ? getDatesInRange(startDate, endDate)
+                ? getDatesInRange(startDate, endDate).reduce((acc, date) => {
+                    acc[date] = { selected: true, color: "#159636", textColor: "white" };
+                    return acc;
+                  }, {})
                 : {}),
-              [startDate]: {
-                selected: true,
-                startingDay: true,
-                color: "#159636",
-                textColor: "white",
-              },
-              [endDate]: {
-                selected: true,
-                endingDay: true,
-                color: "#159636",
-                textColor: "white",
-              },
+              ...(startDate && {
+                [startDate]: {
+                  selected: true,
+                  startingDay: true,
+                  color: "#159636",
+                  textColor: "white",
+                },
+              }),
+              ...(endDate && {
+                [endDate]: {
+                  selected: true,
+                  endingDay: true,
+                  color: "#159636",
+                  textColor: "white",
+                },
+              }),
             }}
             markingType="period"
             theme={{
@@ -623,9 +695,7 @@ export default function SaleDetail() {
                 style={styles.timeButton}
                 onPress={() => setCurrentPicker("start")}
               >
-                <Text>
-                  {sale.startTime}
-                </Text>
+                <Text>{sale.startTime}</Text>
               </TouchableOpacity>
             </View>
 
@@ -636,9 +706,7 @@ export default function SaleDetail() {
                 style={styles.timeButton}
                 onPress={() => setCurrentPicker("end")}
               >
-                <Text>
-                  {sale.endTime}
-                </Text>
+                <Text>{sale.endTime}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -658,27 +726,11 @@ export default function SaleDetail() {
                     : "Select End Time"}
                 </Text>
                 <DateTimePicker
-                  value={currentPicker === "start" ? sale.startTime : sale.endTime}
+                  value={currentPicker === "start" ? startTime : endTime}
                   mode="time"
                   is24Hour={true}
                   display="spinner"
-                  onChange={(event, selectedTime) => {
-                    if (selectedTime) {
-                      if (currentPicker === "start") {
-                        setStartTime(selectedTime);
-                      } else if (currentPicker === "end") {
-                        if (selectedTime > startTime) {
-                          setEndTime(selectedTime);
-                        } else {
-                          Alert.alert(
-                            "Invalid Time",
-                            "End time must be after start time."
-                          );
-                        }
-                      }
-                    }
-                    setCurrentPicker(null); // Close the modal
-                  }}
+                  onChange={handleTimeChange}
                 />
                 <TouchableOpacity
                   style={styles.closeModalButton}
@@ -690,12 +742,12 @@ export default function SaleDetail() {
             </View>
           </Modal>
         </View>
-
         {/* Categories */}
         <View style={styles.categoriesContainer}>
           <Text style={styles.sectionTitle}>Categories</Text>
+
           <View style={styles.selectedCategories}>
-            {Array.from(sale.categories).map((category) => (
+            {Array.from(sale.categories || []).map((category) => (
               <TouchableOpacity
                 key={category}
                 style={styles.categoryChip}
@@ -765,8 +817,15 @@ export default function SaleDetail() {
             <TouchableOpacity
               style={styles.confirmButton}
               onPress={() => {
-                setSelectedCategories(new Set(temporarySelectedCategories));
-                setShowAddCategory(false);
+                // Update the sale state with the selected categories
+                setSale((prevSale) => {
+                  if (!prevSale) return null; // Handle null case
+                  return {
+                    ...prevSale,
+                    categories: Array.from(temporarySelectedCategories), // Update categories
+                  };
+                });
+                setShowAddCategory(false); // Close the modal
               }}
             >
               <Text style={styles.confirmButtonText}>Confirm</Text>
