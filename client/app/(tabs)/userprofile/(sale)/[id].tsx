@@ -333,78 +333,87 @@ export default function SaleDetail() {
   //   await handleAddPhoto();
   // };
   const handleDeletePhoto = async (imageUri) => {
+    console.log("Deleting photo with URI:", imageUri);
     try {
+
       const response = await fetch(
-        `https://yardhopperapi.onrender.com/api/listings/${id}/images`,
+        `https://yardhopperapi.onrender.com/api/listings/${id}/images?uri=${encodeURIComponent(imageUri)}`,
         {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${idToken}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ uri: imageUri }),
+          // body: JSON.stringify({uri: imageUri}),
         }
       );
+      console.log("API Response:", response.status, await response.text());
 
       if (!response.ok) throw new Error("Failed to delete photo");
       const updatedImages = await response.json();
-      setSale((prev) => ({
-        ...prev,
-        images: updatedImages,
-      }));
+      setSale((prev) => {
+        if (!prev) return null;
+
+        return {
+          ...prev,
+          images: updatedImages,
+        };
+      });
 
       Alert.alert("Success", "Photo deleted successfully!");
     } catch (error) {
-      Alert.alert("Error", error.message || "Failed to delete photo.");
+      Alert.alert("Error", (error as Error).message || "Failed to delete photo.");
     }
   };
 
   const handleAddPhoto = async () => {
-    if (!image) {
-        Alert.alert("No image selected", "Please select an image to add.");
-        return;
-    }
 
     try {
-        await openImagePicker();
-        const fileInfo = await FileSystem.getInfoAsync(image);
-        if (!fileInfo.exists) throw new Error("Selected file does not exist");
+      await openImagePicker();
 
-        const formData = new FormData();
-        const imageName = image.split("/").pop() || "default-name.jpg";
+      if (!image) {
+          Alert.alert("No image selected", "Please select an image to add.");
+          return;
+      }
 
-        formData.append("image", {
-          uri: image,
-          type: mimeType,
-          name: imageName,
+      const fileInfo = await FileSystem.getInfoAsync(image);
+      if (!fileInfo.exists) throw new Error("Selected file does not exist");
+
+      const formData = new FormData();
+      const imageName = image.split("/").pop() || "default-name.jpg";
+
+      formData.append("image", {
+        uri: image,
+        type: mimeType,
+        name: imageName,
+      });
+      const response = await fetch(
+          `https://yardhopperapi.onrender.com/api/listings/${id}/images`,
+          {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+            },
+            body: formData,
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to upload image");
+        const updatedImages = await response.json();
+        setSale((prev) => {
+          if (!prev) return null;
+
+          return {
+            ...prev,
+            images: updatedImages,
+          };
         });
-        const response = await fetch(
-            `https://yardhopperapi.onrender.com/api/listings/${id}/images`,
-            {
-              method: "POST",
-              headers: {
-                "Accept": "application/json",
-              },
-              body: formData,
-            }
-          );
 
-          if (!response.ok) throw new Error("Failed to upload image");
-          const updatedImages = await response.json();
-          setSale((prev) => {
-            if (!prev) return null;
-
-            return {
-              ...prev,
-              images: updatedImages,
-            };
-          });
-
-          Alert.alert("Success", "Photo added successfully!");
-          reset();
-        } catch (error) {
-          Alert.alert("Error", (error as Error).message || "Failed to add photo.");
-        }
+        Alert.alert("Success", "Photo added successfully!");
+        reset();
+      } catch (error) {
+        Alert.alert("Error", (error as Error).message || "Failed to add photo.");
+      }
   };
 
 
@@ -441,45 +450,39 @@ export default function SaleDetail() {
 
       {/* Images */}
       <View style={styles.cardContainer}>
-        {sale.images ? (
-          <>
-            <Image source={{ uri: sale.images[0]?.uri }} style={styles.image} />
-            <TouchableOpacity style={styles.imageButton}>
-              <Text
-                style={styles.buttonText}
-                onPress={() => handleAddPhoto()}
-              >
-                Change Photo
-              </Text>
+      {sale.images && sale.images.length > 0 ? (
+        sale.images.map((img, index) => (
+          <View key={index} style={styles.imageContainer}>
+            <Image
+              source={{
+                uri: img.uri || "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
+              }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+            <TouchableOpacity
+              style={styles.imageButton}
+              onPress={() => handleDeletePhoto(img.uri)}
+            >
+              <Text style={styles.buttonText}>Delete Photo</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.imageButton}>
-
-              <Text
-                style={styles.buttonText}
-                onPress={() => handleDeletePhoto(sale.images[0]?.uri)}
-              >
-                Delete Photo
-              </Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-            <>
-              <Image
-                  source={{
-                    uri:
-                      image ||
-                      "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
-                  }}
-                  style={styles.imagePreview}
-                  resizeMode="cover"
-              />
-              <TouchableOpacity style={styles.imageButton}>
-                <Text style={styles.buttonText} onPress={() => handleAddPhoto()}>
-                  Add Photo
-                </Text>
-              </TouchableOpacity>
-            </>
-        )}
+          </View>
+        ))
+      ) : (
+        <View style={styles.imagePlaceholderContainer}>
+          <Image
+            source={{
+              uri: "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png",
+            }}
+            style={styles.placeholderImage}
+            resizeMode="cover"
+          />
+          <Text style={styles.noImagesText}>No images available for this listing.</Text>
+        </View>
+      )}
+      <TouchableOpacity style={styles.imageButton} onPress={handleAddPhoto}>
+        <Text style={styles.buttonText}>Add Photo</Text>
+      </TouchableOpacity>
 
         {/* Title */}
         <Text style={styles.inputLabel}>
@@ -763,15 +766,29 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
     marginBottom: 16,
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
   },
   imageButton: {
     backgroundColor: "#159636",
-    padding: 12,
+    padding: 10,
     borderRadius: 25,
     alignItems: "center",
-    marginBottom: 45,
+    marginBottom: 20,
     width: "50%",
     alignSelf: "center",
+  },
+  imageContainer: {
+    marginBottom: 20,
+    alignItems: "center",
+  },
+  imagePreview: {
+    width: 300,
+    height: 200,
+    marginBottom: 40,
+    borderRadius: 10,
+    borderColor: "#e0e0e0",
+    borderWidth: 1,
   },
   input: {
     backgroundColor: "#F5F5F5",
@@ -780,14 +797,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
     borderColor: "#E0E0E0",
-    borderWidth: 1,
-  },
-  imagePreview: {
-    width: 300,
-    height: 200,
-    marginBottom: 40,
-    borderRadius: 10,
-    borderColor: "#e0e0e0",
     borderWidth: 1,
   },
   textArea: {
@@ -824,6 +833,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 24,
+  },
+  placeholderImage: {
+    width: 150,
+    height: 150,
+    alignSelf: "center",
+    marginBottom: 10,
+  },
+  imagePlaceholderContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 20,
+  },
+  noImagesText: {
+    fontSize: 16,
+    color: "#888",
+    textAlign: "center",
   },
   label: {
     fontSize: 16,
