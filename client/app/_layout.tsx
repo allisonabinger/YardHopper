@@ -8,8 +8,8 @@ import 'react-native-reanimated';
 import { AuthProvider } from '@/components/AuthProvider';
 import { ListingProvider } from '@/app/context/ListingContext';
 import { SavedListingsProvider } from '@/app/context/SavedListingsContext';
-import { useColorScheme } from 'react-native'; // Use React Native's color scheme hook
-import { Colors } from '@/constants/Colors'; // Your color constants
+import { useColorScheme } from 'react-native';
+import { Colors } from '@/constants/Colors'; 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
