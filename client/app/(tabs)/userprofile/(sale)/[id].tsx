@@ -309,27 +309,39 @@ export default function SaleDetail() {
   };
 
   const toggleCategory = (category) => {
-    setSelectedCategories((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(category)) {
-        newSet.delete(category);
+    setSale((prevSale) => {
+      if (!prevSale) return null; // Handle the case when sale is null
+
+      const updatedCategories = new Set(prevSale.categories || []);
+      if (updatedCategories.has(category)) {
+        updatedCategories.delete(category);
       } else {
-        newSet.add(category);
+        updatedCategories.add(category);
       }
-      return newSet;
+
+      return {
+        ...prevSale,
+        categories: Array.from(updatedCategories),
+      };
     });
   };
 
   const removeCategory = (category) => {
-    setSelectedCategories((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(category);
-      return newSet;
+    setSale((prevSale) => {
+      if (!prevSale) return null; // Handle the case when sale is null
+
+      const updatedCategories = new Set(prevSale.categories || []);
+      updatedCategories.delete(category);
+
+      return {
+        ...prevSale,
+        categories: Array.from(updatedCategories),
+      };
     });
   };
 
-  const [temporarySelectedCategories, setTemporarySelectedCategories] =
-    useState(new Set(sale?.categories || [])
+  const [temporarySelectedCategories, setTemporarySelectedCategories] = useState(
+    new Set(sale?.categories || [])
   );
 
   // Function to toggle category selection in the temporary state
@@ -345,10 +357,21 @@ export default function SaleDetail() {
     });
   };
 
+  const applyTemporaryCategories = () => {
+    setSale((prevSale) => {
+      if (!prevSale) return null;
+
+      return {
+        ...prevSale,
+        categories: Array.from(temporarySelectedCategories),
+      };
+    });
+  };
+
   const handleChangePhoto = async (oldImageUri) => {
     Alert.alert(
       "Replace Photo",
-      "Do you want to replace the your photo with the one selected?",
+      "Do you want to replace the your photo with a new picture?",
       [
         {
           text: "Cancel",
@@ -694,8 +717,9 @@ export default function SaleDetail() {
         {/* Categories */}
         <View style={styles.categoriesContainer}>
           <Text style={styles.sectionTitle}>Categories</Text>
+
           <View style={styles.selectedCategories}>
-            {Array.from(sale.categories).map((category) => (
+            {Array.from(sale.categories || []).map((category) => (
               <TouchableOpacity
                 key={category}
                 style={styles.categoryChip}
@@ -765,8 +789,15 @@ export default function SaleDetail() {
             <TouchableOpacity
               style={styles.confirmButton}
               onPress={() => {
-                setSelectedCategories(new Set(temporarySelectedCategories));
-                setShowAddCategory(false);
+                // Update the sale state with the selected categories
+                setSale((prevSale) => {
+                  if (!prevSale) return null; // Handle null case
+                  return {
+                    ...prevSale,
+                    categories: Array.from(temporarySelectedCategories), // Update categories
+                  };
+                });
+                setShowAddCategory(false); // Close the modal
               }}
             >
               <Text style={styles.confirmButtonText}>Confirm</Text>
