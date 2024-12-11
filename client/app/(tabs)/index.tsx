@@ -14,7 +14,8 @@ import FilterModal from "@/components/FilterModal";
 import PopupCardModal from "@/components/PopupCardModal";
 import Card from "@/components/Card";
 import { useRouter } from "expo-router";
-import { useSavedListings} from "../context/SavedListingsContext";
+import { useSavedListings} from "../../contexts/SavedListingsContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type ListingItem = {
   title: string;
@@ -93,7 +94,7 @@ export default function HomeScreen() {
     const data = await response.json();
 
     // Update listings state
-    console.log(JSON.stringify(data, null, 2));
+    // console.log(JSON.stringify(data, null, 2));
     setListings((prevListings) => {
       const newListings = isRefresh ? data.listings : [...prevListings, ...data.listings];
       return newListings.filter(
@@ -117,9 +118,9 @@ useEffect(() => {
   const initializeData = async () => {
     await Promise.all([fetchListings(), fetchSavedListings()]);
   };
-
   initializeData();
 }, []);
+
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -127,19 +128,23 @@ useEffect(() => {
     setRefreshing(false);
   };
 
+
   const toggleFilter = () => {
     setFilterModalVisible(!filterModalVisible);
   };
+
 
   const openModal = (listing: ListingItem) => {
     setSelectedListing(listing);
     setModalVisible(true);
   };
 
+
   const closeModal = () => {
     setModalVisible(false);
     setSelectedListing(null);
   };
+
 
   const handleToggleLike = (listing: ListingItem) => {
     const isAlreadyLiked = savedListings.listings.some(
@@ -151,17 +156,20 @@ useEffect(() => {
       addSavedListing(listing.postId); // Pass the postId to save the listing
     }
   };
-  
+
+
   const isSelectedLiked = selectedListing
   ? savedListings.listings.some(
       (savedListing) => savedListing.postId === selectedListing.postId
     )
   : false;
 
+
   const renderItem = ({ item }: { item: ListingItem }) => {
     const isLiked = savedListings.listings.some(
       (savedListing) => savedListing.postId === item.postId
     );
+
 
     return (
       <Card
@@ -185,7 +193,7 @@ useEffect(() => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Explore</Text>
       </View>
@@ -207,6 +215,11 @@ useEffect(() => {
             name={viewMode === "list" ? "toggle-outline" : "toggle"}
             size={28}
             color="#159636"
+            style={{
+              transform: [
+                { rotate: viewMode === "list" ? "180deg" : "0deg" } // Start upside down and rotate to normal
+              ],
+            }}
           />
           <Text style={styles.toggleText}>
             {viewMode === "list" ? "Map View" : "List View"}
@@ -274,11 +287,16 @@ useEffect(() => {
         setSelectedCategories={setSelectedCategories}
         radius={radius}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    paddingBottom: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",

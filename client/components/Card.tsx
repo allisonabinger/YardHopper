@@ -21,9 +21,9 @@ interface CardProps {
   categories?: string[];
   isLiked?: boolean;
   onToggleLike?: (postId: string) => void;
-  isExpanded?: boolean;
-  disableToggle?: boolean; // Added this prop to disable toggling
+  disableToggle?: boolean;
   route: () => void;
+  disableLikeButton?: boolean;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -37,60 +37,73 @@ const Card: React.FC<CardProps> = ({
   categories,
   onToggleLike,
   disableToggle = false,
+  disableLikeButton = false,
   route,
 }) => {
-  const router = useRouter();
   const fadeAnimation = useRef(new Animated.Value(0)).current;
+  const toggleRef = useRef(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleExpandToggle = () => {
+    if (toggleRef.current) return;
+
+    toggleRef.current = true;
+    setTimeout(() => {
+      toggleRef.current = false;
+    }, 300);
+
     if (disableToggle) {
-      route(); // Trigger onPress if toggling is disabled
+      route();
       return;
     }
-    setIsExpanded(!isExpanded);
 
-    // Animate the fade in or out
+    setIsExpanded((prev) => !prev);
+
     Animated.spring(fadeAnimation, {
       toValue: isExpanded ? 0 : 1,
-      friction: 9,
-      tension: 40,
+      damping: 15,
+      stiffness: 100,
+      mass: 1,
       useNativeDriver: true,
     }).start();
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handleExpandToggle}>
+    <TouchableOpacity style={styles.card} onPress={handleExpandToggle} activeOpacity={0.9}>
       {/* Image Carousel Section */}
       <View style={styles.imageContainer}>
         <ScrollView horizontal pagingEnabled style={styles.imageCarousel}>
-          {images.length > 0 ? (
-            images.map((img, idx) => (
-              <Image
-                key={idx}
-                source={{ uri: img.uri }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            ))
-          ) : (
+        {images.length > 0 && images.some((img) => img.uri) ? (
+          images.map((img, idx) => (
             <Image
-              source={{ uri: "https://via.placeholder.com/300x200.png?text=Coming+Soon!" }}
+              key={idx}
+              source={{ uri: img.uri }}
               style={styles.image}
               resizeMode="cover"
             />
-          )}
-        </ScrollView>
-        <TouchableOpacity
-          style={styles.likeButton}
-          onPress={() => onToggleLike?.(postId)}
-        >
-          <Ionicons
-            name={isLiked ? "heart" : "heart-outline"}
-            size={24}
-            color={isLiked ? "#159636" : "gray"}
+          ))
+        ) : (
+          <Image
+            source={{
+              uri: "https://via.placeholder.com/300x200.png?text=Coming+Soon!",
+            }}
+            style={styles.image}
+            resizeMode="cover"
           />
-        </TouchableOpacity>
+        )}
+        </ScrollView>
+        {!disableLikeButton && (
+          <TouchableOpacity
+            style={styles.likeButton}
+            onPress={() => onToggleLike?.(postId)}
+          >
+            <Ionicons
+              name={isLiked ? "heart" : "heart-outline"}
+              size={24}
+              color={isLiked ? "#159636" : "gray"}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Content Section */}
@@ -121,10 +134,7 @@ const Card: React.FC<CardProps> = ({
             <Text style={styles.date}>Date: {date}</Text>
 
             {/* See More Details Button */}
-            <TouchableOpacity
-              style={styles.seeMoreButton}
-              onPress={route}
-            >
+            <TouchableOpacity style={styles.seeMoreButton} onPress={route}>
               <Text style={styles.seeMoreText}>See More Details</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -156,13 +166,10 @@ const styles = StyleSheet.create({
   },
   imageCarousel: {
     height: "100%",
-    borderRadius: 10,
   },
   image: {
     height: "100%",
     width: 300,
-    borderRadius: 10,
-    marginRight: 10,
   },
   likeButton: {
     position: "absolute",

@@ -21,45 +21,67 @@ export default function LoginScreen() {
   const auth = useAuth();
   const router = useRouter();
 
-  // Form state for email and password
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState(true); // Loading state for biometric authentication
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const authenticateWithBiometrics = async () => {
       try {
         const isBiometricEnabled = await SecureStore.getItemAsync("useBiometrics");
-        const token = await SecureStore.getItemAsync("userToken");
+        const storedEmail = await SecureStore.getItemAsync("userEmail");
+        const storedPassword = await SecureStore.getItemAsync("userPassword");
 
-        if (isBiometricEnabled === "true" && token) {
+        if (isBiometricEnabled === "true" && storedEmail && storedPassword) {
           const { success } = await LocalAuthentication.authenticateAsync({
             promptMessage: "Authenticate to log in",
           });
 
           if (success) {
-            router.replace("/(tabs)"); // Redirect to the main app if authentication succeeds
+            setEmail(storedEmail);
+            setPassword(storedPassword);
           }
         }
       } catch (error) {
         console.error("Biometric authentication error:", error);
         Alert.alert("Authentication Failed", "Please log in manually.");
       } finally {
-        setLoading(false); // Stop loading whether authentication succeeds or fails
+        setLoading(false);
       }
     };
 
     authenticateWithBiometrics();
-  }, [router]);
+  }, []);
+
+//   useEffect(() => {
+//     if (email && password) {
+//       login(email, password); // Automatically log in when email and password are set
+//     }
+//   }, [email, password]);
+
+const handleLogIn = () => {
+    try {
+        if (email === "") {
+            Alert.alert("Missing email.");
+        } else if (password === "") {
+            Alert.alert("Missing password.");
+        }
+        login(email, password);
+    } catch (error) {
+        Alert.alert("Error", (error as Error).message);
+    }
+}
 
   async function login(email: string, password: string) {
     try {
       console.log(`Logging in with ${email} and ${password}`);
       await auth.login(email, password);
 
-      // Save user token and enable biometrics for the next login
+      // Save user credentials and enable biometrics for the next login
       const token = "exampleToken"; // Replace with actual token
       await SecureStore.setItemAsync("userToken", token);
+      await SecureStore.setItemAsync("userEmail", email);
+      await SecureStore.setItemAsync("userPassword", password);
       await SecureStore.setItemAsync("useBiometrics", "true");
 
       router.replace("/(tabs)");
@@ -85,15 +107,9 @@ export default function LoginScreen() {
         contentContainerStyle={styles.scrollViewContent}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Logo */}
-        <Image
-          source={require("../assets/images/logo.png")}
-          style={styles.logo}
-        />
+        <Image source={require("../assets/images/logo.png")} style={styles.logo} />
 
-        {/* Form Container */}
         <View style={styles.formContainer}>
-          {/* Email Input */}
           <TextInput
             placeholder="Email"
             placeholderTextColor="#A9A9A9"
@@ -104,8 +120,6 @@ export default function LoginScreen() {
             autoCapitalize="none"
             autoCorrect={false}
           />
-
-          {/* Password Input */}
           <TextInput
             placeholder="Password"
             placeholderTextColor="#A9A9A9"
@@ -116,13 +130,9 @@ export default function LoginScreen() {
             autoCapitalize="none"
             autoCorrect={false}
           />
-
-          {/* Login Button */}
           <Pressable onPress={() => login(email, password)} style={styles.loginButton}>
-            <Text style={styles.loginButtonText}>Log In</Text>
+            <Text style={styles.loginButtonText} onPress={handleLogIn}>Log In</Text>
           </Pressable>
-
-          {/* Sign-up Redirect */}
           <View style={styles.signupContainer}>
             <Link href="/register">
               <Text style={styles.signupText}>No account? Sign up</Text>
@@ -139,6 +149,7 @@ export default function LoginScreen() {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -152,7 +163,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 255,
-    height: 300,
+    height: 320,
     marginBottom: 60,
     padding: 30,
   },
