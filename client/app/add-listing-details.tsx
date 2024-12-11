@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar } from "react-native-calendars";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import PageLayout from "./PageLayout";
-import { useListingContext } from "./context/ListingContext";
+import { useListingContext } from "../contexts/ListingContext";
 
 export default function AddListingDetails() {
   const { listingData, updateListingData } = useListingContext();
@@ -51,17 +51,17 @@ export default function AddListingDetails() {
         setIsGeoActive(false);
         return;
       }
-  
+
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
       const { latitude, longitude } = location.coords;
-  
+
       const [geocodedAddress] = await Location.reverseGeocodeAsync({
         latitude,
         longitude,
       });
-  
+
       if (geocodedAddress) {
         const newAddress = {
           street: geocodedAddress.street || "",
@@ -69,11 +69,11 @@ export default function AddListingDetails() {
           state: geocodedAddress.region || "",
           zip: geocodedAddress.postalCode || "",
         };
-  
+
         // Update both local state and context
         setAddress(newAddress);
         updateListingData({ address: newAddress });
-  
+
         setIsGeoActive(true); // Enable the button after successful update
       } else {
         Alert.alert("Error", "Unable to fetch address information.");
