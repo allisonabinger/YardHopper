@@ -53,11 +53,24 @@ export default function LoginScreen() {
     authenticateWithBiometrics();
   }, []);
 
-  useEffect(() => {
-    if (email && password) {
-      login(email, password); // Automatically log in when email and password are set
+//   useEffect(() => {
+//     if (email && password) {
+//       login(email, password); // Automatically log in when email and password are set
+//     }
+//   }, [email, password]);
+
+const handleLogIn = () => {
+    try {
+        if (email === "") {
+            Alert.alert("Missing email.");
+        } else if (password === "") {
+            Alert.alert("Missing password.");
+        }
+        login(email, password);
+    } catch (error) {
+        Alert.alert("Error", (error as Error).message);
     }
-  }, [email, password]);
+}
 
   async function login(email: string, password: string) {
     try {
@@ -118,7 +131,7 @@ export default function LoginScreen() {
             autoCorrect={false}
           />
           <Pressable onPress={() => login(email, password)} style={styles.loginButton}>
-            <Text style={styles.loginButtonText}>Log In</Text>
+            <Text style={styles.loginButtonText} onPress={handleLogIn}>Log In</Text>
           </Pressable>
           <View style={styles.signupContainer}>
             <Link href="/register">
@@ -150,7 +163,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 255,
-    height: 300,
+    height: 320,
     marginBottom: 60,
     padding: 30,
   },
