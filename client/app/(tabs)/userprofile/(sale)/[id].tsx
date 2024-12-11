@@ -442,8 +442,18 @@ export default function SaleDetail() {
           <>
             <Image source={{ uri: sale.images[0]?.uri }} style={styles.image} />
             <TouchableOpacity style={styles.imageButton}>
-              <Text style={styles.buttonText} onPress={handleChangePhoto(sale.images.uri)}>Change Photo</Text>
-              <Text style={styles.buttonText} onPress={handleDeletePhoto(sale.images.uri)}>Delete Photo</Text>
+              <Text
+                style={styles.buttonText}
+                onPress={() => handleChangePhoto(sale.images[0]?.uri)}
+              >
+                Change Photo
+              </Text>
+              <Text
+                style={styles.buttonText}
+                onPress={() => handleDeletePhoto(sale.images[0]?.uri)}
+              >
+                Delete Photo
+              </Text>
             </TouchableOpacity>
           </>
         ) : (
