@@ -12,6 +12,9 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/components/AuthProvider";
+import { useColorScheme } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+
 
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState("");
@@ -23,56 +26,57 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const colorScheme = useColorScheme(); // Declare colorScheme first
+  const placeholderColor = colorScheme === "dark" ? "#AAAAAA" : "#888888";
+
   const auth = useAuth();
   const router = useRouter();
 
-// app/register.tsx
-const handleRegister = async () => {
-  if (!firstName || !lastName || !email || !zipcode || !password || !confirmPassword) {
-    alert("All fields are required");
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    alert("Passwords do not match");
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError(null);
-
-    // Step 1: Register user with Firebase
-    await auth.register(email, password);
-
-    // Step 2: Fetch ID token and create profile
-    const idToken = await auth.getValidIdToken();
-    if (!idToken) throw new Error("Failed to retrieve ID token.");
-
-    const response = await fetch("https://yardhopperapi.onrender.com/api/users/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({ first: firstName, last: lastName, zipcode }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to create profile.");
+  const handleRegister = async () => {
+    if (!firstName || !lastName || !email || !zipcode || !password || !confirmPassword) {
+      Alert.alert("Error", "All fields are required.");
+      return;
     }
 
-    console.log("User profile successfully created.");
-    router.replace("/register-location");
-  } catch (error: any) {
-    console.error("Error during registration:", error.message);
-    setError(error.message || "Registration failed. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match.");
+      return;
+    }
 
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Step 1: Register user with Firebase
+      await auth.register(email, password);
+
+      // Step 2: Fetch ID token and create profile
+      const idToken = await auth.getValidIdToken();
+      if (!idToken) throw new Error("Failed to retrieve ID token.");
+
+      const response = await fetch("https://yardhopperapi.onrender.com/api/users/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ first: firstName, last: lastName, zipcode }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create profile.");
+      }
+
+      console.log("User profile successfully created.");
+      router.replace("/register-location");
+    } catch (error: any) {
+      console.error("Error during registration:", error.message);
+      setError(error.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -83,6 +87,11 @@ const handleRegister = async () => {
         contentContainerStyle={styles.scrollViewContent}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Back Button
+        <Pressable onPress={() => router.push("/login")} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={30} color="#159636" />
+        </Pressable> */}
+
         <Text style={styles.title}>Create your account</Text>
 
         <View style={styles.formContainer}>
@@ -91,18 +100,21 @@ const handleRegister = async () => {
             style={styles.input}
             value={firstName}
             onChangeText={setFirstName}
+            placeholderTextColor={placeholderColor}
           />
           <TextInput
             placeholder="Last Name"
             style={styles.input}
             value={lastName}
             onChangeText={setLastName}
+            placeholderTextColor={placeholderColor}
           />
           <TextInput
             placeholder="Email"
             style={styles.input}
             value={email}
             onChangeText={setEmail}
+            placeholderTextColor={placeholderColor}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -111,6 +123,7 @@ const handleRegister = async () => {
             style={styles.input}
             value={zipcode}
             onChangeText={setZipcode}
+            placeholderTextColor={placeholderColor}
             keyboardType="numeric"
           />
           <TextInput
@@ -118,6 +131,7 @@ const handleRegister = async () => {
             style={styles.input}
             value={password}
             onChangeText={setPassword}
+            placeholderTextColor={placeholderColor}
             secureTextEntry
           />
           <TextInput
@@ -125,6 +139,7 @@ const handleRegister = async () => {
             style={styles.input}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
+            placeholderTextColor={placeholderColor}
             secureTextEntry
           />
 
@@ -137,6 +152,12 @@ const handleRegister = async () => {
             disabled={loading}
           >
             <Text style={styles.registerButtonText}>Create Account</Text>
+          </Pressable>
+
+          {/* Back to Login Button */}
+          <Pressable onPress={() => router.push("/login")} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={20} color="#159636" />
+            <Text style={styles.backButtonText}>Back to Login</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -154,6 +175,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+    alignSelf: "center",
+  },
+  backButtonText: {
+    color: "#159636",
+    fontSize: 16,
+    marginLeft: 5,
   },
   title: {
     fontSize: 30,
