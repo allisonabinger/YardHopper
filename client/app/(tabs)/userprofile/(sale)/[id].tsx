@@ -97,8 +97,8 @@ export default function SaleDetail() {
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   //   const [listing, setListing] = useState<ListingItem | null>(null);
-  const startDate = sale?.dates?.[0];
-  const endDate = sale?.dates?.[sale.dates.length - 1];
+  const [startDate, setStartDate] = useState(sale?.dates?.[0]);
+  const [endDate, setEndDate] = useState(sale?.dates?.[sale.dates.length - 1]);
 
   const fetchSale = async () => {
     try {
@@ -273,20 +273,34 @@ export default function SaleDetail() {
       ]
     );
   };
-
   const handleDayPress = (day) => {
     if (!startDate || (startDate && endDate)) {
+      // If there's no start date or if both start and end are set, update startDate
       setStartDate(day.dateString);
-      setEndDate(null);
+      setEndDate(null); // Reset endDate when a new startDate is selected
     } else if (startDate && !endDate) {
       const start = new Date(startDate);
       const end = new Date(day.dateString);
 
       if (end >= start) {
+        // If the end date is after or equal to the start date, set endDate
         setEndDate(day.dateString);
+        updateSaleDates();
       } else {
+        // Show an alert if the selected end date is before the start date
         Alert.alert("Invalid Date", "End date must be after the start date.");
       }
+    }
+  };
+
+  const updateSaleDates = () => {
+    if (startDate && endDate) {
+      // Get the selected dates as an array of date strings
+      const updatedDates = getDatesInRange(startDate, endDate);
+      setSale((prevSale) => ({
+        ...prevSale,
+        dates: updatedDates, // Update sale.dates with the new date range
+      }));
     }
   };
 
@@ -612,20 +626,24 @@ export default function SaleDetail() {
             onDayPress={handleDayPress}
             markedDates={{
               ...(startDate && endDate
-                ? getDatesInRange(startDate, endDate)
+                ? getDatesInRange(startDate, endDate) // Get the dates between start and end dates
                 : {}),
-              [startDate]: {
-                selected: true,
-                startingDay: true,
-                color: "#159636",
-                textColor: "white",
-              },
-              [endDate]: {
-                selected: true,
-                endingDay: true,
-                color: "#159636",
-                textColor: "white",
-              },
+              ...(startDate && {
+                [startDate]: {
+                  selected: true,
+                  startingDay: true,
+                  color: "#159636",
+                  textColor: "white",
+                },
+              }),
+              ...(endDate && {
+                [endDate]: {
+                  selected: true,
+                  endingDay: true,
+                  color: "#159636",
+                  textColor: "white",
+                },
+              }),
             }}
             markingType="period"
             theme={{
