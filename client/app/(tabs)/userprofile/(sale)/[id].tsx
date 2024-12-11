@@ -464,7 +464,7 @@ export default function SaleDetail() {
 
       Alert.alert("Success", "Photo deleted successfully!");
     } catch (error) {
-      Alert.alert("Error", (error as Error).message || "Failed to delete photo.");
+      Alert.alert("Error in handling delete photoooo", (error as Error).message || "Failed to delete photo.");
     } finally {
       await fetchSale();
     }
