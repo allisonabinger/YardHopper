@@ -273,26 +273,35 @@ export default function SaleDetail() {
       ]
     );
   };
-  const handleDayPress = (day) => {
+
+const handleDayPress = (day) => {
+    const selectedDate = new Date(day.dateString);
+  
     if (!sale.dates || sale.dates.length === 0) {
-      // Initialize dates array if it's empty
       setSale({ ...sale, dates: [day.dateString] });
     } else if (sale.dates.length === 1) {
-      // When start date is selected, choose the end date
-      const start = new Date(sale.dates[0]);
-      const end = new Date(day.dateString);
-
-      if (end >= start) {
+      const startDate = new Date(sale.dates[0]);
+  
+      if (selectedDate >= startDate) {
         const updatedDates = getDatesInRange(sale.dates[0], day.dateString);
         setSale({ ...sale, dates: updatedDates });
-        updateSaleDates(updatedDates); // Update your sale.dates
+        updateSaleDates(updatedDates);
       } else {
-        // Show an alert if the selected end date is before the start date
-        Alert.alert("Invalid Date", "End date must be after the start date.");
+        setSale({ ...sale, dates: [day.dateString] });
       }
     } else {
-      // Reset dates if more than two dates are selected
-      setSale({ ...sale, dates: [day.dateString] });
+      const startDate = new Date(sale.dates[0]);
+      const endDate = new Date(sale.dates[sale.dates.length - 1]);
+  
+      if (selectedDate < startDate) {
+        setSale({ ...sale, dates: [day.dateString] });
+      } else if (selectedDate > endDate) {
+        const updatedDates = getDatesInRange(sale.dates[0], day.dateString);
+        setSale({ ...sale, dates: updatedDates });
+        updateSaleDates(updatedDates);
+      } else {
+        setSale({ ...sale, dates: [day.dateString] });
+      }
     }
   };
 
@@ -559,7 +568,7 @@ export default function SaleDetail() {
           <View key={index} style={styles.imageContainer}>
             <Image
               source={{
-                uri: sale.images[0].uri || image, // Use the image from the sale data or from the picker preview
+                uri: sale.images[index].uri || image, // Use the image from the sale data or from the picker preview
               }}
               style={styles.image}
               resizeMode="cover"
@@ -662,7 +671,8 @@ export default function SaleDetail() {
               ...(startDate && {
                 [startDate]: {
                   selected: true,
-                  startingDay: true,
+                  startingDay: false,
+                  endingDay: true,
                   color: "#159636",
                   textColor: "white",
                 },
@@ -670,7 +680,8 @@ export default function SaleDetail() {
               ...(endDate && {
                 [endDate]: {
                   selected: true,
-                  endingDay: true,
+                  endingDay: false,
+                  startingDay: true,
                   color: "#159636",
                   textColor: "white",
                 },
