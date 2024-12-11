@@ -13,7 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import { useSavedListings } from "@/app/context/SavedListingsContext";
+import { useSavedListings } from "@/contexts/SavedListingsContext";
 
 
 type ListingItem = {
