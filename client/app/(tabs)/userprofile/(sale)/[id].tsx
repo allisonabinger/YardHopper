@@ -328,10 +328,10 @@ export default function SaleDetail() {
     });
   };
 
-  const handleChangePhoto = async (oldImageUri) => {
-    await handleDeletePhoto(oldImageUri);
-    await handleAddPhoto();
-  };
+  // const handleChangePhoto = async (oldImageUri) => {
+  //   await handleDeletePhoto(oldImageUri);
+  //   await handleAddPhoto();
+  // };
   const handleDeletePhoto = async (imageUri) => {
     try {
       const response = await fetch(
@@ -360,12 +360,13 @@ export default function SaleDetail() {
   };
 
   const handleAddPhoto = async () => {
+    if (!image) {
+        Alert.alert("No image selected", "Please select an image to add.");
+        return;
+    }
+
     try {
         await openImagePicker();
-        if (!image) {
-            Alert.alert("No image selected", "Please select an image to add.");
-            return;
-        }
         const fileInfo = await FileSystem.getInfoAsync(image);
         if (!fileInfo.exists) throw new Error("Selected file does not exist");
 
@@ -381,7 +382,9 @@ export default function SaleDetail() {
             `https://yardhopperapi.onrender.com/api/listings/${id}/images`,
             {
               method: "POST",
-              headers: { Authorization: `Bearer ${idToken}` },
+              headers: {
+                "Accept": "application/json",
+              },
               body: formData,
             }
           );
@@ -444,10 +447,13 @@ export default function SaleDetail() {
             <TouchableOpacity style={styles.imageButton}>
               <Text
                 style={styles.buttonText}
-                onPress={() => handleChangePhoto(sale.images[0]?.uri)}
+                onPress={() => handleAddPhoto()}
               >
                 Change Photo
               </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.imageButton}>
+
               <Text
                 style={styles.buttonText}
                 onPress={() => handleDeletePhoto(sale.images[0]?.uri)}
@@ -467,7 +473,11 @@ export default function SaleDetail() {
                   style={styles.imagePreview}
                   resizeMode="cover"
               />
-              <Text style={styles.buttonText} onPress={() => handleAddPhoto}>Add Photo</Text>
+              <TouchableOpacity style={styles.imageButton}>
+                <Text style={styles.buttonText} onPress={() => handleAddPhoto()}>
+                  Add Photo
+                </Text>
+              </TouchableOpacity>
             </>
         )}
 
