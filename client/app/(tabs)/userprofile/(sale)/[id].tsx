@@ -346,9 +346,27 @@ export default function SaleDetail() {
   };
 
   const handleChangePhoto = async (oldImageUri) => {
-    await handleDeletePhoto(oldImageUri);
-    await handleAddPhoto();
+    Alert.alert(
+      "Replace Photo",
+      "Do you want to replace the your photo with the one selected?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Replace",
+          onPress: async () => {
+            await handleDeletePhoto(oldImageUri);
+            openImagePicker();
+            await handleAddPhoto();
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
+
   const handleDeletePhoto = async (imageUri) => {
     console.log("Deleting photo with URI:", imageUri);
     try {
@@ -369,7 +387,7 @@ export default function SaleDetail() {
       if (!response.ok) throw new Error("Failed to delete photo");
       const updatedImages = await response.json();
 
-      await fetchSale();
+      // await fetchSale();
       // setSale((prev) => {
       //   if (!prev) return null;
 
@@ -382,6 +400,8 @@ export default function SaleDetail() {
       Alert.alert("Success", "Photo deleted successfully!");
     } catch (error) {
       Alert.alert("Error", (error as Error).message || "Failed to delete photo.");
+    } finally {
+      await fetchSale();
     }
   };
 
@@ -487,7 +507,7 @@ export default function SaleDetail() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.imageButton}
-              onPress={openImagePicker} // Opens the image picker to select a new photo
+              onPress={() => handleChangePhoto(sale.images[0].uri)}// Opens the image picker to select a new photo
             >
               <Text style={styles.buttonText}>Select New Photo</Text>
             </TouchableOpacity>
