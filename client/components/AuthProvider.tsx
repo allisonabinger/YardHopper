@@ -83,11 +83,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function refreshProfile() {
     if (user) {
       try {
-        console.log("Refreshing profile for user:", user.email); // Debug
+        // console.log("Refreshing profile for user:", user.email); // Debug
         const token = await getValidIdToken();
         if (token) {
           const updatedProfile = await fetchUserProfile(token);
-          console.log("Updated Profile:", updatedProfile); // Debug
+          // console.log("Updated Profile:", updatedProfile); // Debug
           setProfile(updatedProfile);
         }
       } catch (error) {

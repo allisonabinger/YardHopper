@@ -58,7 +58,7 @@ export default function UpdateUserSettingsPage() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to fetch user profile.");
+          // throw new Error(errorData.message || "Failed to fetch user profile.");
         }
 
         const profileData = await response.json();
@@ -75,8 +75,8 @@ export default function UpdateUserSettingsPage() {
         });
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-        console.error("Error fetching user profile:", errorMessage);
-        Alert.alert("Error", errorMessage || "Failed to load user profile.");
+        // console.error("Error fetching user profile:", errorMessage);
+        // Alert.alert("Error", errorMessage || "Failed to load user profile.");
       } finally {
         setLoading(false);
       }
