@@ -50,7 +50,7 @@ export default function SavedScreen() {
 
   useEffect(() => {
     fetchSavedListings().then(() => {
-      console.log("Saved Listings:", JSON.stringify(savedListings.listings, null, 2));
+      // console.log("Saved Listings:", JSON.stringify(savedListings.listings, null, 2));
     });
   }, []);
 

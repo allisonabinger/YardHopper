@@ -44,7 +44,7 @@ const RegisterLocation = () => {
       const { latitude, longitude } = coords;
       setLocation({ latitude, longitude });
       Alert.alert("Location Acquired", `Latitude: ${latitude}, Longitude: ${longitude}`);
-      console.log("Current location:", { latitude, longitude });
+      // console.log("Current location:", { latitude, longitude });
       router.replace("/(tabs)"); // Navigate to home after successful location access
     } catch (error) {
       console.error("Error getting location:", error);
