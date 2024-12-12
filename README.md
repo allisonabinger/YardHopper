@@ -1,81 +1,74 @@
-## Find your treasure!
+# YardHopper - A Comprehensive Garage Sale App
 
-# YardHopper
-YardHopper is a full-stack application consisting of a mobile app built with Expo/React Native and a backend API built with Node.js and Express.
+## Project Overview
 
-## Table of Contents
-- Client-Side (Mobile App)
-- Server-Side (YardHopperAPI)
-- API Documentation
-- Data Management
-- Security
-- Auto-Cleanup
-- Client-Side (Mobile App)
-- Project Structure
-- The client-side project uses Expo, which creates a .expo folder in the project.
+YardHopper is a full-stack mobile application designed to simplify the process of discovering and organizing garage sales within local communities. Developed using Expo, React Native, and Firebase, this app provides a centralized platform for bargain hunters and enthusiasts who enjoy treasure hunting at yard sales.
 
-## The .expo folder contains:
-devices.json: Information about devices that have recently opened this project.
-settings.json: Server configuration used to serve the application manifest.
-Note: The .expo folder should not be committed to version control as it contains machine-specific information.
+## Key Features
 
-## Server-Side (YardHopperAPI)
-The server-side component is hosted on Render and provides the backend functionality for YardHopper.
+- User-friendly interface for searching nearby garage sales
+- Ability to explore detailed listings of items available for purchase
+- Feature for users to create and manage their own sales
+- Comprehensive search functionality with filtering options
+- Interactive map view for visualizing sale locations
+- User profile management and settings
+- Integration with device features like photo library and location services
 
-## API Core Structure
-The API follows the Separation of Concerns principle, making it modular, testable, and maintainable. The structure includes:
+## Architecture
 
-src/: Main functionality
-app.ts: Express application configuration
-server.ts: Main entry point
-config/: Environment and Firebase configurations
-routes/: API endpoints
-controllers/: Request handling and response construction
-services/: Database and storage interactions
-models/: Interfaces and types
-middlewares/: Authentication and error handling
-swagger/: API documentation configuration
-Framework and Technologies
-Node.js
-Express
-Firebase (Authentication, Firestore, Storage)
-Swagger
-Multer
-Crypto
-geoFirestore
-API Documentation
-For detailed API documentation, please visit the Swagger UI.
+The YardHopper application is built as a full-stack solution with the following components:
 
-## Main Endpoints
-- Listings: /api/listings
-- Users: /api/users
-- Each endpoint has various operations (GET, POST, PUT, DELETE) for managing listings and user data.
+- Frontend: Developed using Expo and React Native, providing a native mobile app experience
+- Backend: Built with Firebase Cloud Functions and Firestore database with a custom API hosted on Render
+
+## Core Functionality
+
+1. **User Authentication**: Secure login and account management system
+2. **Sale Discovery**: Search and filter garage sales based on various criteria
+3. **Listing Management**: Create, edit, and delete personal garage sale listings
+4. **Item Details**: View comprehensive information about individual sale items
+5. **Map Integration**: Visualize sale locations on an interactive map
+6. **Image Upload**: Add and manage images for sale listings
+7. **Location Services**: Use device GPS for precise sale location tracking
+
+## API Documentation
+
+The API documentation can be found at https://yardhopperapi.onrender.com/api-docs. It provides detailed information on available endpoints, request/response formats, and authentication requirements.
+
+## Security Measures
+
+- Authentication is handled using Firebase authentication
+- All sensitive data is encrypted before transmission
+- Private user information is not publicly accessible
+- Users can archive their posts and delete their accounts, ensuring data privacy
 
 ## Data Management
-YardHopper uses Firestore, a NoSQL database, for data storage. The main collections are:
 
-listings: Stores information about yard sales and other events.
-users: Stores user profile information.
-Security
-Authentication
-Firebase Authentication is used for user management.
-Each API request requires an authenticated user with a valid ID token.
-Encryption
-Sensitive information is encrypted before transmission to ensure data privacy.
+The application utilizes a NoSQL schema in Firestore for efficient data storage and retrieval. Data is structured to balance public accessibility with user privacy.
 
-## Privacy
-User information is kept private and not publicly accessible.
-Users can archive or delete their posts and account data.
-Auto-Cleanup
-A cloud function runs daily at midnight to:
+## Best Practices
 
-## Archive expired listings
-Update the status of upcoming listings to active when appropriate
-For more detailed information on specific endpoints, data structures, or development setup, please refer to the respective sections in this README or the API documentation.
+- Separation of Concerns: Modular design for improved maintainability and testability
+- Error Handling: Comprehensive error management system with custom error classes
+- Validation: Rigorous input validation to ensure data integrity
+- Geolocation Integration: Utilizes GeoApify API for accurate location-based services
 
-# Authors:
-Chris Gillis
-Mark Tipton
-Allison Binger
-Mariah Bargas
-Kier McAlister
+## Acknowledgments
+
+Special thanks to all contributors who have made this project possible:
+
+- Chris Gillis
+- Mark Tipton
+- Allison Binger
+- Mariah Bargas
+- Kier McAlister
+
+## Support Information
+
+For any questions or issues, please feel free to reach out:
+
+- Email: yardhopperadmn@gmail.com
+
+We appreciate your feedback.
+
+Happy treasure hunting!
